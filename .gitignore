@@ -1,3 +1,7 @@
+# Custom
+*/laurent's_code_examples
+data/*.xlsx
+
 # History files
 .Rhistory
 .Rapp.history
@@ -37,3 +41,4 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+.Rproj.user
