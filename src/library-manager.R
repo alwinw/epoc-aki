@@ -2,7 +2,9 @@
 # Alwin Wang 2019
 
 packages <- c(
+  "epiR",
   "tidyverse", 
+  "readxl",
   "styler"
 )
 new.packages <- packages[!(packages %in% installed.packages()[, "Package"])]

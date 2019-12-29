@@ -1,0 +1,39 @@
+# Merge Excel Files
+# Alwin Wang 2019
+
+oliguria_xlsx_data <- list(
+  demographic = read_excel(oliguria_xlsx_path, "Patient Demographics"),
+  data_set    = read_excel(oliguria_xlsx_path, "Data set"),
+  outcomes    = read_excel(oliguria_xlsx_path, "AKI & outcomes"),
+  screen_log  = read_excel(oliguria_xlsx_path, "Screening log")
+)
+creatinine_xlsx_data <- list(
+  demographic = read_excel(creatinine_xlsx_path, "Patient Demographics"),
+  data_set    = read_excel(creatinine_xlsx_path, "Data set"),
+  outcomes    = read_excel(creatinine_xlsx_path, "AKI & outcomes"),
+  screen_log  = read_excel(creatinine_xlsx_path, "Screening log")
+)
+demographics_xlsx_data <- list(
+  num_creatinine = read_excel(demographics_xlsx_path, "no cr change"),
+  num_oliguria   = read_excel(demographics_xlsx_path, "no oliguria"),
+  neither_cr_ol  = read_excel(demographics_xlsx_path, "neither cr nor olig")
+)
+
+excel_date_to_character <- function(vector) {
+  ifelse(
+    grepl("/", vector), 
+    vector, 
+    as.character(as.Date(as.numeric(vector), origin = "1899-12-30"), format = "%d/%m/%y"))
+}
+
+oliguria_xlsx_data$screen_log %<>% arrange(`UR number`, Dates_screened) %>% 
+  mutate(Dates_screened = excel_date_to_character(Dates_screened))
+creatinine_xlsx_data$screen_log %<>% arrange(`UR number`, Dates_screened) %>% 
+  mutate(Dates_screened = excel_date_to_character(Dates_screened))
+
+data_collection_errors = 
+  (creatinine_xlsx_data$screen_log$`UR number`      != oliguria_xlsx_data$screen_log$`UR number`     ) |
+  (creatinine_xlsx_data$screen_log$Dates_screened   != oliguria_xlsx_data$screen_log$Dates_screened  ) |
+  (creatinine_xlsx_data$screen_log$Excl_criteria_ok != oliguria_xlsx_data$screen_log$Excl_criteria_ok)
+creatinine_collection_errors = creatinine_xlsx_data$screen_log[data_collection_errors,]
+oliguria_collection_errors   = oliguria_xlsx_data  $screen_log[data_collection_errors,]
