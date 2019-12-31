@@ -86,6 +86,35 @@ if (length(unique(c(creatinine_xlsx_n_obs, oliguria_xlsx_n_obs, merged_xlsx_n_ob
 
 #
 
+merged_xlsx_data$screen_log %<>% 
+  mutate(Excl_criteria_ok = factor(Excl_criteria_ok, levels = c("N", "Y"))) %>% 
+  group_by(Excl_criteria_ok)
+
+admissions_flow_chart = data.frame(
+  summary = c(
+    "Total Admissions:",
+    "Total Unique UR Numbers:"),
+  number  = c(
+    nrow(merged_xlsx_data$screen_log),
+    length(unique(merged_xlsx_data$screen_log$`UR number`)))
+)
+
+admissions_flow_chart = with(
+  merged_xlsx_data$screen_log,
+  data.frame(
+    `Total Unique UR Numbers` = length(unique(`UR number`)),
+    `Total Admissions`        = length(`UR number`),
+    check.names = FALSE
+  )
+)
+
+
+admissions_flow_chart = data.frame(
+  `Total Unique UR Numbers` = length(unique(merged_xlsx_data$screen_log$`UR number`)),
+  `Total Admissions`        = nrow(merged_xlsx_data$screen_log),
+  check.names = FALSE
+)
+
 cat(paste("\n", 
           "Total Admissions:         ", nrow(mer$scre), "\n",
           "Total Unique UR Number:   ", length(unique(mer$scre$`UR number`)), "\n",
