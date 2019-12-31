@@ -2,7 +2,7 @@
 title: "Creatinine Time Series Analysis"
 author: "Alwin Wang"
 date: "31/12/2019"
-output: word_document
+output: html_document
 # html_document: Recommended format for authoring
 # pdf_document : Requires TeX (MiKTeX on Windows, MacTeX 2013+ on OS X, TeX Live 2013+ on Linux)
 # word_document: Requires installation of MS Word or Libre/Open Office on Linux
@@ -12,7 +12,7 @@ output: word_document
 knitr::opts_chunk$set(echo = TRUE, cache=TRUE)
 ```
 
-```{r library, echo=FALSE, include=FALSE}
+```{r library, echo=FALSE, include=FALSE, cache=FALSE}
 source("library-manager.R")
 ```
 
@@ -33,6 +33,7 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
 ```{r cars}
+kable(cars)
 summary(cars)
 ```
 

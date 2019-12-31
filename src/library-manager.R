@@ -3,6 +3,7 @@
 
 packages <- c(
   "epiR",
+  "knitr",
   "tidyverse", 
   "readxl",
   "styler"
