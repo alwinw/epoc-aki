@@ -86,59 +86,63 @@ if (length(unique(c(creatinine_xlsx_n_obs, oliguria_xlsx_n_obs, merged_xlsx_n_ob
 
 #
 
-# merged_xlsx_data$screen_log %<>% 
-#   mutate(Excl_criteria_ok = factor(Excl_criteria_ok, levels = c("N", "Y"))) %>% 
-#   group_by(Excl_criteria_ok)
+merged_xlsx_colnames = colnames(merged_xlsx_data$screen_log)
+merged_xlsx_log_colnames = merged_xlsx_colnames[
+  !(merged_xlsx_colnames %in%
+    grep(paste0("UR number|Dates_screened|Pt_Study_no|Total_no_|", 
+                tail(colnames(creatinine_xlsx_data$screen_log),1)), 
+       merged_xlsx_colnames, value = TRUE))
+]
+merged_xlsx_data$screen_log[merged_xlsx_log_colnames] <- 
+  ifelse(merged_xlsx_data$screen_log[merged_xlsx_log_colnames] == "N" | 
+         is.na(merged_xlsx_data$screen_log[merged_xlsx_log_colnames]), 
+       FALSE, 
+       TRUE)
 
-admissions_flow_chart <- merged_xlsx_data$screen_log %>% 
+#
+
+#
+admissions_flow_chart_all <- merged_xlsx_data$screen_log %>% 
   summarise(
     `Total Unique UR Numbers`     = length(unique(`UR number`)),
-    `Total Admissions`            = length(`UR number`),
+    `Total Admissions`            = n(),
     `> Total Excluded Admissions` = length(`UR number`[Excl_criteria_ok == "N"]),
     `> Total Eligible Admissions` = length(`UR number`[Excl_criteria_ok == "Y"])
   )
 
-kable(t(admissions_flow_chart))
+admissions_flow_chart_excluded <- merged_xlsx_data$screen_log %>% 
+  filter(!Excl_criteria_ok) %>% 
+  summarise(
+    `| Total Excluded Admissions` = n(),
+    `|-- AKI`                     = length(`UR number`[Already_AKI      ]),
+    `|-- Weekend`                 = length(`UR number`[Admit_weekend    ]),
+    `|-- No ICD`                  = length(`UR number`[No_IDC           ]),
+    `|-- ESKD`                    = length(`UR number`[ESKD             ]),
+    `|-- EOLC`                    = length(`UR number`[EOLC             ]),
+    `|-- Kidney transplant`       = length(`UR number`[Kidney_transplant]),
+    `°-- Child`                   = length(`UR number`[Child            ])
+  ) # could do something more fancy here with gather?
 
-cat(paste("\n", 
-          "Total Admissions:         ", nrow(mer$scre), "\n",
-          "Total Unique UR Number:   ", length(unique(mer$scre$`UR number`)), "\n",
-          "Total Excluded Admissions:", nrow(filter(mer$scre, Excl_criteria_ok == "N")), "\n",
-          "Total Eligible Admissions:", nrow(filter(mer$scre, Excl_criteria_ok == "Y")), "\n",
-          "Excluded Branch\n",
-          "  AKI:                    ", nrow(filter(mer$scre, Excl_criteria_ok =="N", Already_AKI == "Y")), "\n",
-          "  Weekend:                ", nrow(filter(mer$scre, Excl_criteria_ok =="N", Admit_weekend == "Y")), "\n",
-          "  No IDC:                 ", nrow(filter(mer$scre, Excl_criteria_ok =="N", No_IDC == "Y")), "\n",
-          "  ESKD:                   ", nrow(filter(mer$scre, Excl_criteria_ok =="N", ESKD == "Y")), "\n",
-          "  EOLC:                   ", nrow(filter(mer$scre, Excl_criteria_ok =="N", EOLC == "Y")), "\n",
-          "  Kidney transplant:      ", nrow(filter(mer$scre, Excl_criteria_ok =="N", Kidney_transplant == "Y")), "\n",
-          "  Child:                  ", nrow(filter(mer$scre, Excl_criteria_ok =="N", Child == "Y")), "\n",
-          "Included Cr Branch\n",
-          "  Cr change episode:      ", nrow(filter(mer$scre, Excl_criteria_ok =="Y", Epis_cr_change == "Y")), "\n",
-          "     1 Cr episode:        ", nrow(filter(mer$scre, Excl_criteria_ok =="Y", Total_no_cr_epis ==  1)), "\n",
-          "     2 Cr episode:        ", nrow(filter(mer$scre, Excl_criteria_ok =="Y", Total_no_cr_epis ==  2)), "\n",
-          "     3 Cr episode:        ", nrow(filter(mer$scre, Excl_criteria_ok =="Y", Total_no_cr_epis ==  3)), "\n",
-          "     4 Cr episode:        ", nrow(filter(mer$scre, Excl_criteria_ok =="Y", Total_no_cr_epis ==  4)), "\n",
-          "     5 Cr episode:        ", nrow(filter(mer$scre, Excl_criteria_ok =="Y", Total_no_cr_epis ==  5)), "\n",
-          "     6 Cr episode:        ", nrow(filter(mer$scre, Excl_criteria_ok =="Y", Total_no_cr_epis ==  6)), "\n",
-          "     7 Cr episode:        ", nrow(filter(mer$scre, Excl_criteria_ok =="Y", Total_no_cr_epis ==  7)), "\n",
-          "     8 Cr episode:        ", nrow(filter(mer$scre, Excl_criteria_ok =="Y", Total_no_cr_epis ==  8)), "\n",
-          "     9 Cr episode:        ", nrow(filter(mer$scre, Excl_criteria_ok =="Y", Total_no_cr_epis ==  9)), "\n",
-          "    10 Cr episode:        ", nrow(filter(mer$scre, Excl_criteria_ok =="Y", Total_no_cr_epis == 10)), "\n",
-          "    Total Cr episodes:    ", sum(mer$scre$Total_no_cr_epis, na.rm = TRUE), "\n",
-          "  No Cr change episode:   ", nrow(filter(mer$scre, Excl_criteria_ok =="Y", is.na(Epis_cr_change))), "\n",
-          "Included Olig Branch\n",
-          "  Olig episode:           ", nrow(filter(mer$scre, Excl_criteria_ok =="Y", Epis_olig == "Y")), "\n",
-          "     1 Olig episode:      ", nrow(filter(mer$scre, Excl_criteria_ok =="Y", Total_no_olig_epis ==  1)), "\n",
-          "     2 Olig episode:      ", nrow(filter(mer$scre, Excl_criteria_ok =="Y", Total_no_olig_epis ==  2)), "\n",
-          "     3 Olig episode:      ", nrow(filter(mer$scre, Excl_criteria_ok =="Y", Total_no_olig_epis ==  3)), "\n",
-          "     4 Olig episode:      ", nrow(filter(mer$scre, Excl_criteria_ok =="Y", Total_no_olig_epis ==  4)), "\n",
-          "     Total Olig episodes: ", sum(mer$scre$Total_no_olig_epis, na.rm = TRUE), "\n",
-          "  No Olig episode:        ", nrow(filter(mer$scre, Excl_criteria_ok =="Y", is.na(Epis_olig))), "\n",
-          "Cr change and Olig\n",
-          "  Both Cr and Olig:       ", nrow(filter(mer$scre, Excl_criteria_ok =="Y", Epis_cr_change == "Y", Epis_olig == "Y")), "\n",
-          "  Neither Cr nor Olig:    ", nrow(filter(mer$scre, Excl_criteria_ok =="Y", is.na(Epis_cr_change), is.na(Epis_olig))), "\n",
-          "  Cr change only:         ", nrow(filter(mer$scre, Excl_criteria_ok =="Y", Epis_cr_change == "Y", is.na(Epis_olig))), "\n",
-          "  Olig only:              ", nrow(filter(mer$scre, Excl_criteria_ok =="Y", is.na(Epis_cr_change), Epis_olig == "Y")), "\n"
-))
+admissions_flow_chart_included_cr <- merged_xlsx_data$screen_log %>% 
+  filter(Excl_criteria_ok) %>% 
+  group_by(Total_no_cr_epis) %>% 
+  summarise(
+    `> Total Eligible Admissions` = n()
+  )
+
+admissions_flow_chart_included_olig <- merged_xlsx_data$screen_log %>% 
+  filter(Excl_criteria_ok) %>% 
+  group_by(Total_no_olig_epis) %>% 
+  summarise(
+    `> Total Eligible Admissions` = n()
+  )
+
+admissions_flow_chart_included_all <- merged_xlsx_data$screen_log %>% 
+  filter(Excl_criteria_ok) %>% 
+  group_by(Total_no_olig_epis) %>% 
+  summarise(
+    n = n()
+  )
+
+#
 
