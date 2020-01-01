@@ -27,6 +27,9 @@ load_excel_files <- function() {
     furosemide   = read_excel(creat_furo_xlsx_path, "Medication"             )
   )
   
+  names(creatinine_xlsx$screen_log)[ncol(creatinine_xlsx$screen_log)] <- "Comment"
+  names(oliguria_xlsx  $screen_log)[ncol(oliguria_xlsx  $screen_log)] <- "Comment"
+  
   xlsx_data <- list(
     oliguria     = oliguria_xlsx    ,
     creatinine   = creatinine_xlsx  ,
@@ -81,39 +84,59 @@ data_collection_errors <- function(xlsx_data) {
     "Discarded Pt Study Numbers: ", paste(xlsx_data$excluded_Pt_Study_no, collapse = ", "), "\n"
   ))
   
-  xlsx_data$discarded_pts <- creatinine_errors %>% 
-    mutate(
-      Excl_criteria_ok = "N",
-      Already_AKI      = "Y")
+  xlsx_data$creatinine$screen_log[errors_logi, "Dates_screened"] = 
+    xlsx_data$oliguria$screen_log[errors_logi, "Dates_screened"]
+  xlsx_data$creatinine$screen_log[errors_logi, "Excl_criteria_ok"] = "N"
+  xlsx_data$creatinine$screen_log[errors_logi, "Already_AKI"]     = "Y"
+  xlsx_data$oliguria  $screen_log[errors_logi, "Excl_criteria_ok"] = "N"
+  xlsx_data$oliguria  $screen_log[errors_logi, "Already_AKI"]     = "Y"
+  
   
   return(xlsx_data)
 }
 
+xlsx_data = data_collection_errors(xlsx_data)
+
 # Merge screening logs
-merge_columns = setdiff(
-  intersect(colnames(creatinine_xlsx$screen_log), colnames(oliguria_xlsx$screen_log)),
-  c("Incl_criteria_ok", "Pt_Study_no", tail(colnames(creatinine_xlsx$screen_log),1))
-)
-merged_xlsx = list(screen_log = 
-    full_join(
-      filter(creatinine_xlsx$screen_log, !(`UR number` %in% excluded_UR_numbers)),
-      filter(oliguria_xlsx  $screen_log, !(`UR number` %in% excluded_UR_numbers)),
-      by     = merge_columns,
-      suffix = c("_cre", "_oli")
-))
-if (anyNA(merged_xlsx$screen_log$`UR number`)) {
-  stop("NA in UR number of merged Excel sheets")
+merge_xlsx_screening <- function(xlsx_data) {
+  merge_columns = setdiff(
+    intersect(colnames(xlsx_data$creatinine$screen_log), 
+              colnames(xlsx_data$oliguria$screen_log)),
+    c("Incl_criteria_ok", "Pt_Study_no", "Comment")
+  )
+  analysis_data = full_join(
+    xlsx_data$creatinine$screen_log,
+    xlsx_data$oliguria  $screen_log,
+    by     = merge_columns,
+    suffix = c("_cre", "_oli")
+    )
+  
+  if (anyNA(analysis_data$`UR number`)) {
+    stop("NA in UR number of merged Excel sheets")
+  }
+  creatinine_n_obs = nrow(xlsx_data$creatinine$screen_log)
+  oliguria_n_obs   = nrow(xlsx_data$oliguria  $screen_log)
+  analysis_n_obs   = nrow(analysis_data)
+  if (length(unique(c(creatinine_n_obs, oliguria_n_obs, analysis_n_obs))) != 1) {
+    stop(paste0(
+      "Inconsistent number of n_obs after UR numbers discarded. ",
+      "Creatinine: ", creatinine_n_obs, ", ",
+      "Oliguria: "  , oliguria_n_obs  , ", ",
+      "Merged: "    , analysis_n_obs  , ", "))
+  }
+  
+  return(analysis_data)
 }
-creatinine_xlsx_n_obs = nrow(filter(creatinine_xlsx$screen_log, !(`UR number` %in% excluded_UR_numbers)))
-oliguria_xlsx_n_obs   = nrow(filter(oliguria_xlsx$screen_log  , !(`UR number` %in% excluded_UR_numbers)))
-merged_xlsx_n_obs     = nrow(merged_xlsx$screen_log)
-if (length(unique(c(creatinine_xlsx_n_obs, oliguria_xlsx_n_obs, merged_xlsx_n_obs))) != 1) {
-  stop(paste0(
-    "Inconsistent number of n_obs after UR numbers discarded. ",
-    "Creatinine: ", creatinine_xlsx_n_obs, ", ",
-    "Oliguria: "  , oliguria_xlsx_n_obs  , ", ",
-    "Merged: "    , merged_xlsx_n_obs    , ", "))
+
+analysis_data <- merge_xlsx_screening(xlsx_data)
+
+print("flowchart here")
+
+list_analysis_data <- function(analysis_data) {
+  analysis_data <- split(analysis_data, analysis_data$`UR number`)
 }
+
+
 
 #
 
@@ -139,3 +162,6 @@ DateTime <- function(date, time) {
 
 merged_xlsx$creatinine <- creatinine_xlsx$data_set %>% 
   fill(Pt_Study_no)
+
+
+# https://stackoverflow.com/questions/26194298/unlist-data-frame-column-preserving-information-from-other-column?noredirect=1&lq=1
