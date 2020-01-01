@@ -1,6 +1,7 @@
 # Merge Excel Files
 # Alwin Wang 2019
 
+# Read Excel Files
 suppressMessages(
 oliguria_xlsx_data <- list(
   demographic = read_excel(oliguria_xlsx_path, "Patient Demographics"),
@@ -22,8 +23,7 @@ demographics_xlsx_data <- list(
   neither_cr_ol  = read_excel(demographics_xlsx_path, "neither cr nor olig")
 ))
 
-#
-
+# Convert Excel Dates
 excel_date_to_character <- function(vector) {
   suppressWarnings(
   ifelse(
@@ -39,8 +39,7 @@ oliguria_xlsx_data$screen_log   %<>% arrange(`UR number`, Dates_screened) %>%
 creatinine_xlsx_data$screen_log %<>% arrange(`UR number`, Dates_screened) %>% 
   mutate(Dates_screened = excel_date_to_character(Dates_screened))
 
-#
-
+# Data collection errors
 data_collection_errors = 
   (creatinine_xlsx_data$screen_log$`UR number`      != oliguria_xlsx_data$screen_log$`UR number`     ) |
   (creatinine_xlsx_data$screen_log$Dates_screened   != oliguria_xlsx_data$screen_log$Dates_screened  ) |
@@ -57,8 +56,7 @@ cat(paste(
   "Discarded Pt Study Numbers: ", paste(excluded_Pt_Study_no, collapse = ", "), "\n"
 ))
 
-#
-
+# Merge screening logs
 merge_columns = setdiff(
   intersect(colnames(creatinine_xlsx_data$screen_log), colnames(oliguria_xlsx_data$screen_log)),
   c("Incl_criteria_ok", "Pt_Study_no", tail(colnames(creatinine_xlsx_data$screen_log),1))
@@ -101,48 +99,10 @@ merged_xlsx_data$screen_log[merged_xlsx_log_colnames] <-
 
 #
 
-#
-admissions_flow_chart_all <- merged_xlsx_data$screen_log %>% 
-  summarise(
-    `Total Unique UR Numbers`     = length(unique(`UR number`)),
-    `Total Admissions`            = n(),
-    `> Total Excluded Admissions` = length(`UR number`[Excl_criteria_ok == "N"]),
-    `> Total Eligible Admissions` = length(`UR number`[Excl_criteria_ok == "Y"])
-  )
+DateTime <- function(date, time) {
+  if (is.na(date) | is.na(time)) return(NA)
+  else return(as.POSIXct(paste(date, format(time, format = "%H:%M:%S"))))
+}
 
-admissions_flow_chart_excluded <- merged_xlsx_data$screen_log %>% 
-  filter(!Excl_criteria_ok) %>% 
-  summarise(
-    `| Total Excluded Admissions` = n(),
-    `|-- AKI`                     = length(`UR number`[Already_AKI      ]),
-    `|-- Weekend`                 = length(`UR number`[Admit_weekend    ]),
-    `|-- No ICD`                  = length(`UR number`[No_IDC           ]),
-    `|-- ESKD`                    = length(`UR number`[ESKD             ]),
-    `|-- EOLC`                    = length(`UR number`[EOLC             ]),
-    `|-- Kidney transplant`       = length(`UR number`[Kidney_transplant]),
-    `°-- Child`                   = length(`UR number`[Child            ])
-  ) # could do something more fancy here with gather?
-
-admissions_flow_chart_included_cr <- merged_xlsx_data$screen_log %>% 
-  filter(Excl_criteria_ok) %>% 
-  group_by(Total_no_cr_epis) %>% 
-  summarise(
-    `> Total Eligible Admissions` = n()
-  )
-
-admissions_flow_chart_included_olig <- merged_xlsx_data$screen_log %>% 
-  filter(Excl_criteria_ok) %>% 
-  group_by(Total_no_olig_epis) %>% 
-  summarise(
-    `> Total Eligible Admissions` = n()
-  )
-
-admissions_flow_chart_included_all <- merged_xlsx_data$screen_log %>% 
-  filter(Excl_criteria_ok) %>% 
-  group_by(Total_no_olig_epis) %>% 
-  summarise(
-    n = n()
-  )
-
-#
-
+merged_xlsx_data$creatinine <- creatinine_xlsx_data$data_set %>% 
+  fill(Pt_Study_no)
