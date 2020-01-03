@@ -40,7 +40,7 @@ load_excel_files <- function() {
 }
 
 xlsx_data <- suppressMessages(load_excel_files())
-str(xlsx_data)
+# str(xlsx_data)
 
 # Convert Excel Dates
 excel_date_to_character <- function(vector) {
@@ -125,6 +125,14 @@ merge_xlsx_screening <- function(xlsx_data) {
       "Merged: "    , analysis_n_obs  , ", "))
   }
   
+  logi_colnames <- colnames(analysis_data)[
+    !grepl("UR number|Dates_screened|Pt_Study_no|Total_no_|Comment", colnames(analysis_data))]
+  num_colnames <- colnames(analysis_data)[
+    grepl("Total_no_", colnames(analysis_data))]
+  analysis_data <- analysis_data %>% 
+    mutate_at(logi_colnames, function(x) if_else(x == "N" | is.na(x), FALSE, TRUE)) %>% 
+    mutate_at(num_colnames , function(x) if_else(           is.na(x), 0    , x   ))
+  
   return(analysis_data)
 }
 
@@ -163,5 +171,4 @@ DateTime <- function(date, time) {
 merged_xlsx$creatinine <- creatinine_xlsx$data_set %>% 
   fill(Pt_Study_no)
 
-
-# https://stackoverflow.com/questions/26194298/unlist-data-frame-column-preserving-information-from-other-column?noredirect=1&lq=1
+# case_when
