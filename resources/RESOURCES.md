@@ -7,3 +7,13 @@ https://datascience.stackexchange.com/questions/45684/multivariate-time-series-b
 https://machinelearningmastery.com/multivariate-time-series-forecasting-lstms-keras/
 
 https://stats.stackexchange.com/questions/193054/time-series-analysis-for-predicting-a-binary-outcome
+
+
+
+https://cran.r-project.org/web/packages/data.tree/vignettes/data.tree.html
+https://www.r-graph-gallery.com/334-basic-dendrogram-with-ggraph.html
+https://stackoverflow.com/questions/4722689/creating-tree-diagram-for-showing-case-count-using-r
+
+https://stackoverflow.com/questions/26194298/unlist-data-frame-column-preserving-information-from-other-column
+
+case_when instead of nested ifelse statements
