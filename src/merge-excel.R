@@ -91,7 +91,6 @@ data_collection_errors <- function(xlsx_data) {
   xlsx_data$oliguria  $screen_log[errors_logi, "Excl_criteria_ok"] = "N"
   xlsx_data$oliguria  $screen_log[errors_logi, "Already_AKI"]     = "Y"
   
-  
   return(xlsx_data)
 }
 
@@ -114,6 +113,7 @@ merge_xlsx_screening <- function(xlsx_data) {
   if (anyNA(analysis_data$`UR number`)) {
     stop("NA in UR number of merged Excel sheets")
   }
+  
   creatinine_n_obs = nrow(xlsx_data$creatinine$screen_log)
   oliguria_n_obs   = nrow(xlsx_data$oliguria  $screen_log)
   analysis_n_obs   = nrow(analysis_data)
@@ -128,12 +128,7 @@ merge_xlsx_screening <- function(xlsx_data) {
   logi_colnames <- colnames(analysis_data)[
     !grepl("UR number|Dates_screened|Pt_Study_no|Total_no_|Comment", colnames(analysis_data))]
   analysis_data <- analysis_data %>% 
-    mutate_at(
-      logi_colnames, 
-      function(x) if_else(x == "N" | is.na(x), FALSE, TRUE)) %>% 
-    mutate_at(
-      vars(starts_with("Total_no_")) , 
-      function(x) if_else(is.na(x), 0, x))
+    mutate_at(logi_colnames, function(x) if_else(x == "N", FALSE, TRUE))
 
   return(analysis_data)
 }
@@ -146,11 +141,46 @@ list_analysis_data <- function(analysis_data) {
   analysis_data <- split(analysis_data, analysis_data$`UR number`)
 }
 
-#
+# merge data sets
 
-DateTime <- function(date, time) {
+dttm_as_posixct <- function(date, time) {
   if (is.na(date) | is.na(time)) return(NA)
   else return(as.POSIXct(paste(date, format(time, format = "%H:%M:%S"))))
 }
 
-# case_when
+
+merge_data_set_demo_outcomes <- function(data,
+                                         excluded_Pt_Study_no,
+                                         data_name = deparse(substitute(data)))
+  
+  {
+  combined_data <-data$data_set %>% 
+    fill(Pt_Study_no) %>% 
+    full_join(., data$demographic, by = "Pt_Study_no") %>% 
+    full_join(., data$outcomes   , by = "Pt_Study_no")
+  if (nrow(combined_data) != nrow(data$data_set)) {
+    stop(paste0(
+      "Inconsistent number of rows after merging data_set with demographics and outcomes",
+      "Data: "         , data_name          , ", ",
+      "Data set rows: ", nrow(data$data_set), ", ",
+      "Merged rows: "  , nrow(combined_data), ", "
+    ))
+  }
+  
+  dt_cols <- data.frame(
+    i = grep("^date|date$", colnames(combined_data), ignore.case = TRUE),
+    d = grep("^date|date$", colnames(combined_data), ignore.case = TRUE, value = TRUE)
+  )
+  tm_cols <- data.frame(
+    i = grep("^time|time$", colnames(combined_data), ignore.case = TRUE),
+    t = grep("^time|time$", colnames(combined_data), ignore.case = TRUE, value = TRUE)
+  )
+  
+  combined_data <- combined_data %>% 
+    select(-last_col()) %>% 
+    filter(!(Pt_Study_no %in% excluded_Pt_Study_no))
+  
+  return(combined_data)
+}
+
+merge_data_set_demo_outcomes(xlsx_data$creatinine, xlsx_data$excluded_Pt_Study_no)
