@@ -15,3 +15,5 @@ https://www.r-graph-gallery.com/334-basic-dendrogram-with-ggraph.html
 https://stackoverflow.com/questions/4722689/creating-tree-diagram-for-showing-case-count-using-r
 
 https://stackoverflow.com/questions/26194298/unlist-data-frame-column-preserving-information-from-other-column
+
+case_when instead of nested ifelse statements

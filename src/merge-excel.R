@@ -127,12 +127,14 @@ merge_xlsx_screening <- function(xlsx_data) {
   
   logi_colnames <- colnames(analysis_data)[
     !grepl("UR number|Dates_screened|Pt_Study_no|Total_no_|Comment", colnames(analysis_data))]
-  num_colnames <- colnames(analysis_data)[
-    grepl("Total_no_", colnames(analysis_data))]
   analysis_data <- analysis_data %>% 
-    mutate_at(logi_colnames, function(x) if_else(x == "N" | is.na(x), FALSE, TRUE)) %>% 
-    mutate_at(num_colnames , function(x) if_else(           is.na(x), 0    , x   ))
-  
+    mutate_at(
+      logi_colnames, 
+      function(x) if_else(x == "N" | is.na(x), FALSE, TRUE)) %>% 
+    mutate_at(
+      vars(starts_with("Total_no_")) , 
+      function(x) if_else(is.na(x), 0, x))
+
   return(analysis_data)
 }
 
@@ -144,31 +146,11 @@ list_analysis_data <- function(analysis_data) {
   analysis_data <- split(analysis_data, analysis_data$`UR number`)
 }
 
-
-
-#
-
-merged_xlsx_colnames = colnames(merged_xlsx$screen_log)
-merged_xlsx_logi_colnames = merged_xlsx_colnames[
-  !(merged_xlsx_colnames %in%
-    grep(paste0("UR number|Dates_screened|Pt_Study_no|Total_no_|", 
-                tail(colnames(creatinine_xlsx$screen_log),1)), 
-       merged_xlsx_colnames, value = TRUE))
-]
-merged_xlsx$screen_log[merged_xlsx_logi_colnames] <- 
-  ifelse(merged_xlsx$screen_log[merged_xlsx_logi_colnames] == "N" | 
-         is.na(merged_xlsx$screen_log[merged_xlsx_logi_colnames]), 
-       FALSE, 
-       TRUE)
-
 #
 
 DateTime <- function(date, time) {
   if (is.na(date) | is.na(time)) return(NA)
   else return(as.POSIXct(paste(date, format(time, format = "%H:%M:%S"))))
 }
-
-merged_xlsx$creatinine <- creatinine_xlsx$data_set %>% 
-  fill(Pt_Study_no)
 
 # case_when
