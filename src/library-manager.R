@@ -1,12 +1,19 @@
 # Library Manager
 # Alwin Wang 2019
 
-packages <- c(
-  "tidyverse", 
-  "styler"
-)
-new.packages <- packages[!(packages %in% installed.packages()[, "Package"])]
-if(length(new.packages)) install.packages(new.packages)
+load_library <- function() {
+  packages <- c(
+    "epiR",
+    "knitr",
+    "tidyverse", 
+    "readxl",
+    "styler"
+  )
+  new.packages <- packages[!(packages %in% installed.packages()[, "Package"])]
+  if(length(new.packages)) install.packages(new.packages)
+  
+  invisible(lapply(packages, library, character.only = TRUE))
+}
 
-invisible(lapply(packages, library, character.only = TRUE))
-rm(packages, new.packages)
+suppressMessages(suppressWarnings(load_library()))
+

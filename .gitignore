@@ -1,6 +1,11 @@
 # Custom
-*/laurent's_code_examples
 data/*.xlsx
+resources/laurent's_code_examples
+resources/*.pdf
+src/*.docx
+src/*.log
+src/*.pdf
+src/*_files/
 
 # History files
 .Rhistory
