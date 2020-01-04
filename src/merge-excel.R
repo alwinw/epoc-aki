@@ -143,11 +143,6 @@ list_analysis_data <- function(analysis_data) {
 
 # merge data sets
 
-dttm_as_posixct <- function(date, time) {
-  if (is.na(date) | is.na(time)) return(NA)
-  else return(as.POSIXct(paste(date, format(time, format = "%H:%M:%S"))))
-}
-
 dttm_cols <- function(text, colnames) {
   cols <- data.frame(
     i = grep(paste0("^", text, "|", text, "$"), colnames, ignore.case = TRUE),
@@ -183,34 +178,36 @@ merge_data_set_demo_outcomes <- function(data,
     dttm_cols("time", colnames(combined_data)), by = "match") %>% 
     select(date, time, match)
   
-  combined_data %>% 
-    select(-last_col()) %>% 
+  combined_data %<>% select(-last_col()) %>% 
     filter(!(Pt_Study_no %in% excluded_Pt_Study_no)) %>% 
     pivot_longer(
       cols = c(dttm_col$date, dttm_col$time),
-      names_to = "dttm_names",
+      names_to = "dttm_name",
       values_to = "dttm"
     ) %>% 
     mutate(
-      dttm_names = gsub("date|time", "DateTime", dttm_names, ignore.case = TRUE)
+      type = if_else(grepl("date", dttm_name, ignore.case = TRUE), "date", "time"),
+      dttm_name = gsub("date|time", "DateTime", dttm_name, ignore.case = TRUE)
     ) %>% 
     pivot_wider(
-      names_from = "dttm_names"
+      names_from = "type",
+      values_from = "dttm"
+    ) %>% 
+    mutate(
+      datetime = paste(
+        format(date, format = "%d-%m-%Y"),
+        format(time, format = "%H:%M:%S")
+      ),
+      date = NULL,
+      time = NULL
+    ) %>% 
+    pivot_wider(
+      names_from = "dttm_name",
+      values_from = "datetime"
     )
-    select(Pt_Study_no, dttm_names, dttm) %>% 
-    head(., 40) %>% 
-    as.data.frame()
-  
-  
-  
-  
-  
-    mutate_at(dttm_col$date, paste) %>% 
-    mutate_at(dttm_col$time, function(x) format(x, format = "%H:%M:%S")) %>% 
-    str(.)
-    
   
   return(combined_data)
 }
 
 merge_data_set_demo_outcomes(xlsx_data$creatinine, xlsx_data$excluded_Pt_Study_no)
+merge_data_set_demo_outcomes(xlsx_data$oliguria  , xlsx_data$excluded_Pt_Study_no)
