@@ -7,6 +7,7 @@ load_library <- function() {
     "knitr",
     "tidyverse", 
     "readxl",
+    "roxygen2",
     "styler"
   )
   new.packages <- packages[!(packages %in% installed.packages()[, "Package"])]
