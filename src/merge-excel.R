@@ -151,9 +151,10 @@ dttm_as_posixct <- function(date, time) {
 dttm_cols <- function(text, colnames) {
   cols <- data.frame(
     i = grep(paste0("^", text, "|", text, "$"), colnames, ignore.case = TRUE),
-    j = grep(paste0("^", text, "|", text, "$"), colnames, ignore.case = TRUE, value = TRUE)
+    j = grep(paste0("^", text, "|", text, "$"), colnames, ignore.case = TRUE, value = TRUE),
+    stringsAsFactors = FALSE
   ) %>% 
-    mutate(k = gsub(text, "", j, ignore.case = TRUE))
+    mutate(k = gsub(text, "DateTime", j, ignore.case = TRUE))
   colnames(cols) <- c(paste0(text, "_i"), paste0(text), "match")
   
   return(cols)
@@ -180,11 +181,34 @@ merge_data_set_demo_outcomes <- function(data,
   dttm_col = inner_join(
     dttm_cols("date", colnames(combined_data)),
     dttm_cols("time", colnames(combined_data)), by = "match") %>% 
-    select(date, time)
+    select(date, time, match)
   
-  combined_data <- combined_data %>% 
+  combined_data %>% 
     select(-last_col()) %>% 
-    filter(!(Pt_Study_no %in% excluded_Pt_Study_no))
+    filter(!(Pt_Study_no %in% excluded_Pt_Study_no)) %>% 
+    pivot_longer(
+      cols = c(dttm_col$date, dttm_col$time),
+      names_to = "dttm_names",
+      values_to = "dttm"
+    ) %>% 
+    mutate(
+      dttm_names = gsub("date|time", "DateTime", dttm_names, ignore.case = TRUE)
+    ) %>% 
+    pivot_wider(
+      names_from = "dttm_names"
+    )
+    select(Pt_Study_no, dttm_names, dttm) %>% 
+    head(., 40) %>% 
+    as.data.frame()
+  
+  
+  
+  
+  
+    mutate_at(dttm_col$date, paste) %>% 
+    mutate_at(dttm_col$time, function(x) format(x, format = "%H:%M:%S")) %>% 
+    str(.)
+    
   
   return(combined_data)
 }
