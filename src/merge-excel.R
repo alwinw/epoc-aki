@@ -259,10 +259,10 @@ merge_xlsx_creatinine_oliguria <- function(analysis_data, xlsx_data) {
       Hosp_LOS          = as.duration(DateTime_hosp_admit %--% DateTime_hosp_dc  ) / ddays (1),
       
       ICUadmtoAKIDx     = as.duration(DateTime_ICU_admit  %--% DateTime_AKI_Dx   ) / dhours(1),
-      Time_betw_ABG     = as.duration(DateTime_pre_ABG    %--% DateTime_post_ABG ) / dhours(1),
-      Time_betw_cr_AKI  = as.duration(DateTime_post_ABG   %--% DateTime_AKI_Dx   ) / dhours(1),
+      Time_betw_ABG     = as.duration(`T-4_ABG_DateTime`  %--% T0_ABG_DateTime   ) / dhours(1),
+      Time_betw_cr_AKI  = as.duration(T0_ABG_DateTime     %--% DateTime_AKI_Dx   ) / dhours(1),
       Time_betw_oli_AKI = as.duration(DateTime_olig_epis  %--% DateTime_AKI_Dx   ) / dhours(1),
-      Time_betw_ICU_cr  = as.duration(DateTime_ICU_admit  %--% DateTime_post_ABG ) / dhours(1),
+      Time_betw_ICU_cr  = as.duration(DateTime_ICU_admit  %--% T0_ABG_DateTime   ) / dhours(1),
       Time_betw_ICU_oli = as.duration(DateTime_ICU_admit  %--% DateTime_olig_epis) / dhours(1),
       
       crchange          = (T0_ABG_Cr - `T-4_ABG_Cr`),
