@@ -1,6 +1,8 @@
 # Merge Excel Files
 # Alwin Wang 2019
 
+# To do: search for "read_excel" in Paper_analysis.R
+
 # Read Excel Files
 load_excel_files <- function() {
   oliguria_xlsx <- list(
@@ -84,12 +86,21 @@ data_collection_errors <- function(xlsx_data) {
     "Discarded Pt Study Numbers: ", paste(xlsx_data$excluded_Pt_Study_no, collapse = ", "), "\n"
   ))
   
+  # Discard data from xlsx_data
   xlsx_data$creatinine$screen_log[errors_logi, "Dates_screened"] = 
     xlsx_data$oliguria$screen_log[errors_logi, "Dates_screened"]
-  xlsx_data$creatinine$screen_log[errors_logi, "Excl_criteria_ok"] = "N"
-  xlsx_data$creatinine$screen_log[errors_logi, "Already_AKI"]     = "Y"
-  xlsx_data$oliguria  $screen_log[errors_logi, "Excl_criteria_ok"] = "N"
-  xlsx_data$oliguria  $screen_log[errors_logi, "Already_AKI"]     = "Y"
+  
+  xlsx_data$creatinine$screen_log[errors_logi, "Excl_criteria_ok"  ] = "N"
+  xlsx_data$creatinine$screen_log[errors_logi, "Incl_criteria_ok"  ] = NA
+  xlsx_data$creatinine$screen_log[errors_logi, "Already_AKI"       ] = "Y"
+  xlsx_data$creatinine$screen_log[errors_logi, "Epis_cr_change"    ] = NA
+  xlsx_data$creatinine$screen_log[errors_logi, "Total_no_cr_epis"  ] = NA
+  
+  xlsx_data$oliguria  $screen_log[errors_logi, "Excl_criteria_ok"  ] = "N"
+  xlsx_data$oliguria  $screen_log[errors_logi, "Incl_criteria_ok"  ] = NA
+  xlsx_data$oliguria  $screen_log[errors_logi, "Already_AKI"       ] = "Y"
+  xlsx_data$oliguria  $screen_log[errors_logi, "Epis_olig"         ] = NA
+  xlsx_data$oliguria  $screen_log[errors_logi, "Total_no_olig_epis"] = NA
   
   return(xlsx_data)
 }
@@ -107,7 +118,7 @@ merge_xlsx_screening <- function(xlsx_data) {
     xlsx_data$creatinine$screen_log,
     xlsx_data$oliguria  $screen_log,
     by     = merge_columns,
-    suffix = c("_cre", "_oli")
+    suffix = c("_crch", "_olig")
     )
   
   if (anyNA(analysis_data$`UR number`)) {
@@ -136,10 +147,6 @@ merge_xlsx_screening <- function(xlsx_data) {
 analysis_data <- merge_xlsx_screening(xlsx_data)
 
 print("flowchart here")
-
-list_analysis_data <- function(analysis_data) {
-  analysis_data <- split(analysis_data, analysis_data$`UR number`)
-}
 
 # merge data sets
 
@@ -177,8 +184,12 @@ merge_data_set_demo_outcomes <- function(data,
     dttm_cols("date", colnames(combined_data)),
     dttm_cols("time", colnames(combined_data)), by = "match") %>% 
     select(date, time, match)
+  # Instead, consider using mutate_at to convert date and time columns and paste
+  # then into the date columns. Then use rename at to conver to a datetime name
+  # and then remove the time columns.
   
-  combined_data %<>% select(-last_col()) %>% 
+  combined_data <- combined_data %>% 
+    select(-last_col()) %>% 
     filter(!(Pt_Study_no %in% excluded_Pt_Study_no)) %>% 
     pivot_longer(
       cols = c(dttm_col$date, dttm_col$time),
@@ -194,10 +205,13 @@ merge_data_set_demo_outcomes <- function(data,
       values_from = "dttm"
     ) %>% 
     mutate(
-      datetime = paste(
-        format(date, format = "%d-%m-%Y"),
-        format(time, format = "%H:%M:%S")
-      ),
+      datetime = ifelse(
+        (is.na(date) | is.na(time)),
+        NA,
+        paste(
+          format(date, format = "%d-%m-%Y"),
+          format(time, format = "%H:%M:%S")
+      )),
       date = NULL,
       time = NULL
     ) %>% 
@@ -209,5 +223,44 @@ merge_data_set_demo_outcomes <- function(data,
   return(combined_data)
 }
 
-merge_data_set_demo_outcomes(xlsx_data$creatinine, xlsx_data$excluded_Pt_Study_no)
-merge_data_set_demo_outcomes(xlsx_data$oliguria  , xlsx_data$excluded_Pt_Study_no)
+merge_xlsx_creatinine_oliguria <- function(analysis_data, xlsx_data) {
+  creatinine = merge_data_set_demo_outcomes(xlsx_data$creatinine, xlsx_data$excluded_Pt_Study_no)
+  oliguria   = merge_data_set_demo_outcomes(xlsx_data$oliguria  , xlsx_data$excluded_Pt_Study_no)
+  
+    colnames(creatinine)[1] = "Pt_Study_no_crch"
+  colnames(oliguria  )[1] = "Pt_Study_no_olig"
+  
+  both <- suppressMessages(full_join(creatinine, oliguria))
+  
+  Total_no_cr_epis = sum(analysis_data$Total_no_cr_epis, na.rm = TRUE)
+  if (length(unique(c(
+    nrow(creatinine), length(which(!is.na(both$Pt_Study_no_crch))), Total_no_cr_epis))) != 1) 
+    {
+    stop(paste0(
+      "Number of creatinine episodes is not consistent", 
+      "Merged xlsx creatinine data: "   , nrow(creatinine), ", ",
+      "Merged creatinine and oliguria: ", length(which(!is.na(both$Pt_Study_no_crch))), ", ",
+      "Merged screening log number: "   , Total_no_cr_epis))
+  }
+  Total_no_olig_epis = sum(analysis_data$Total_no_olig_epis, na.rm = TRUE)
+  if (length(unique(c(
+    nrow(oliguria), length(which(!is.na(both$Pt_Study_no_olig))), Total_no_olig_epis))) != 1) 
+    {
+    stop(paste0(
+      "Number of oliguria episodes is not consistent", 
+      "Merged xlsx oliguria data: "     , nrow(oliguria), ", ",
+      "Merged creatinine and oliguria: ", length(which(!is.na(both$Pt_Study_no_olig))), ", ",
+      "Merged screening log number: "   , Total_no_olig_epis))
+  }
+  
+  # Length of Stay variables
+  # AKI number variables thing
+  
+  analysis_data <- suppressMessages(full_join(analysis_data, both))
+  
+  return(analysis_data)
+}
+
+analysis_data = merge_xlsx_creatinine_oliguria(analysis_data, xlsx_data)
+
+# GENERATE FLOW CHART AGAIN AND COMPARE THE PAIR
