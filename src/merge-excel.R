@@ -148,6 +148,16 @@ dttm_as_posixct <- function(date, time) {
   else return(as.POSIXct(paste(date, format(time, format = "%H:%M:%S"))))
 }
 
+dttm_cols <- function(text, colnames) {
+  cols <- data.frame(
+    i = grep(paste0("^", text, "|", text, "$"), colnames, ignore.case = TRUE),
+    j = grep(paste0("^", text, "|", text, "$"), colnames, ignore.case = TRUE, value = TRUE)
+  ) %>% 
+    mutate(k = gsub(text, "", j, ignore.case = TRUE))
+  colnames(cols) <- c(paste0(text, "_i"), paste0(text), "match")
+  
+  return(cols)
+}
 
 merge_data_set_demo_outcomes <- function(data,
                                          excluded_Pt_Study_no,
@@ -167,14 +177,10 @@ merge_data_set_demo_outcomes <- function(data,
     ))
   }
   
-  dt_cols <- data.frame(
-    i = grep("^date|date$", colnames(combined_data), ignore.case = TRUE),
-    d = grep("^date|date$", colnames(combined_data), ignore.case = TRUE, value = TRUE)
-  )
-  tm_cols <- data.frame(
-    i = grep("^time|time$", colnames(combined_data), ignore.case = TRUE),
-    t = grep("^time|time$", colnames(combined_data), ignore.case = TRUE, value = TRUE)
-  )
+  dttm_col = inner_join(
+    dttm_cols("date", colnames(combined_data)),
+    dttm_cols("time", colnames(combined_data)), by = "match") %>% 
+    select(date, time)
   
   combined_data <- combined_data %>% 
     select(-last_col()) %>% 
