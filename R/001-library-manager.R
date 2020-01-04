@@ -3,6 +3,7 @@
 
 load_library <- function() {
   packages <- c(
+    "base",
     "epiR",
     "knitr",
     "tidyverse", 
@@ -14,7 +15,12 @@ load_library <- function() {
   if(length(new.packages)) install.packages(new.packages)
   
   invisible(lapply(packages, library, character.only = TRUE))
+  
+  citations <- lapply(packages, citation)
+  names(citations) <- packages
+  
+  return(citations)
 }
 
-suppressMessages(suppressWarnings(load_library()))
+# invisible(suppressMessages(suppressWarnings(load_library())))
 

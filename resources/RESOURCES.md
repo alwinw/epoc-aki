@@ -29,4 +29,9 @@ https://stackoverflow.com/questions/45556169/pass-a-column-name-to-a-function-us
     test = "hi"
     df %>% mutate(!!test = 1)
 
+https://monashdatafluency.github.io/r-rep-res/
 
+citation(package = "base", lib.loc = NULL, auto = NULL)
+readCitationFile(file, meta = NULL)
+e.g.
+    citation("tidyverse")
