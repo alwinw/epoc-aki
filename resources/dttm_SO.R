@@ -4,7 +4,8 @@ library(tidyverse)
 tbl <- read_table2(
   "x   y   dateA       timeA   dateB       timeB   time_obs
    A   1   2020/1/29   3:30PM  2020/10/1   1:20AM  2:30PM
-   B   2   2019/12/2   8:10AM  2020/5/15   3:40PM  1:50AM"
+   B   2   2019/12/2   8:10AM  2020/5/15   3:40PM  1:50AM
+   C   3   NA          4:20PM  NA          NA      5:20AM"
 ) %>% 
   mutate_at(vars(matches("date|time")), as.POSIXct)
 
@@ -23,9 +24,13 @@ tidy_tbl <- tbl %>%
     values_from = "dttm"
     ) %>% 
   mutate(
-    datetime = paste(
-      format(date, format = "%d/%m/%Y"),
-      format(time, format = "%H:%M:%S"))
+    datetime = if_else(
+      (is.na(date) | is.na(time)),
+      NA,
+      paste(
+        format(date, format = "%d-%m-%Y"),
+        format(time, format = "%H:%M:%S")
+      ))
   ) %>% 
   select(-date, -time) %>% 
   pivot_wider(
