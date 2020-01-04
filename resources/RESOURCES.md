@@ -17,3 +17,10 @@ https://stackoverflow.com/questions/4722689/creating-tree-diagram-for-showing-ca
 https://stackoverflow.com/questions/26194298/unlist-data-frame-column-preserving-information-from-other-column
 
 case_when instead of nested ifelse statements
+read_table2 to quickly and easily make a dataframe e.g. 
+    tbl <- read_table2(
+    "iso    year
+    ALB     2003
+    ALB     2004")
+
+https://reprex.tidyverse.org/
