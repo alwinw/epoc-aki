@@ -24,3 +24,9 @@ read_table2 to quickly and easily make a dataframe e.g.
     ALB     2004")
 
 https://reprex.tidyverse.org/
+
+https://stackoverflow.com/questions/45556169/pass-a-column-name-to-a-function-using-dplyr-mutate-without-using-the-depreciate e.g.
+    test = "hi"
+    df %>% mutate(!!test = 1)
+
+
