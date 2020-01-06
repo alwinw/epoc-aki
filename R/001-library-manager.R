@@ -1,16 +1,18 @@
 # Library Manager
 # Alwin Wang 2019
 
-load_library <- function() {
-  packages <- c(
-    "base",
-    "epiR",
-    "knitr",
-    "tidyverse", 
-    "readxl",
-    "roxygen2",
-    "styler"
-  )
+load_library <- function(packages = NULL) {
+  if (is.null(packages))
+    packages <- c(
+      "base",
+      "rmarkdown",
+      "knitr",
+      "bookdown",
+      "tidyverse", 
+      "readxl",
+      "tinytex",
+      "citr"
+    )
   new.packages <- packages[!(packages %in% installed.packages()[, "Package"])]
   if(length(new.packages)) install.packages(new.packages)
   
