@@ -35,3 +35,5 @@ citation(package = "base", lib.loc = NULL, auto = NULL)
 readCitationFile(file, meta = NULL)
 e.g.
     citation("tidyverse")
+
+glimpse() instead of str()
