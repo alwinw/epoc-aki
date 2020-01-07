@@ -3,7 +3,7 @@
 
 # To do: search for "read_excel" in Paper_analysis.R
 
-# Read Excel Files
+# Load Excel Files ----
 load_excel_files <- function() {
   oliguria_xlsx <- list(
     demographic = read_excel(oliguria_xlsx_path, "Patient Demographics"),
@@ -41,10 +41,7 @@ load_excel_files <- function() {
   return(xlsx_data)
 }
 
-xlsx_data <- suppressMessages(load_excel_files())
-# str(xlsx_data)
-
-# Convert Excel Dates
+# Convert Excel Dates ----
 excel_date_to_character <- function(vector) {
   suppressWarnings(
   ifelse(
@@ -62,9 +59,7 @@ convert_excel <- function(xlsx_data) {
   return(xlsx_data)
 }
 
-xlsx_data <- convert_excel(xlsx_data)
-
-# Data collection errors
+# Data collection errors ----
 data_collection_errors <- function(xlsx_data) {
   errors_logi = 
     (xlsx_data$creatinine$screen_log$`UR number`      != xlsx_data$oliguria$screen_log$`UR number`     ) |
@@ -107,7 +102,7 @@ data_collection_errors <- function(xlsx_data) {
 
 xlsx_data = data_collection_errors(xlsx_data)
 
-# Merge screening logs
+# Merge screening logs -----
 merge_xlsx_screening <- function(xlsx_data) {
   merge_columns = setdiff(
     intersect(colnames(xlsx_data$creatinine$screen_log), 
@@ -144,12 +139,9 @@ merge_xlsx_screening <- function(xlsx_data) {
   return(analysis_data)
 }
 
-analysis_data <- merge_xlsx_screening(xlsx_data)
+# Flow chart here
 
-print("flowchart here")
-
-# merge data sets
-
+# Merge Excel Sheets Together ----
 dttm_cols <- function(text, colnames) {
   cols <- data.frame(
     i = grep(paste0("^", text, "|", text, "$"), colnames, ignore.case = TRUE),
@@ -220,6 +212,7 @@ merge_data_set_demo_outcomes <- function(data,excluded_Pt_Study_no,
   return(combined_data)
 }
 
+# Merge Excel Files Together ----
 merge_xlsx_creatinine_oliguria <- function(analysis_data, xlsx_data) {
   creatinine = merge_data_set_demo_outcomes(xlsx_data$creatinine, xlsx_data$excluded_Pt_Study_no)
   oliguria   = merge_data_set_demo_outcomes(xlsx_data$oliguria  , xlsx_data$excluded_Pt_Study_no)

@@ -5,14 +5,15 @@ load_library <- function(packages = NULL) {
   if (is.null(packages))
     packages <- c(
       "base",
-      "rmarkdown",
-      "knitr",
-      "bookdown",
-      "tidyverse", 
+      "tidyverse",
+      "lubridate",
       "readxl",
-      "tinytex",
+      "knitr",
+      "rmarkdown",
+      "bookdown",
       "citr",
-      "lubridate"
+      "tinytex",
+      "servr"
     )
   new.packages <- packages[!(packages %in% installed.packages()[, "Package"])]
   if(length(new.packages)) install.packages(new.packages)
