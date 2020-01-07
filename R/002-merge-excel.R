@@ -162,11 +162,8 @@ dttm_cols <- function(text, colnames) {
   return(cols)
 }
 
-merge_data_set_demo_outcomes <- function(data,
-                                         excluded_Pt_Study_no,
-                                         data_name = deparse(substitute(data)))
-  
-  {
+merge_data_set_demo_outcomes <- function(data,excluded_Pt_Study_no,
+                                         data_name = deparse(substitute(data))) {
   combined_data <-data$data_set %>% 
     fill(Pt_Study_no) %>% 
     full_join(., data$demographic, by = "Pt_Study_no") %>% 

@@ -11,7 +11,8 @@ load_library <- function(packages = NULL) {
       "tidyverse", 
       "readxl",
       "tinytex",
-      "citr"
+      "citr",
+      "lubridate"
     )
   new.packages <- packages[!(packages %in% installed.packages()[, "Package"])]
   if(length(new.packages)) install.packages(new.packages)
