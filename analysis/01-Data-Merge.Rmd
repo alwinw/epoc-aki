@@ -1,0 +1,33 @@
+---
+title: "01-Data-Merge"
+author: "Alwin Wang"
+date: "07/01/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, cache=TRUE)
+source("../R/001-library-manager.R")
+# soruce other files too
+
+load_library()
+```
+
+## Merge Observations from Data Collection:
+
+### Load Data {ref:}
+
+Changes were made to the Excel data collection worksheets in order to further clean the data prior to loading.
+
+* Creatinine change in oliguria
+
+  - 'AKI & outcomes'!D120: Cell changed from "4/18" to blank. `read_excel` correctly reads this column as POSIXct [4 Jan 2020]
+  - 'Data set'!D1: Column name changed from "Time_olig_episode" to "Time_olig_epis". Consistent with other column names and conversion of individual date and time columns into single DTTM columns
+
+```{r data locations}
+oliguria_xlsx_path     = file.path("../data", "Creatinine change in oliguria 4.1.20.xlsx" )
+creatinine_xlsx_path   = file.path("../data", "Small changes in creatinine 27.9.18.xlsx"  )
+demographics_xlsx_path = file.path("../data", "Demographics pts screened out.xlsx"        )
+creat_furo_xlsx_path   = file.path("../data", "ED_ICU_Creatinine_Furosemide.xlsx"         )
+```
+
