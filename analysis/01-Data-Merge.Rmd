@@ -26,11 +26,15 @@ Changes were made to the Excel data collection worksheets in order to further cl
 
 Data locations:
 
+```{r data locations setup, echo=FALSE}
+# Use chunk option `code = readLines("../R/000-data-source.R"), echo=TRUE` but this includes comments
+data_source <- readLines("../R/000-data-source.R")
+data_locations = data_source[!(data_source == "" | grepl("#", data_source))]
+knitr::read_chunk(data_locations)
+```
+
 ```{r data locations, echo=TRUE}
-oliguria_xlsx_path     = file.path("../data", "Creatinine change in oliguria 4.1.20.xlsx" )
-creatinine_xlsx_path   = file.path("../data", "Small changes in creatinine 27.9.18.xlsx"  )
-demographics_xlsx_path = file.path("../data", "Demographics pts screened out.xlsx"        )
-creat_furo_xlsx_path   = file.path("../data", "ED_ICU_Creatinine_Furosemide.xlsx"         )
+# <<answer>>
 ```
 
 ```{r load excel files}
@@ -216,7 +220,7 @@ Both 'Creatinine Change in Oliguria' and  'Small changes in creatinine' had data
 
 Each of these was combined, then combined with the other data collection spreadsheet. The number of observations was checked throughout to ensure there were no patients duplicated/removed.
 
-```{r merge each Excel file fun, echo=FALSE}
+```{r merge Excel sheets together fun, echo=FALSE}
 dttm_cols <- function(text, colnames) {
   cols <- data.frame(
     i = grep(paste0("^", text, "|", text, "$"), colnames, ignore.case = TRUE),
@@ -318,52 +322,7 @@ merge_xlsx_creatinine_oliguria <- function(analysis_data, xlsx_data) {
       "Merged creatinine and oliguria: ", length(which(!is.na(both$Pt_Study_no_olig))), ", ",
       "Merged screening log number: "   , Total_no_olig_epis))
   }
-  
-  both <- both %>% 
-    mutate(
-      ICU_LOS           = as.duration(DateTime_ICU_admit  %--% DateTime_ICU_dc   ) / ddays (1),
-      Hosp_LOS          = as.duration(DateTime_hosp_admit %--% DateTime_hosp_dc  ) / ddays (1),
-      
-      ICUadmtoAKIDx     = as.duration(DateTime_ICU_admit  %--% DateTime_AKI_Dx   ) / dhours(1),
-      Time_betw_ABG     = as.duration(`T-4_ABG_DateTime`  %--% T0_ABG_DateTime   ) / dhours(1),
-      Time_betw_cr_AKI  = as.duration(T0_ABG_DateTime     %--% DateTime_AKI_Dx   ) / dhours(1),
-      Time_betw_oli_AKI = as.duration(DateTime_olig_epis  %--% DateTime_AKI_Dx   ) / dhours(1),
-      Time_betw_ICU_cr  = as.duration(DateTime_ICU_admit  %--% T0_ABG_DateTime   ) / dhours(1),
-      Time_betw_ICU_oli = as.duration(DateTime_ICU_admit  %--% DateTime_olig_epis) / dhours(1),
-      
-      crchange          = (T0_ABG_Cr - `T-4_ABG_Cr`),
-      delta_cr          =  crchange  / Time_betw_ABG,
-      percent_delta_cr  = (crchange  / `T-4_ABG_Cr`) * 100 / Time_betw_ABG,
-      T0_UO_wtadjusted  = (T0_UO / 4)/Wt,
-      
-      akistagesv2       = ifelse(AKI_ICU == 0, 0, AKI_stage),
-      aki2or3           = ifelse(akistagesv2 >= 2, 1, 0),
-      
-      craki12h          = ifelse(Time_betw_cr_AKI > 12 | AKI_ICU == 0, 0, 1),
-      craki24h          = ifelse(Time_betw_cr_AKI > 24 | AKI_ICU == 0, 0, 1),
-      craki48h          = ifelse(Time_betw_cr_AKI > 48 | AKI_ICU == 0, 0, 1),
-      craki2or3in12h    = ifelse(craki2or3 == 1 & craki12h ==1, 1, 0),
-      craki2or3in24h    = ifelse(craki2or3 == 1 & craki24h ==1, 1, 0),
-      craki2or3in48h    = ifelse(craki2or3 == 1 & craki48h ==1, 1, 0),
-      craki2or3         = ifelse(Cr_defined_AKI_stage >=2, 1, 0),
-      craki12h          = ifelse(Time_betw_cr_AKI > 12 | Cr_defined_AKI == 0, 0, 1),
-      craki24h          = ifelse(Time_betw_cr_AKI > 24 | Cr_defined_AKI == 0, 0, 1),
-      craki48h          = ifelse(Time_betw_cr_AKI > 48 | Cr_defined_AKI == 0, 0, 1),
-      craki2or3in12h    = ifelse(craki2or3 == 1 & craki12h ==1, 1, 0),
-      craki2or3in24h    = ifelse(craki2or3 == 1 & craki24h ==1, 1, 0),
-      craki2or3in48h    = ifelse(craki2or3 == 1 & craki48h ==1, 1, 0),
-      
-      oliaki12h         = ifelse(Time_betw_oli_ep_AKI > 12 | AKI_ICU == 0, 0, 1),
-      oliaki24h         = ifelse(Time_betw_oli_ep_AKI > 24 | AKI_ICU == 0, 0, 1),
-      oliaki48h         = ifelse(Time_betw_oli_ep_AKI > 48 | AKI_ICU == 0, 0, 1),
-      oliaki2or3in12h   = ifelse(aki2or3 == 1 & aki12h ==1, 1, 0),
-      oliaki2or3in24h   = ifelse(aki2or3 == 1 & aki24h ==1, 1, 0),
-      oliaki2or3in48h   = ifelse(aki2or3 == 1 & aki48h ==1, 1, 0),
-      oliaki2or3in12h   = ifelse(oliaki2or3 == 1 & oliaki12h ==1, 1, 0),
-      oliaki2or3in24h   = ifelse(oliaki2or3 == 1 & oliaki24h ==1, 1, 0),
-      oliaki2or3in48h   = ifelse(oliaki2or3 == 1 & oliaki48h ==1, 1, 0)
-    )
-  
+
   analysis_data <- suppressMessages(full_join(analysis_data, both))
   
   return(analysis_data)
