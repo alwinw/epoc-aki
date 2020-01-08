@@ -70,7 +70,7 @@ data_collection_errors <- function(xlsx_data) {
   xlsx_data$excluded_UR_numbers  = creatinine_errors$`UR number`
   xlsx_data$excluded_Pt_Study_no = discard(c(oliguria_errors$Pt_Study_no, creatinine_errors$Pt_Study_no), is.na)
   
-  cat("\nCreatinine xlsx sheet\n")
+  cat("Creatinine xlsx sheet\n")
   print(creatinine_errors[, c(13, 2:4)])
   cat("\nOliguria xlsx sheet\n"  )
   print(oliguria_errors  [, c(13, 2:4)])
@@ -98,8 +98,6 @@ data_collection_errors <- function(xlsx_data) {
   
   return(xlsx_data)
 }
-
-xlsx_data = data_collection_errors(xlsx_data)
 
 # Merge screening logs -----
 merge_xlsx_screening <- function(xlsx_data) {
@@ -153,7 +151,7 @@ dttm_cols <- function(text, colnames) {
   return(cols)
 }
 
-merge_data_set_demo_outcomes <- function(data,excluded_Pt_Study_no,
+merge_xlsx_sheets <- function(data,excluded_Pt_Study_no,
                                          data_name = deparse(substitute(data))) {
   combined_data <-data$data_set %>% 
     fill(Pt_Study_no) %>% 
@@ -213,8 +211,8 @@ merge_data_set_demo_outcomes <- function(data,excluded_Pt_Study_no,
 
 # Merge Excel Files Together ----
 merge_xlsx_creatinine_oliguria <- function(analysis_data, xlsx_data) {
-  creatinine = merge_data_set_demo_outcomes(xlsx_data$creatinine, xlsx_data$excluded_Pt_Study_no)
-  oliguria   = merge_data_set_demo_outcomes(xlsx_data$oliguria  , xlsx_data$excluded_Pt_Study_no)
+  creatinine = merge_xlsx_sheets(xlsx_data$creatinine, xlsx_data$excluded_Pt_Study_no)
+  oliguria   = merge_xlsx_sheets(xlsx_data$oliguria  , xlsx_data$excluded_Pt_Study_no)
   
   colnames(creatinine)[1] = "Pt_Study_no_crch"
   colnames(oliguria  )[1] = "Pt_Study_no_olig"
@@ -292,6 +290,6 @@ merge_xlsx_creatinine_oliguria <- function(analysis_data, xlsx_data) {
   return(analysis_data)
 }
 
-analysis_data = merge_xlsx_creatinine_oliguria(analysis_data, xlsx_data)
+# analysis_data = merge_xlsx_creatinine_oliguria(analysis_data, xlsx_data)
 
 # GENERATE FLOW CHART AGAIN AND COMPARE THE PAIR

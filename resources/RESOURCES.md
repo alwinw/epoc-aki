@@ -1,3 +1,5 @@
+# Resources
+
 The Pattern of Longitudinal Change in Serum Creatinine and Ninety-Day Mortality After Major Surgery
 https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4829495/
 
@@ -7,8 +9,6 @@ https://datascience.stackexchange.com/questions/45684/multivariate-time-series-b
 https://machinelearningmastery.com/multivariate-time-series-forecasting-lstms-keras/
 
 https://stats.stackexchange.com/questions/193054/time-series-analysis-for-predicting-a-binary-outcome
-
-
 
 https://cran.r-project.org/web/packages/data.tree/vignettes/data.tree.html
 https://www.r-graph-gallery.com/334-basic-dendrogram-with-ggraph.html
@@ -37,3 +37,8 @@ e.g.
     citation("tidyverse")
 
 glimpse() instead of str()
+
+https://stackoverflow.com/questions/13672720/r-command-for-setting-working-directory-to-source-file-location-in-rstudio
+
+    sys.frame(1)$ofile
+    parent.frame(2)$ofile
