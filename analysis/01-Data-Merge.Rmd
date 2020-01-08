@@ -26,16 +26,9 @@ Changes were made to the Excel data collection worksheets in order to further cl
 
 Data locations:
 
-```{r data locations setup, echo=FALSE}
-# Use chunk option `code = readLines("../R/000-data-source.R"), echo=TRUE` but this includes comments
-data_source <- readLines("../R/000-data-source.R")
-data_locations = data_source[!(data_source == "" | grepl("#", data_source))]
-knitr::read_chunk(data_locations)
+```{r data locations, code = readLines("../R/000-data-source.R"), echo=TRUE}
 ```
 
-```{r data locations, echo=TRUE}
-# <<answer>>
-```
 
 ```{r load excel files}
 load_excel_files <- function() {
@@ -74,8 +67,6 @@ load_excel_files <- function() {
   )
   return(xlsx_data)
 }
-
-xlsx_data <- suppressMessages(load_excel_files())
 ```
 
 ```{r convert Excel dates fun}
@@ -98,8 +89,15 @@ convert_excel <- function(xlsx_data) {
 
 ```
 
-```{r convert Excel dates, echo=TRUE}
+```{r load Excel, echo=TRUE}
+xlsx_data <- suppressMessages(load_excel_files())
 xlsx_data <- convert_excel(xlsx_data)
+```
+
+```{r load Excel disp, echo=FALSE}
+invisible(
+  lapply(names(xlsx_data), function(x) cat(paste0(x, "\n")))
+)
 ```
 
 ## Screening logs

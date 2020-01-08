@@ -41,7 +41,6 @@ load_excel_files <- function() {
   return(xlsx_data)
 }
 
-# Convert Excel Dates ----
 excel_date_to_character <- function(vector) {
   suppressWarnings(
   ifelse(
