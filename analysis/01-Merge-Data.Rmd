@@ -1,5 +1,5 @@
 ---
-title: "01-Data-Merge"
+title: "Merge Screening Logs"
 author: "Alwin Wang"
 date: "07/01/2020"
 output: html_document
@@ -33,7 +33,7 @@ Data locations:
 
 
 ```{r load Excel}
-xlsx_data <- suppressMessages(load_excel_files())
+xlsx_data <- suppressMessages(load_excel_files("../"))
 xlsx_data <- convert_excel(xlsx_data)
 ```
 
