@@ -16,4 +16,4 @@ xlsx_data <- convert_excel(xlsx_data)
 xlsx_data  <-  data_collection_errors(xlsx_data)
 
 analysis_data <- merge_xlsx_screening(xlsx_data)
-analysis_data <- merge_xlsx_sheets(analysis_data, xlsx_data)
+# analysis_data <- merge_xlsx_sheets(analysis_data, xlsx_data)

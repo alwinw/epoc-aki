@@ -1,0 +1,30 @@
+---
+title: 'Creatinine Time Series Analysis'
+author: 'Alwin Wang'
+output: bookdown::gitbook # pdf_book
+site: bookdown::bookdown_site
+link-citations: yes
+knit: "bookdown::render_book"
+---
+
+<!-- 
+Edit these lines as appropriate.
+* The actual content is in several Rmd files.
+* Edit the _bookdown.yml file to set the order in which you'd like them to appear. 
+* Ensure you have installed the knitr and bookdown packages for R.
+* Also ensure LaTeX is installed on your computer.
+-->
+
+```{r setup}
+getwd()
+
+knitr::opts_chunk$set(echo=TRUE, message=FALSE, cache=TRUE)
+
+source("R/000-data-source.R")
+source("R/001-library-manager.R")
+source("R/002-merge-screening.R")
+
+source("R/004-merge-collection.R")
+
+load_library()
+```

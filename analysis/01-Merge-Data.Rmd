@@ -1,19 +1,7 @@
 ---
-title: "Merge Screening Logs"
-author: "Alwin Wang"
-date: "07/01/2020"
-output: html_document
+chapter: 1
+knit: "bookdown::render_book"
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo=TRUE, message=FALSE, cache=TRUE)
-source("../R/000-data-source.R"    )
-source("../R/001-library-manager.R")
-source("../R/002-merge-excel.R"    )
-# soruce other files too
-
-load_library()
-```
 
 # Merge Observations from Data Collection
 
@@ -28,12 +16,12 @@ Changes were made to the Excel data collection worksheets in order to further cl
 
 Data locations:
 
-```{r data locations, code = readLines("../R/000-data-source.R"), eval=FALSE}
+```{r data locations, code = readLines("R/000-data-source.R"), eval=FALSE}
 ```
 
 
 ```{r load Excel}
-xlsx_data <- suppressMessages(load_excel_files("../"))
+xlsx_data <- suppressMessages(load_excel_files())
 xlsx_data <- convert_excel(xlsx_data)
 ```
 
