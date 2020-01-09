@@ -2,10 +2,13 @@
 data/*.xlsx
 resources/laurent's_code_examples
 resources/*.pdf
-src/*.docx
-src/*.log
-src/*.pdf
-src/*_files/
+analysis/*.docx
+analysis/*.log
+analysis/*.html
+analysis/*.pdf
+analysis/*_files/
+_*
+*.tex
 
 # History files
 .Rhistory

@@ -1,0 +1,75 @@
+---
+chapter: 1
+knit: "bookdown::render_book"
+---
+
+# Merge Observations from Data Collection
+
+## Load Data
+
+Changes were made to the Excel data collection worksheets in order to further clean the data prior to loading.
+
+* Creatinine change in oliguria
+
+  - `'AKI & outcomes'!D120`: Cell changed from "4/18" to blank. `read_excel` correctly reads this column as POSIXct [4 Jan 2020]
+  - `'Data set'!D1`: Column name changed from "Time_olig_episode" to "Time_olig_epis". Consistent with other column names and conversion of individual date and time columns into single DTTM columns
+
+Data locations:
+
+```{r data locations, code = readLines("R/000-data-source.R"), eval=FALSE}
+```
+
+
+```{r load Excel}
+xlsx_data <- suppressMessages(load_excel_files())
+xlsx_data <- convert_excel(xlsx_data)
+```
+
+```{r load Excel disp, echo=FALSE}
+invisible(
+  lapply(names(xlsx_data), function(x) cat(paste0(x, "\n")))
+)
+```
+
+## Screening logs
+
+### Data Collection Errors
+
+Checks were made on the data collection screening log. Errors were identified and they were corrected as `Excl_criteria_ok = "N"` and `"Already_AKI" = "Y"` to be consistent with previous corrections made for @citation{Toh2019}. Additional changes were made in order to prevent errors merging databases.
+
+The discarded patient study numbers are listed below. These are consistent with the rejected numbers for @citatin{Toh2019}
+
+```{r data collection errors}
+xlsx_data <- data_collection_errors(xlsx_data)
+```
+
+
+### Merging of Screening Logs
+
+The screening logs were merged by common columns. Columns that had the same heading but different meanings in the 'Creatinine Change in Oliguria' and  'Small changes in creatinine' where given suffixes of `_olig` and `_crch` respsectively. These columns were:
+
+* `Incl_criteria_ok`: Different between oliguria and creatinine change
+* `Pt_Study_no`: Different, `L` or `LT`
+* `Comment`: Specific to each data collection
+
+
+```{r merge screening logs}
+analysis_data <- merge_xlsx_screening(xlsx_data)
+glimpse(analysis_data)
+```
+
+## Data Sets
+
+Both 'Creatinine Change in Oliguria' and  'Small changes in creatinine' had data sets that included:
+
+* `Patient Demographics`
+* `AKI & Outcomes`
+* `Screening log`
+
+Each of these was combined, then combined with the other data collection spreadsheet. The number of observations was checked throughout to ensure there were no patients duplicated/removed.
+
+
+```{r merge data sets}
+# analysis_data <- merge_xlsx_creatinine_oliguria(analysis_data, xlsx_data)
+# glimpse(analysis_data)
+```
