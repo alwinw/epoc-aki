@@ -2,21 +2,30 @@
 
 Creatinine Time Series Analysis
 
-## Git Development
+Alwin Wang
 
-1. New branch:
+## Running
+Instructions to come
+
+## Git Version Control and Development Flow
+
+1. New branch for a new feature
 
     ```bash
+    git fetch
+    git pull
     git checkout -b dev/feature-name
+    git push --set-upstream origin dev/feature-name
     ```
 
-2. Run existing code: 
+2. Run the existing code to build RData
 
     ```r
+    rm(list = ls(all. names = TRUE))
     source("index.R")
     ```
 
-3. New script: 
+3. New script for development work
 
     ```bash
     R/00X-feature-name
@@ -29,21 +38,57 @@ Creatinine Time Series Analysis
         mutate(...)
     ```
 
-5. Functionalise code in script
+5. Commit and push changes -- potentially numerous when working across multiple devices
+
+    ```bash
+    git fetch
+    git status
+    git add .
+    git commit -m "Summary here
+    Additional details here"
+    git push
+    ```
+
+6. Functionalise code in script
 
     ```r
-    feature <- function(data, args, kargs) {
+    feature <- function(data, args, kwargs) {
         data %>%
             mutate(...)
         return(data)
     }
     ```
 
-6. Call function in main script and check output
+7. Call function in main script and Rmarkdown
 
     ```r
-    # clear data
+    featured_data <- feature(data, args, kwargs)
+    dplyr::glimpse(featured_data, width = 20)
+    ```
+
+8. Check output of main script
+
+    ```r
+    rm(list = ls(all. names = TRUE))
     source("index.R")
     ```
 
-7. Call function in Rmd
+9. Check output of bookdown via Addins or
+
+    ```r
+    bookdown::serve_book()
+    ```
+
+10. Pull request on GitHub (preferred)
+
+    * Create pull
+    * Merge pull
+    * Delete branch
+
+    or merge via command line (not preferred)
+
+    ```bash
+    git checkout master
+    git merge dev/feature
+    git push
+    ```
