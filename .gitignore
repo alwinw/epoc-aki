@@ -7,8 +7,9 @@ analysis/*.log
 analysis/*.html
 analysis/*.pdf
 analysis/*_files/
-_*
 *.tex
+_*
+!*.yml
 
 # History files
 .Rhistory
