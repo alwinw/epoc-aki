@@ -28,6 +28,9 @@ load_excel_files <- function(path = NULL) {
     num_oliguria   = read_excel(demographics_xlsx_path, "no oliguria"        ),
     neither_cr_ol  = read_excel(demographics_xlsx_path, "neither cr nor olig")
   )
+  apd_extract_xlsx <- list(
+    apd_extract = read_excel(apd_extract_xlsx_path, "Admissions")
+  )
   creat_furo_xlsx <- list(
     blood_gas    = read_excel(creat_furo_xlsx_path, "Blood Gas"              ),
     bio_chem     = read_excel(creat_furo_xlsx_path, "BioChem"                ),
@@ -42,6 +45,7 @@ load_excel_files <- function(path = NULL) {
     oliguria     = oliguria_xlsx    ,
     creatinine   = creatinine_xlsx  ,
     demographics = demographics_xlsx,
+    apd_extract  = apd_extract_xlsx ,
     time_series  = creat_furo_xlsx
   )
   return(xlsx_data)

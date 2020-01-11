@@ -5,6 +5,7 @@ Creatinine Time Series Analysis
 Alwin Wang
 
 ## Running
+
 Instructions to come
 
 ## Git Version Control and Development Flow
@@ -12,6 +13,7 @@ Instructions to come
 1. New branch for a new feature
 
     ```bash
+    git checkout master
     git fetch
     git pull
     git checkout -b dev/feature-name
@@ -92,3 +94,8 @@ Instructions to come
     git merge dev/feature
     git push
     ```
+
+## Outstanding Items
+
+* Pretty print for structure of `xlsx_data`
+* Flowchart of screening log as per previous paper
