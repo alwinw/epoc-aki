@@ -1,7 +1,7 @@
 ---
 title: 'Creatinine Time Series Analysis'
 author: 'Alwin Wang'
-output: bookdown::gitbook # pdf_book
+output: bookdown::gitbook # pdf_book # word_document
 site: bookdown::bookdown_site
 link-citations: yes
 knit: "bookdown::render_book"
@@ -16,15 +16,13 @@ Edit these lines as appropriate.
 -->
 
 ```{r setup}
-getwd()
-
 knitr::opts_chunk$set(echo=TRUE, message=FALSE, cache=TRUE)
 
 source("R/000-data-source.R")
 source("R/001-library-manager.R")
 source("R/002-merge-screening.R")
-
+# Flowchart
 source("R/004-merge-collection.R")
 
-load_library()
+invisible(suppressMessages(load_library()))
 ```
