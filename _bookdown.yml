@@ -1,0 +1,10 @@
+book_filename: "analysis"
+language:
+  ui:
+    chapter_name: "Section "
+rmd_files: [
+  "index.Rmd",
+  "analysis/01-Merge-Data.Rmd"
+  ]
+output_dir: "_analysis_output"
+delete_merged_file: TRUE
