@@ -55,7 +55,7 @@ The screening logs were merged by common columns. Columns that had the same head
 
 ```{r merge screening logs}
 analysis_data <- merge_xlsx_screening(xlsx_data)
-glimpse(analysis_data)
+glimpse(select(analysis_data, -`UR number`), width = 80)
 ```
 
 ## Data Sets
