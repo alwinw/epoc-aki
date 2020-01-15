@@ -166,7 +166,18 @@ merge_xlsx_creatinine_oliguria <- function(analysis_data, xlsx_data) {
       "Merged screening log number: "   , Total_no_olig_epis))
   }
   
+  # nrow(filter(analysis_data, is.na(Total_no_cr_epis) & is.na(Total_no_olig_epis)))
+  # nrow(filter(analysis_data, !is.na(Total_no_cr_epis) & !is.na(Total_no_olig_epis)))
+  # Appears that patients with both olig and cr_ch have duplicate records?
+  
+  # temp = inner_join(analysis_data, both)
+  # temp_full = full_join(analysis_data, both)
+  # length(which(!is.na(temp_full$Cr_epis_no)))
+  # length(which(!is.na(temp_full$Olig_epis_no)))
+  
   analysis_data <- suppressMessages(full_join(analysis_data, both))
+  
+  # Need to devise a robust check or check in flow chart of analysis_data
   
   return(analysis_data)
 }
