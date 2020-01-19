@@ -1,13 +1,30 @@
-# Admissions Flow Chart
+# Screening Log Flow Chart
 # Alwin Wang 2020
 
-admissions_flow_chart_all <- merged_xlsx_data$screen_log %>% 
-  summarise(
-    `Total Unique UR Numbers`     = length(unique(`UR number`)),
-    `Total Admissions`            = n(),
-    `> Total Excluded Admissions` = length(`UR number`[Excl_criteria_ok == "N"]),
-    `> Total Eligible Admissions` = length(`UR number`[Excl_criteria_ok == "Y"])
-  )
+# Screening Data Flow Chart ----
+screening_data_flow_chart <- function(screening_data) {
+  flow_chart_all <- screening_data %>% 
+    summarise(
+      `Total Unique UR Numbers`     = length(unique(`UR number`)),
+      `Total Admissions`            = n(),
+      `> Total Excluded Admissions` = length(`UR number`[!Excl_criteria_ok]),
+      `> Total Eligible Admissions` = length(`UR number`[ Excl_criteria_ok])
+    )
+  
+  flow_chart_excluded <- screening_data %>% 
+    filter(!Excl_criteria_ok) %>% 
+    summarise(
+      `| Total Excluded Admissions` = n(),
+      `|-- AKI`                = length(`UR number`[Already_AKI      ]),
+      `|-- Weekend`            = length(`UR number`[Admit_weekend    ]),
+      `|-- No ICD`             = length(`UR number`[No_IDC           ]),
+      `|-- ESKD`               = length(`UR number`[ESKD             ]),
+      `|-- EOLC`               = length(`UR number`[EOLC             ]),
+      `|-- Kidney transplant`  = length(`UR number`[Kidney_transplant]),
+      `°-- Child`              = length(`UR number`[Child            ])
+    )
+}
+
 
 admissions_flow_chart_excluded <- merged_xlsx_data$screen_log %>% 
   filter(!Excl_criteria_ok) %>% 
