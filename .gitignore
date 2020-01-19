@@ -10,6 +10,7 @@ analysis/*_files/
 *.tex
 _*
 !*.yml
+libs/
 
 # History files
 .Rhistory
