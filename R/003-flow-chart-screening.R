@@ -3,6 +3,23 @@
 
 # Screening Data Flow Chart ----
 screening_data_flow_chart <- function(screening_data) {
+  
+  all = paste0(
+    "Total Unique UR Numbers:      ", length(unique(screening_data$`UR number`)), "\n",
+    "Total Admissions:             ", nrow(screening_data), "\n")
+  
+  
+  exclueded = paste0(
+    "|- Total Excluded Admissions: ", sum(!screening_data$Excl_criteria_ok), "\n",
+    "|  |- AKI:                    ", 
+    
+    "|- Total Included Admissions: ", sum(screening_data$Excl_criteria_ok), "\n"
+  )
+}
+
+
+# Screening Data Flow Chart ----
+screening_data_flow_chart_tables <- function(screening_data) {
   flow_chart_all <- screening_data %>% 
     summarise(
       `Total Unique UR Numbers`     = length(unique(`UR number`)),
@@ -39,6 +56,13 @@ screening_data_flow_chart <- function(screening_data) {
     )
   
   flow_chart_included_both <- screening_data %>% 
-    filter(Excl_criteria_ok) 
-  # group by interaction between is.na(Epis_cr_change) and olig
+    filter(Excl_criteria_ok) %>% 
+    mutate(
+      crch_ep = ifelse(!is.na(Epis_cr_change) & Epis_cr_change, "Cr Change", "No Cr Change"),
+      olig_ep = ifelse(!is.na(Epis_olig) & Epis_olig, "Oliguria", "No Oliguria")
+    ) %>% 
+    group_by(both = interaction(crch_ep, olig_ep, sep = " & ")) %>% 
+    summarise(
+      `> Total Elibible Admissions` = n()
+    )
 }
