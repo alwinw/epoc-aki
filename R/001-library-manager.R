@@ -1,10 +1,11 @@
 # Library Manager
 # Alwin Wang 2019
 
-load_library <- function(packages = NULL) {
+load_library <- function(packages = NULL, bib_file = "references/R-references.bib") {
   if (is.null(packages))
     packages <- c(
       "base",
+      "bibtex",
       "tidyverse",
       "lubridate",
       "readxl",
@@ -20,10 +21,8 @@ load_library <- function(packages = NULL) {
   
   invisible(lapply(packages, library, character.only = TRUE))
   
-  citations <- lapply(packages, citation)
-  names(citations) <- packages
-  
-  return(citations)
+  knitr::write_bib(packages, file = bib_file)
+  return(NULL)
 }
 
 # invisible(suppressMessages(suppressWarnings(load_library())))
