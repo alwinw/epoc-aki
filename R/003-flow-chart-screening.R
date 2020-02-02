@@ -9,7 +9,7 @@ screening_data_flow_chart <- function(screening_data) {
     "Total Admissions:             ", nrow(screening_data), "\n")
   
   
-  exclueded = paste0(
+  excluded = paste0(
     "|- Total Excluded Admissions: ", sum(!screening_data$Excl_criteria_ok), "\n",
     "|  |- AKI:                    ", 
     
