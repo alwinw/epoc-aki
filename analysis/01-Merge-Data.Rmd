@@ -54,8 +54,8 @@ The screening logs were merged by common columns. Columns that had the same head
 
 
 ```{r merge screening logs}
-analysis_data <- merge_xlsx_screening(xlsx_data)
-glimpse(select(analysis_data, -`UR number`), width = 80)
+screening_data <- merge_xlsx_screening(xlsx_data)
+glimpse(select(screening_data, -`UR number`), width = 80)
 ```
 
 ## Data Sets
@@ -70,6 +70,6 @@ Each of these was combined, then combined with the other data collection spreads
 
 
 ```{r merge data sets}
-# analysis_data <- merge_xlsx_creatinine_oliguria(analysis_data, xlsx_data)
-# glimpse(analysis_data)
+analysis_data <- merge_xlsx_creatinine_oliguria(screening_data, xlsx_data)
+glimpse(select(analysis_data, - `UR number`), width = 80)
 ```

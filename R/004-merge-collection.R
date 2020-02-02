@@ -73,7 +73,7 @@ merge_xlsx_sheets <- function(data,excluded_Pt_Study_no,
 }
 
 # Merge Excel Files Together ----
-merge_xlsx_creatinine_oliguria <- function(analysis_data, xlsx_data) {
+merge_xlsx_creatinine_oliguria <- function(screening_data, xlsx_data) {
   creatinine = merge_xlsx_sheets(xlsx_data$creatinine, xlsx_data$excluded_Pt_Study_no)
   oliguria   = merge_xlsx_sheets(xlsx_data$oliguria  , xlsx_data$excluded_Pt_Study_no)
   
@@ -145,7 +145,7 @@ merge_xlsx_creatinine_oliguria <- function(analysis_data, xlsx_data) {
   
   both <- suppressMessages(full_join(creatinine, oliguria))
   
-  Total_no_cr_epis = sum(analysis_data$Total_no_cr_epis, na.rm = TRUE)
+  Total_no_cr_epis = sum(screening_data$Total_no_cr_epis, na.rm = TRUE)
   if (length(unique(c(
     nrow(creatinine), length(which(!is.na(both$Pt_Study_no_crch))), Total_no_cr_epis))) != 1) 
   {
@@ -155,7 +155,7 @@ merge_xlsx_creatinine_oliguria <- function(analysis_data, xlsx_data) {
       "Merged creatinine and oliguria: ", length(which(!is.na(both$Pt_Study_no_crch))), ", ",
       "Merged screening log number: "   , Total_no_cr_epis))
   }
-  Total_no_olig_epis = sum(analysis_data$Total_no_olig_epis, na.rm = TRUE)
+  Total_no_olig_epis = sum(screening_data$Total_no_olig_epis, na.rm = TRUE)
   if (length(unique(c(
     nrow(oliguria), length(which(!is.na(both$Pt_Study_no_olig))), Total_no_olig_epis))) != 1) 
   {
@@ -166,16 +166,16 @@ merge_xlsx_creatinine_oliguria <- function(analysis_data, xlsx_data) {
       "Merged screening log number: "   , Total_no_olig_epis))
   }
   
-  # nrow(filter(analysis_data, is.na(Total_no_cr_epis) & is.na(Total_no_olig_epis)))
-  # nrow(filter(analysis_data, !is.na(Total_no_cr_epis) & !is.na(Total_no_olig_epis)))
+  # nrow(filter(screening_data, is.na(Total_no_cr_epis) & is.na(Total_no_olig_epis)))
+  # nrow(filter(screening_data, !is.na(Total_no_cr_epis) & !is.na(Total_no_olig_epis)))
   # Appears that patients with both olig and cr_ch have duplicate records?
   
-  # temp = inner_join(analysis_data, both)
-  # temp_full = full_join(analysis_data, both)
+  # temp = inner_join(screening_data, both)
+  # temp_full = full_join(screening_data, both)
   # length(which(!is.na(temp_full$Cr_epis_no)))
   # length(which(!is.na(temp_full$Olig_epis_no)))
   
-  analysis_data <- suppressMessages(full_join(analysis_data, both))
+  analysis_data <- suppressMessages(full_join(screening_data, both))
   
   # Need to devise a robust check or check in flow chart of analysis_data
   
