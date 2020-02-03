@@ -1,8 +1,6 @@
 # Merge Excel screening log
 # Alwin Wang 2019
 
-# To do: search for "read_excel" in Paper_analysis.R
-
 # Load Excel Files ----
 load_excel_files <- function(path = NULL) {
   if (!is.null(path)){

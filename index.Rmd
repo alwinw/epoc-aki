@@ -22,7 +22,8 @@ source("R/000-data-source.R")
 source("R/001-library-manager.R")
 source("R/002-merge-screening.R")
 # Flowchart
-source("R/004-merge-collection.R")
+# apache
+source("R/005-merge-collection.R")
 
 invisible(suppressMessages(load_library()))
 ```
