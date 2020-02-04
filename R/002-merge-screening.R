@@ -116,34 +116,34 @@ merge_xlsx_screening <- function(xlsx_data) {
               colnames(xlsx_data$oliguria$screen_log)),
     c("Incl_criteria_ok", "Pt_Study_no", "Comment")
   )
-  analysis_data = full_join(
+  screening_data = full_join(
     xlsx_data$creatinine$screen_log,
     xlsx_data$oliguria  $screen_log,
     by     = merge_columns,
     suffix = c("_crch", "_olig")
     )
   
-  if (anyNA(analysis_data$`UR number`)) {
+  if (anyNA(screening_data$`UR number`)) {
     stop("NA in UR number of merged Excel sheets")
   }
   
   creatinine_n_obs = nrow(xlsx_data$creatinine$screen_log)
   oliguria_n_obs   = nrow(xlsx_data$oliguria  $screen_log)
-  analysis_n_obs   = nrow(analysis_data)
-  if (length(unique(c(creatinine_n_obs, oliguria_n_obs, analysis_n_obs))) != 1) {
+  screening_n_obs  = nrow(screening_data)
+  if (length(unique(c(creatinine_n_obs, oliguria_n_obs, screening_n_obs))) != 1) {
     stop(paste0(
       "Inconsistent number of n_obs after UR numbers discarded. ",
       "Creatinine: ", creatinine_n_obs, ", ",
       "Oliguria: "  , oliguria_n_obs  , ", ",
-      "Merged: "    , analysis_n_obs  , ", "))
+      "Merged: "    , screening_n_obs  , ", "))
   }
   
-  logi_colnames <- colnames(analysis_data)[
-    !grepl("UR number|Dates_screened|Pt_Study_no|Total_no_|Comment", colnames(analysis_data))]
-  analysis_data <- analysis_data %>% 
+  logi_colnames <- colnames(screening_data)[
+    !grepl("UR number|Dates_screened|Pt_Study_no|Total_no_|Comment", colnames(screening_data))]
+  screening_data <- screening_data %>% 
     mutate_at(logi_colnames, function(x) if_else(x == "N", FALSE, TRUE))
 
-  return(analysis_data)
+  return(screening_data)
 }
 
 # Flow chart here
