@@ -1,10 +1,13 @@
+#============================ Easy Library Manager =============================
+#                                Alwin Wang 2019
+
 #' Library manager
 #'
 #' Loads packages from a specified requirements file and optionally writes
 #' them out to a references file
 #'
-#' @param req_file file containing the list of packages to load
-#' @param bib_file if not NULL, will write out the references to the given file
+#' @param req_file A file containing the list of packages to load
+#' @param bib_file If not NULL, write out the citations to the given file
 #'
 #' @return None
 #'
