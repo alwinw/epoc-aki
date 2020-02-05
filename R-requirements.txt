@@ -1,0 +1,11 @@
+base
+bibtex
+tidyverse
+lubridate
+readxl
+knitr
+rmarkdown
+bookdown
+citr
+tinytex
+servr
