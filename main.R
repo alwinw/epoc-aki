@@ -8,7 +8,7 @@ source("R/002-merge-data.R")
 
 #-------------------------------- Run Analysis ---------------------------------
 invisible(suppressMessages(
-  load_library("R-requirements.txt", "references/R-references.bib")
+  load_library("R-requirements.txt", "R-references.bib")
 ))
 
 xlsx_data <- suppressMessages(load_excel_files())
