@@ -28,5 +28,10 @@ glimpse(screening_data, width = 80)
 pt_study_no <- generate_pt_study_no(screening_data)
 print(pt_study_no)
 
+pt_info = merge_xlsx_pt_info(
+  xlsx_data$creatinine$demographic,
+  xlsx_data$oliguria$demographic,
+  pt_study_no)
+glimpse(pt_info, width = 80)
 
 merged_data <- merge_xlsx_creatinine_oliguria(screening_data, xlsx_data)

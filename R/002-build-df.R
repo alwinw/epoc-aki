@@ -189,6 +189,62 @@ find_cols <- function(text, replace, colnames) {
   return(cols)
 }
 
+#' Convert columns into DateTime
+#' 
+#' Finds and converts the relevant columns into DateTime
+#' 
+#' @param dataframe A input dataframe
+#' 
+#' @return A dataframe with converted columns
+#' 
+#' @examples 
+#' date_time_cols(pt_info)
+
+date_time_cols <- function(dataframe) {
+  dttm_col = inner_join(
+    find_cols("date", "DateTime", colnames(dataframe)),
+    find_cols("time", "DateTime", colnames(dataframe)), 
+    by = "match") %>% 
+    select(date, time, match)
+  # Instead, consider using mutate_at to convert date and time columns and paste
+  # then into the date columns. Then use rename at to conver to a datetime name
+  # and then remove the time columns.
+  
+  modified_df <- dataframe %>% 
+    select(-last_col()) %>% 
+    # filter(!(Pt_Study_no %in% excluded_Pt_Study_no)) %>% 
+    pivot_longer(
+      cols = c(dttm_col$date, dttm_col$time),
+      names_to = "dttm_name",
+      values_to = "dttm"
+    ) %>% 
+    mutate(
+      type = if_else(grepl("date", dttm_name, ignore.case = TRUE), "date", "time"),
+      dttm_name = gsub("date|time", "DateTime", dttm_name, ignore.case = TRUE)
+    ) %>% 
+    pivot_wider(
+      names_from = "type",
+      values_from = "dttm"
+    ) %>% 
+    mutate(
+      datetime = ifelse(
+        (is.na(date) | is.na(time)),
+        NA,
+        paste(
+          format(date, format = "%Y-%m-%d"),
+          format(time, format = "%H:%M:%S")
+        )),
+      date = NULL,
+      time = NULL
+    ) %>% 
+    pivot_wider(
+      names_from = "dttm_name",
+      values_from = "datetime"
+    )
+  
+  return(modified_df)
+}
+
 #' Merge patient information
 #' 
 #' Merge patient demographics from various sources
@@ -200,12 +256,69 @@ find_cols <- function(text, replace, colnames) {
 #' @return A dataframe of patient information
 #' 
 #' @example 
-#' patient_data = merge_xlsx_pt_info(xlsx_data$creatinine$demographic,
-#'                                   xlsx_data$oliguria$demographic)
+#' pt_info = merge_xlsx_pt_info(xlsx_data$creatinine$demographic,
+#'                              xlsx_data$oliguria$demographic,
+#'                              pt_study_no)
 
 
 merge_xlsx_pt_info <- function(creatinine_demographic,
-                               oliguria_demographic) {
+                               oliguria_demographic,
+                               pt_study_no) {
+  pt_info_crch <- full_join(
+    pt_study_no, 
+    rename(creatinine_demographic, Pt_Study_no_crch = Pt_Study_no),
+    by = "Pt_Study_no_crch")
+  pt_info_olig <- full_join(
+    pt_study_no,
+    rename(oliguria_demographic, Pt_Study_no_olig = Pt_Study_no),
+    by = "Pt_Study_no_olig"
+  )
+  pt_info_full <- full_join(
+    pt_info_crch,
+    pt_info_olig,
+    by = colnames(pt_info_crch)
+  ) %>% 
+    group_by(temp_id = interaction(`UR number`, Dates_screened)) %>% 
+    arrange(`UR number`) %>% 
+    mutate(n = n()) %>% 
+    filter(n == 1 | (n > 1 & !is.na(Age))) %>%  # Remove missing data
+    mutate(n = n())
   
+  # cat(paste("Number of pt_info rows is", nrow(pt_info_full),
+  #           "whereas number of pt_study_no rows is", nrow(pt_study_no), "\n"))
+  
+  demographics_errors <- pt_info_full %>% 
+    filter(n > 1) %>%  # Errors
+    select(-APACHE_II, -APACHE_III, -Dc_destination) %>%   # Common errors
+    select(-Time_ICU_dc) %>%  # Another error
+    unique(.) %>% 
+    mutate(n = n()) %>% 
+    filter(n > 1)
+  
+  if (nrow(demographics_errors) > 1) {
+    stop(paste0(
+      "Additional demographics errors found. Duplicate rows: ",
+      nrow(demographics_errors)
+      ))
+    print(demographics_errors)
+  }
+  
+  pt_info <- pt_info_full %>% 
+    slice(1) %>% 
+    ungroup() %>% 
+    select(-temp_id, -n) %>% 
+    arrange(`UR number`)
+  
+  pt_info <- date_time_cols(pt_info)
+  
+  pt_info <- pt_info %>% 
+    mutate(
+      ICU_LOS  = as.duration(DateTime_ICU_admit  %--% DateTime_ICU_dc ) / ddays(1),
+      Hosp_LOS = as.duration(DateTime_hosp_admit %--% DateTime_hosp_dc) / ddays(1),
+    )
+  
+  return(pt_info)
 }
+
+#-------------------------- Merge Patient Information --------------------------
 
