@@ -1,8 +1,0 @@
-#================================ Data Sources =================================
-#                                Alwin Wang 2019
-
-oliguria_xlsx_path     = file.path("data", "Creatinine change in oliguria 4.1.20.xlsx")
-creatinine_xlsx_path   = file.path("data", "Small changes in creatinine 27.9.18.xlsx")
-demographics_xlsx_path = file.path("data", "Demographics pts screened out.xlsx")
-apd_extract_xlsx_path  = file.path("data", "COMET-Extract-APD 23 Oct 2018.xlsx")
-creat_furo_xlsx_path   = file.path("data", "ED_ICU_Creatinine_Furosemide.xlsx")
