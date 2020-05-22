@@ -34,4 +34,6 @@ pt_info = merge_xlsx_pt_info(
   pt_study_no)
 glimpse(pt_info, width = 80)
 
+# Don't forget to remove the excluded UR numbers
+
 merged_data <- merge_xlsx_creatinine_oliguria(screening_data, xlsx_data)

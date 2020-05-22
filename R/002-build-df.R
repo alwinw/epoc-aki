@@ -320,5 +320,28 @@ merge_xlsx_pt_info <- function(creatinine_demographic,
   return(pt_info)
 }
 
-#-------------------------- Merge Patient Information --------------------------
+#--------------------------- Merge Patient Outcomes ----------------------------
 
+merge_xlsx_outcomes <- function(creatinine_outcomes, 
+                                oliguria_outcomes, 
+                                pt_study_no) {
+  # First section of code should be moved into a helper function for pt_info
+  # and for outcomes
+  outcomes_crch <- full_join(
+    pt_study_no, 
+    rename(creatinine_outcomes, Pt_Study_no_crch = Pt_Study_no),
+    by = "Pt_Study_no_crch")
+  outcomes_olig <- full_join(
+    pt_study_no,
+    rename(oliguria_outcomes, Pt_Study_no_olig = Pt_Study_no),
+    by = "Pt_Study_no_olig"
+  )
+  outcomes_full <- full_join(
+    outcomes_crch,
+    outcomes_olig,
+    by = intersect(names(outcomes_crch), names(outcomes_olig))
+  ) %>% 
+    group_by(temp_id = interaction(`UR number`, Dates_screened)) %>% 
+    arrange(`UR number`) %>% 
+    mutate(n = n())
+}
