@@ -66,9 +66,21 @@ xlsx_data$screen_out$neither_cr_ol <- last_column_name_comment(xlsx_data$screen_
 
   
 xlsx_data$oliguria$screen_log <- xlsx_data$oliguria$screen_log %>%
-  mutate(Dates_screened = excel_date_to_character(Dates_screened))
+  mutate(Dates_screened = excel_date_to_character(Dates_screened)) %>% 
+  group_by(`UR number`) %>% 
+  mutate(
+    Admission = row_number(),
+    Total_admissions = n()) %>%
+  ungroup() %>% 
+  arrange(`UR number`, Dates_screened)
 xlsx_data$creatinine$screen_log <- xlsx_data$creatinine$screen_log %>%
-  mutate(Dates_screened = excel_date_to_character(Dates_screened))
+  mutate(Dates_screened = excel_date_to_character(Dates_screened)) %>% 
+  group_by(`UR number`) %>% 
+  mutate(
+    Admission = row_number(),
+    Total_admissions = n()) %>%
+  ungroup() %>% 
+  arrange(`UR number`, Dates_screened)
 
 rm(xlsx_paths)
 ```
@@ -131,12 +143,6 @@ rm(errors_logi, creatinine_errors, oliguria_errors)
 
 ```{r joinDemoScreenFun}
 join_demo_screen_log_sheets <- function(demographic, screen_log){
-  screen_log <- screen_log %>% 
-    group_by(`UR number`) %>% 
-    mutate(
-      Admission = row_number(),
-      Total_admissions = n()) %>%
-    ungroup()
   # screen_log %>% select(-Already_AKI:-Epis_cr_change) %>%
   #   group_by(`UR number`) %>% 
   #   arrange(-Total_admissions, `UR number`, Admission) %>%  
@@ -151,6 +157,9 @@ join_demo_screen_log_sheets <- function(demographic, screen_log){
       "Extra rows have been added. Actual:", nrow(joint), 
       "Expected: ", nrow(screen_log)))
   }
+  
+  joint <- joint %>% 
+    arrange(Total_admissions, `UR number`, Admission)
   
   return(joint)
 }
@@ -175,13 +184,34 @@ screening_log$in_merge_cols = setdiff(
 screening_log$screen_in <- full_join(
   screening_log$creatinine, screening_log$oliguria,
   by = screening_log$in_merge_cols, suffix = c("_crch", "_olig"))
-test <- screening_log$screen_in %>% 
-  group_by(`UR number`) %>% 
-  mutate(n = n()) %>% 
-  arrange(-n, `UR number`) %>% 
-  select(`UR number`, Pt_Study_no_crch, Pt_Study_no_olig, Age, n)
 
+# Fill missing NAs due to being screened in for cr and out for olig and vice versa
+# Remove issues with destination due to typos and APACHE_II, APACHE_III
+screening_log$screen_in <- screening_log$screen_in %>% 
+  group_by(`UR number`, Admission) %>% 
+  mutate(duplicates = n()) %>% 
+  arrange(-duplicates, `UR number`) %>% 
+  fill(-`UR number`, -Admission, .direction = "downup") %>%
+  mutate(
+    Dc_destination = first(Dc_destination),
+    APACHE_II   = max(APACHE_II ),
+    APACHE_III  = max(APACHE_III),
+    Time_ICU_dc = max(Time_ICU_dc )) %>% 
+  distinct() %>%
+  mutate(
+    duplicates = n()) %>%
+  arrange(-duplicates, `UR number`) %>%  
+  ungroup() %>% 
+  select(-duplicates)
 
+if (anyNA(screening_log$screen_in$`UR number`)) {
+  stop("NA in UR number of merged screening logs sheets")
+}
+if (nrow(screening_log$creatinine) != nrow(screening_log$screen_in)) {
+  stop(paste(
+    "Extra rows have been added. Actual:", nrow(screening_log$screen_in), 
+    "Expected: ", nrow(screening_log$creatinine)))
+}
 
 screening_log$screen_out <- rbind(
   xlsx_data$screen_out$no_creatinine,
@@ -191,13 +221,12 @@ screening_log$screen_out <- rbind(
 screening_log$screen_out <- screening_log$screen_out %>% 
   rename(
     `UR number` = UR,
-    Comment_sout = Comment)
+    Comment_out = Comment)
 
 screening_log$full_merge_cols = intersect(
   colnames(screening_log$screen_in), 
   colnames(screening_log$screen_out)
 )
-
 screening_log$full <- full_join(
   screening_log$screen_in, screening_log$screen_out,
   by = screening_log$full_merge_cols
