@@ -2,13 +2,9 @@
 data/*.xlsx
 resources/laurent's_code_examples
 resources/*.pdf
-analysis/*.docx
-analysis/*.log
-analysis/*.html
-analysis/*.pdf
-analysis/*_files/
+_book/
 *.tex
-_*
+creatinine-time-series.Rmd
 !*.yml
 libs/
 
