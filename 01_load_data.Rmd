@@ -4,13 +4,21 @@
 
 Here we load the data from the previous study [toh2019]
 
-```{r excelDate2ChrFunction}
+```{r excelDate2ChrFun}
 excel_date_to_character <- function(vector) {
   suppressWarnings(ifelse(grepl("/", vector), vector,
     as.character(as.Date(as.numeric(vector), origin = "1899-12-30"), format = "%d/%m/%y")
   ))
 }
 ```
+
+```{r lastColCommentFun}
+last_column_name_comment <- function(data) {
+  names(data)[ncol(data)] <- "Comment"
+  return(data)
+}
+```
+
 
 ```{r load_excel, message=FALSE}
 xlsx_paths = list(
@@ -50,12 +58,16 @@ xlsx_data$creat_furo <- list(
   furosemide   = read_excel(xlsx_paths$creat_furo, "Medication")
 )
   
-names(xlsx_data$creatinine$screen_log)[ncol(xlsx_data$creatinine$screen_log)] <- "Comment"
-names(xlsx_data$oliguria$screen_log)[ncol(xlsx_data$oliguria$screen_log)] <- "Comment"
+xlsx_data$creatinine$screen_log    <- last_column_name_comment(xlsx_data$creatinine$screen_log   )
+xlsx_data$oliguria  $screen_log    <- last_column_name_comment(xlsx_data$oliguria  $screen_log   )
+xlsx_data$screen_out$no_creatinine <- last_column_name_comment(xlsx_data$screen_out$no_creatinine)
+xlsx_data$screen_out$no_oliguria   <- last_column_name_comment(xlsx_data$screen_out$no_oliguria  )
+xlsx_data$screen_out$neither_cr_ol <- last_column_name_comment(xlsx_data$screen_out$neither_cr_ol)
+
   
-xlsx_data$oliguria$screen_log %<>% arrange(`UR number`, Dates_screened) %>%
+xlsx_data$oliguria$screen_log <- xlsx_data$oliguria$screen_log %>%
   mutate(Dates_screened = excel_date_to_character(Dates_screened))
-xlsx_data$creatinine$screen_log %<>% arrange(`UR number`, Dates_screened) %>%
+xlsx_data$creatinine$screen_log <- xlsx_data$creatinine$screen_log %>%
   mutate(Dates_screened = excel_date_to_character(Dates_screened))
 
 rm(xlsx_paths)
@@ -115,11 +127,21 @@ rm(errors_logi, creatinine_errors, oliguria_errors)
 
 ```
 
-# Merge Data Sources
+## Merge Screening Log
 
 ```{r joinDemoScreenFun}
 join_demo_screen_log_sheets <- function(demographic, screen_log){
-  joint <- full_join(screen_log, demographic, by = "Pt_Study_no")
+  screen_log <- screen_log %>% 
+    group_by(`UR number`) %>% 
+    mutate(
+      Admission = row_number(),
+      Total_admissions = n()) %>%
+    ungroup()
+  # screen_log %>% select(-Already_AKI:-Epis_cr_change) %>%
+  #   group_by(`UR number`) %>% 
+  #   arrange(-Total_admissions, `UR number`, Admission) %>%  
+  #   View(.)
+  joint <- full_join(demographic, screen_log, by = "Pt_Study_no")
   
   if (anyNA(joint$`UR number`)) {
     stop("NA in UR number of merged excel sheets")
@@ -145,22 +167,44 @@ screening_log$oliguria <- join_demo_screen_log_sheets(
   xlsx_data$oliguria$demographic, xlsx_data$oliguria$screen_log
 )
 
-screening_log$merge_cols = setdiff(
+screening_log$in_merge_cols = setdiff(
   intersect(colnames(screening_log$creatinine), 
             colnames(screening_log$oliguria)),
   c("Incl_criteria_ok", "Pt_Study_no", "Comment")
 )
-
 screening_log$screen_in <- full_join(
   screening_log$creatinine, screening_log$oliguria,
-  by = screening_log$merge_cols, suffix = c("_crch", "_olig"))
+  by = screening_log$in_merge_cols, suffix = c("_crch", "_olig"))
+test <- screening_log$screen_in %>% 
+  group_by(`UR number`) %>% 
+  mutate(n = n()) %>% 
+  arrange(-n, `UR number`) %>% 
+  select(`UR number`, Pt_Study_no_crch, Pt_Study_no_olig, Age, n)
 
 
-screen_log_out_joint <- 
+
+screening_log$screen_out <- rbind(
+  xlsx_data$screen_out$no_creatinine,
+  xlsx_data$screen_out$no_oliguria,
+  xlsx_data$screen_out$neither_cr_ol
+)
+screening_log$screen_out <- screening_log$screen_out %>% 
+  rename(
+    `UR number` = UR,
+    Comment_sout = Comment)
+
+screening_log$full_merge_cols = intersect(
+  colnames(screening_log$screen_in), 
+  colnames(screening_log$screen_out)
+)
+
+screening_log$full <- full_join(
+  screening_log$screen_in, screening_log$screen_out,
+  by = screening_log$full_merge_cols
+)
 
 
 ```
-
 
 ## Data Overview
 
