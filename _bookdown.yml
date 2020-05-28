@@ -1,5 +1,6 @@
 book_filename: "creatinine-time-series"
 language:
   ui:
-  chapter_name: "Section "
+    chapter_name: "Section "
+output_dir: "_book_output"
 delete_merged_file: true

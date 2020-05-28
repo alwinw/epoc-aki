@@ -197,7 +197,7 @@ screening_log$screen_in <- screening_log$screen_in %>%
   arrange(-duplicates, `UR number`) %>% 
   fill(-`UR number`, -Admission, .direction = "downup") %>%
   mutate(
-    Dc_destination = first(Dc_destination),
+    Dc_destination = first(Dc_destination),  # Could be bad if first is NA. Change to mutate if duplicates then....
     APACHE_II   = max(APACHE_II ),
     APACHE_III  = max(APACHE_III),
     Time_ICU_dc = max(Time_ICU_dc )) %>% 
@@ -221,11 +221,27 @@ screening_log$screen_out <- rbind(
   xlsx_data$screen_out$no_creatinine,
   xlsx_data$screen_out$no_oliguria,
   xlsx_data$screen_out$neither_cr_ol
-)
-screening_log$screen_out <- screening_log$screen_out %>% 
+) %>% 
+  distinct() %>%
   rename(
     `UR number` = UR,
-    Comment_out = Comment)
+    Comment_out = Comment
+    )%>% 
+  group_by(`UR number`, `Date first screened`) %>% 
+  mutate(
+    APACHE_II   = max(APACHE_II , na.rm = TRUE),
+    APACHE_III  = max(APACHE_III, na.rm = TRUE),
+  ) %>% 
+  distinct() %>%
+  group_by(`UR number`) %>% 
+  top_n(-1, `Date first screened`)
+  # Consider not removing, then grouping by neither, arrange by date, then fill up
+
+if (nrow(screening_log$screen_out) != length(unique(screening_log$screen_out$`UR number`))) {
+  stop(paste(
+    "Duplicate UR numbers found. Actual:", nrow(screening_log$screen_out), 
+    "Expected: ", length(unique(screening_log$screen_out$`UR number`))))
+}
 
 screening_log$full_merge_cols = intersect(
   colnames(screening_log$screen_in), 
@@ -236,6 +252,23 @@ screening_log$full <- full_join(
   by = screening_log$full_merge_cols
 )
 
+test <- screening_log$full %>% 
+  group_by(`UR number`) %>% 
+  mutate(
+    Total_rows = n(),
+    duplicates = Total_admissions != Total_rows,
+    Admission = if_else(is.na(Admission), Total_rows, Admission)
+    ) %>% 
+  group_by(`UR number`, Pt_Study_no_crch, Pt_Study_no_olig) %>% 
+  arrange(-Total_rows, `UR number`, Admission) %>% 
+  fill(.direction = "updown") %>% 
+  # select(`UR number`, Age, Admission, Total_admissions, Total_rows, duplicates) %>% 
+  filter(duplicates || is.na(duplicates))
+ 
+
+
+nrow(screening_log$full)
+nrow(screening_log$screen_in) + nrow(xlsx_data$screen_out$neither_cr_ol)
 
 ```
 

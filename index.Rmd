@@ -12,6 +12,10 @@ github-repo: AlwinW/Creatinine-Time-Series
 description: "Creatinine time series analysis"
 ---
 
+```{r setup}
+knitr::opts_chunk$set(echo=TRUE, message=FALSE, cache=TRUE)
+```
+
 # Preface {-}
 
 Environment set-up
