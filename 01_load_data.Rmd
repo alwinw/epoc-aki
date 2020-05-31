@@ -229,13 +229,20 @@ screening_log$screen_out <- rbind(
     )%>% 
   group_by(`UR number`, `Date first screened`) %>% 
   mutate(
-    APACHE_II   = max(APACHE_II , na.rm = TRUE),
-    APACHE_III  = max(APACHE_III, na.rm = TRUE),
+    APACHE_II  = max(APACHE_II , na.rm = TRUE),
+    APACHE_III = max(APACHE_III, na.rm = TRUE),
+    screen_out = TRUE
   ) %>% 
   distinct() %>%
   group_by(`UR number`) %>% 
   top_n(-1, `Date first screened`)
   # Consider not removing, then grouping by neither, arrange by date, then fill up
+
+screening_log$neither_UR <- 
+  setdiff(unique(screening_log$screen_out$`UR number`), 
+          unique(screening_log$screen_in$`UR number`))
+screening_log$screen_neither <- screening_log$screen_out %>%
+  filter(`UR number` %in% screening_log$neither_UR)
 
 if (nrow(screening_log$screen_out) != length(unique(screening_log$screen_out$`UR number`))) {
   stop(paste(
@@ -257,18 +264,26 @@ test <- screening_log$full %>%
   mutate(
     Total_rows = n(),
     duplicates = Total_admissions != Total_rows,
-    Admission = if_else(is.na(Admission), Total_rows, Admission)
+    # Admission  = if_else(is.na(Admission), Total_rows, Admission),
+    Event      = if_else(is.na(Pt_Study_no_olig), 0, 1),
+    Event      = if_else(is.na(Pt_Study_no_crch), 0, 1) + Event
     ) %>% 
-  group_by(`UR number`, Pt_Study_no_crch, Pt_Study_no_olig) %>% 
-  arrange(-Total_rows, `UR number`, Admission) %>% 
-  fill(.direction = "updown") %>% 
-  # select(`UR number`, Age, Admission, Total_admissions, Total_rows, duplicates) %>% 
+  group_by(`UR number`, Event) %>% 
+  arrange(-Total_rows, `UR number`, Event, Admission) %>% 
+  fill(-`UR number`, -Event, .direction = "updown") %>% 
+  distinct() %>% 
+  group_by(`UR number`) %>% 
+  mutate(
+    Total_rows = n(),
+    duplicates = Total_admissions != Total_rows
+    ) %>% 
+  select(`UR number`, Event, Dates_screened, `Date first screened`, Age, Admission, Total_admissions, Total_rows, duplicates) %>% 
   filter(duplicates || is.na(duplicates))
  
-
+# Need handling of L, LT or neither
 
 nrow(screening_log$full)
-nrow(screening_log$screen_in) + nrow(xlsx_data$screen_out$neither_cr_ol)
+nrow(screening_log$screen_in) + nrow(screening_log$screen_neither)
 
 ```
 

@@ -3,6 +3,7 @@ data/*.xlsx
 resources/laurent's_code_examples
 resources/*.pdf
 _book/
+_book_output/
 *.tex
 creatinine-time-series.Rmd
 !*.yml
