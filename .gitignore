@@ -8,6 +8,7 @@ _book_output/
 creatinine-time-series.Rmd
 !*.yml
 libs/
+resources/*.RData
 
 # History files
 .Rhistory
