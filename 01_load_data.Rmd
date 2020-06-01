@@ -91,6 +91,19 @@ Save old `UR number` here. Replace `UR number` with hash.
 
 ## Identify Potential Data Collection Errors
 
+```{r fixDataFun}
+# TODO!
+fix_screening_log <- function(screen_log){
+  screen_log[errors_logi, "Excl_criteria_ok"] = "N"
+  screen_log[errors_logi, "Incl_criteria_ok"] = NA
+  screen_log[errors_logi, "Already_AKI"] = "Y"
+  screen_log[errors_logi, "Epis_olig"] = NA
+  screen_log[errors_logi, "Total_no_olig_epis"] = NA
+  return(screen_log)
+}
+
+```
+
 ```{r data_collection_errors}
 errors_logi =
   (xlsx_data$creatinine$screen_log$`UR number` != 
@@ -163,6 +176,7 @@ join_demo_screen_log_sheets <- function(demographic, screen_log){
       "Extra rows have been added. Actual:", nrow(joint), 
       "Expected: ", nrow(screen_log)))
   }
+  # TODO: Function that checks number of rows AND number of L, LTs
   
   joint <- joint %>% 
     arrange(Total_admissions, `UR number`, Admission)
@@ -288,7 +302,8 @@ screening_log$full <- screening_log$full %>%
     starts_with("Incl_criteria"), starts_with("Epis_"), starts_with("Total_no_"),
     Dates_screened:Child, Age:Dc_destination, 
     Admission, Total_admissions, starts_with("Comment")
-  )
+  ) %>% 
+  arrange(`UR number`, Admission)
 
 if (nrow(screening_log$full) != nrow(screening_log$screen_in)) {
   stop(paste(
@@ -296,10 +311,8 @@ if (nrow(screening_log$full) != nrow(screening_log$screen_in)) {
     "Expected: ", nrow(screening_log$screen_in)))
 }
 
-screening_log = screening_log$full
-
 kable(
-  t(head(screening_log)),
+  t(head(screening_log$full)),
   caption = "Screening Log",
   booktabs = TRUE)
 ```
@@ -320,6 +333,7 @@ screening_log %>%
     `Unique Patients` = n_distinct(`UR number`)) %>% 
   kable(., caption = "All", booktabs = TRUE)
 ## Unique patients does not add up!!
+# OK!
 
 screening_log %>% 
   filter(Excl_criteria_ok == "Y") %>% 
