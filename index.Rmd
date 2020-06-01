@@ -1,0 +1,62 @@
+--- 
+title: "Creatinine Time Series Analysis"
+author: "Alwin Wang"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+output: bookdown::gitbook
+documentclass: book
+bibliography: [references.bib, R-references.bib]
+biblio-style: apalike
+link-citations: yes
+github-repo: AlwinW/Creatinine-Time-Series
+description: "Creatinine time series analysis"
+---
+
+```{r setup}
+knitr::opts_chunk$set(echo=TRUE, message=FALSE, cache=TRUE)
+```
+
+# Preface {-}
+
+Environment set-up
+
+1. `R` and `RStudio`
+
+    - This analysis is carried out using `R version 3.6.3 (2020-02-29)`
+    - The package `tidyverse version 1.3.0` was extensively used
+    - The IDE `RStudio version 1.4.377` was used to help preview this book
+
+2. `R` packages
+
+    - The list of `R` packages used is in `R-requirements.txt`
+    - These are loaded using
+    
+    ```{r loadLibraryFunction}
+    load_library <- function(req_file, bib_file = NULL) {
+      packages <- readLines(req_file)
+      new.packages <-
+        packages[!(packages %in% installed.packages()[, "Package"])]
+      
+      if (length(new.packages))
+        install.packages(new.packages)
+      invisible(suppressMessages(suppressWarnings(
+        lapply(packages, library, character.only = TRUE)
+      )))
+      
+      if (!is.null(bib_file))
+        knitr::write_bib(packages, file = bib_file)
+      return(NULL)
+    }
+    ```
+    
+    ```{r load_library}
+    invisible(suppressMessages(
+      load_library("R-requirements.txt", "R-references.bib")
+    ))
+    ```
+
+3. The full session information is presented below
+  
+    ```{r sessionInfo}
+    sessionInfo()
+    ```
