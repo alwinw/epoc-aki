@@ -175,6 +175,7 @@ kable(
 ## Data Overview
 
 ```{r data_overview}
+# Using n_distinct() does not seem to be working as expected?
 screening_log$full %>%
   summarise(
     Admissions = n(),
@@ -202,14 +203,38 @@ screening_log$full %>%
   arrange(-cr_epis, -olig_epis) %>%
   kable(., caption = "Included", booktabs = TRUE)
 
-screening_log$full %>%
+test <- screening_log$full %>%
   filter(Excl_criteria_ok == "Y") %>%
   select(`UR number`, starts_with("Total_no_")) %>%
+  mutate(
+    Total_no_cr_epis = if_else(
+      is.na(Total_no_cr_epis), " 0 cr epis", sprintf("%2d cr epis", Total_no_cr_epis)),
+    Total_no_olig_epis = if_else(
+      is.na(Total_no_olig_epis), " 0 olig epis", sprintf("%2d olig epis", Total_no_olig_epis)),
+  ) %>% 
   group_by(Total_no_cr_epis, Total_no_olig_epis) %>%
   summarise(
     Admissions = n(),
-    `Unique Patients` = n_distinct(`UR number`)
   ) %>%
+  ungroup() %>% 
+  # group_by(Total_no_cr_epis) %>% 
+  # mutate(`All cr epis` = sum(Admissions)) %>% 
+  # group_by(Total_no_olig_epis) %>% 
+  # mutate(`All olig epis` = sum(Admissions)) %>% 
+  pivot_wider(names_from = Total_no_olig_epis, values_from = Admissions) %>% 
+
+  mutate(`All olig epis` = rowSums(.[2:ncol(.)], na.rm = TRUE))
+  pivot_longer(ends_with("olig epis"), names_to = "Total_no_olig_epis", values_to = "Admissions")
+  
+  
+  pivot_wider(names_from = )
+  
+  
+  pivot_longer(starts_with("Total_no"), names_to = "type", values_to = "number") %>% 
+  group_by(name) %>% 
+  
+  pivot_wider(names_from = Total_no_olig_epis, values_from = Admissions) %>% 
+  rename(Total_no = Total_no_cr_epis) %>% 
   kable(., caption = "Included", booktabs = TRUE)
 
 screening_log$full %>%
