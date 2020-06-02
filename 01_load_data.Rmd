@@ -19,10 +19,9 @@ last_column_name_comment <- function(data) {
 }
 ```
 
-
 ```{r load_excel, message=FALSE}
 xlsx_paths = list(
-  oliguria     = file.path("data", "Creatinine change in oliguria 4.1.20.xlsx"), 
+  oliguria     = file.path("data", "Creatinine change in oliguria 4.1.20.xlsx"),
   creatinine   = file.path("data", "Small changes in creatinine 27.9.18.xlsx"),
   demographics = file.path("data", "Demographics pts screened out.xlsx"),
   apd_extract  = file.path("data", "COMET-Extract-APD 23 Oct 2018.xlsx"),
@@ -57,29 +56,28 @@ xlsx_data$creat_furo <- list(
   lowest_creat = read_excel(xlsx_paths$creat_furo, "Lowest Creatinine Level"),
   furosemide   = read_excel(xlsx_paths$creat_furo, "Medication")
 )
-  
+
 xlsx_data$creatinine$screen_log    <- last_column_name_comment(xlsx_data$creatinine$screen_log   )
 xlsx_data$oliguria  $screen_log    <- last_column_name_comment(xlsx_data$oliguria  $screen_log   )
 xlsx_data$screen_out$no_creatinine <- last_column_name_comment(xlsx_data$screen_out$no_creatinine)
 xlsx_data$screen_out$no_oliguria   <- last_column_name_comment(xlsx_data$screen_out$no_oliguria  )
 xlsx_data$screen_out$neither_cr_ol <- last_column_name_comment(xlsx_data$screen_out$neither_cr_ol)
 
-  
 xlsx_data$oliguria$screen_log <- xlsx_data$oliguria$screen_log %>%
-  mutate(Dates_screened = excel_date_to_character(Dates_screened)) %>% 
-  group_by(`UR number`) %>% 
+  mutate(Dates_screened = excel_date_to_character(Dates_screened)) %>%
+  group_by(`UR number`) %>%
   mutate(
     Admission = row_number(),
     Total_admissions = n()) %>%
-  ungroup() %>% 
+  ungroup() %>%
   arrange(`UR number`, Dates_screened)
 xlsx_data$creatinine$screen_log <- xlsx_data$creatinine$screen_log %>%
-  mutate(Dates_screened = excel_date_to_character(Dates_screened)) %>% 
-  group_by(`UR number`) %>% 
+  mutate(Dates_screened = excel_date_to_character(Dates_screened)) %>%
+  group_by(`UR number`) %>%
   mutate(
     Admission = row_number(),
     Total_admissions = n()) %>%
-  ungroup() %>% 
+  ungroup() %>%
   arrange(`UR number`, Dates_screened)
 
 rm(xlsx_paths)
@@ -93,11 +91,11 @@ Save old `UR number` here. Replace `UR number` with hash.
 
 ```{r data_collection_errors}
 errors_logi =
-  (xlsx_data$creatinine$screen_log$`UR number` != 
+  (xlsx_data$creatinine$screen_log$`UR number` !=
      xlsx_data$oliguria$screen_log$`UR number`) |
-  (xlsx_data$creatinine$screen_log$Dates_screened != 
+  (xlsx_data$creatinine$screen_log$Dates_screened !=
      xlsx_data$oliguria$screen_log$Dates_screened)  |
-  (xlsx_data$creatinine$screen_log$Excl_criteria_ok != 
+  (xlsx_data$creatinine$screen_log$Excl_criteria_ok !=
      xlsx_data$oliguria$screen_log$Excl_criteria_ok)
 
 creatinine_errors = xlsx_data$creatinine$screen_log[errors_logi, ]
@@ -123,7 +121,7 @@ knitr::kable(
   booktabs = TRUE
 )
 
-# Correct data  
+# Correct data
 xlsx_data$creatinine$screen_log[errors_logi, "Dates_screened"] =
   xlsx_data$oliguria$screen_log[errors_logi, "Dates_screened"]
 
@@ -140,232 +138,4 @@ xlsx_data$oliguria$screen_log[errors_logi, "Epis_olig"] = NA
 xlsx_data$oliguria$screen_log[errors_logi, "Total_no_olig_epis"] = NA
 
 rm(errors_logi, creatinine_errors, oliguria_errors)
-
-```
-
-## Merge Screening Log
-
-```{r joinDemoScreenFun}
-join_demo_screen_log_sheets <- function(demographic, screen_log){
-  joint <- full_join(demographic, screen_log, by = "Pt_Study_no")
-  
-  if (anyNA(joint$`UR number`)) {
-    stop("NA in UR number of merged excel sheets")
-  }
-  if (nrow(joint) != nrow(screen_log)) {
-    stop(paste(
-      "Extra rows have been added. Actual:", nrow(joint), 
-      "Expected: ", nrow(screen_log)))
-  }
-  # TODO: Function that checks number of rows AND number of L, LTs
-  
-  joint <- joint %>% 
-    arrange(Total_admissions, `UR number`, Admission)
-  
-  return(joint)
-}
-
-```
-
-```{r screen_log_all}
-screening_log <- list()
-
-screening_log$creatinine <- join_demo_screen_log_sheets(
-  xlsx_data$creatinine$demographic, xlsx_data$creatinine$screen_log
-)
-screening_log$oliguria <- join_demo_screen_log_sheets(
-  xlsx_data$oliguria$demographic, xlsx_data$oliguria$screen_log
-)
-
-screening_log$in_merge_cols = setdiff(
-  intersect(colnames(screening_log$creatinine), 
-            colnames(screening_log$oliguria)),
-  c("Incl_criteria_ok", "Pt_Study_no", "Comment")
-)
-screening_log$screen_in <- full_join(
-  screening_log$creatinine, screening_log$oliguria,
-  by = screening_log$in_merge_cols, suffix = c("_crch", "_olig"))
-
-# Fill missing NAs due to being screened in for cr and out for olig and vice versa
-# Remove issues with destination due to typos and APACHE_II, APACHE_III
-screening_log$screen_in <- screening_log$screen_in %>% 
-  group_by(`UR number`, Admission) %>% 
-  mutate(duplicates = n()) %>% 
-  arrange(-duplicates, `UR number`) %>% 
-  fill(-`UR number`, -Admission, .direction = "downup") %>%
-  mutate(
-    Dc_destination = first(Dc_destination),  # Could be bad if first is NA. Change to mutate if duplicates then....
-    APACHE_II   = max(APACHE_II ),
-    APACHE_III  = max(APACHE_III),
-    Time_ICU_dc = max(Time_ICU_dc )) %>% 
-  distinct() %>%
-  mutate(
-    duplicates = n()) %>%
-  arrange(-duplicates, `UR number`) %>%  
-  ungroup() %>% 
-  select(-duplicates)
-
-if (anyNA(screening_log$screen_in$`UR number`)) {
-  stop("NA in UR number of merged screening logs sheets")
-}
-if (nrow(screening_log$creatinine) != nrow(screening_log$screen_in)) {
-  stop(paste(
-    "Extra rows have been added. Actual:", nrow(screening_log$screen_in), 
-    "Expected: ", nrow(screening_log$creatinine)))
-}
-
-screening_log$screen_out <- rbind(
-  xlsx_data$screen_out$no_creatinine,
-  xlsx_data$screen_out$no_oliguria,
-  xlsx_data$screen_out$neither_cr_ol
-) %>% 
-  distinct() %>%
-  rename(
-    `UR number` = UR,
-    Comment_out = Comment
-    )%>% 
-  group_by(`UR number`, `Date first screened`) %>% 
-  mutate(
-    APACHE_II  = max(APACHE_II , na.rm = TRUE),
-    APACHE_III = max(APACHE_III, na.rm = TRUE),
-  ) %>% 
-  distinct() %>%
-  group_by(`UR number`) %>% 
-  top_n(-1, `Date first screened`)  # Consider not removing, then grouping by neither, arrange by date, then fill up
-
-screening_log$errors_logi = screening_log$screen_out$`UR number` %in%
-  xlsx_data$excluded_UR_numbers
-
-screening_log$screen_out[screening_log$errors_logi, "Excl_criteria_ok"] = "N"
-screening_log$screen_out[screening_log$errors_logi, "Incl_criteria_ok"] = NA
-screening_log$screen_out[screening_log$errors_logi, "Already_AKI"] = "Y"
-
-screening_log$neither_UR <- 
-  setdiff(unique(screening_log$screen_out$`UR number`), 
-          unique(screening_log$screen_in$`UR number`))
-screening_log$screen_neither <- screening_log$screen_out %>%
-  filter(`UR number` %in% screening_log$neither_UR)
-
-kable(
-  screening_log$screen_neither, caption = 'Admissions found in screen out',
-  booktabs = TRUE
-)
-
-if (nrow(screening_log$screen_out) != length(unique(screening_log$screen_out$`UR number`))) {
-  stop(paste(
-    "Duplicate UR numbers found. Actual:", nrow(screening_log$screen_out), 
-    "Expected: ", length(unique(screening_log$screen_out$`UR number`))))
-}
-
-screening_log$full_merge_cols = intersect(
-  colnames(screening_log$screen_in), 
-  colnames(screening_log$screen_out)
-)
-screening_log$full <- full_join(
-  screening_log$screen_in, screening_log$screen_out,
-  by = screening_log$full_merge_cols
-)
-
-screening_log$full <- screening_log$full %>% 
-  group_by(`UR number`) %>% 
-  mutate(
-    Total_rows = n(),
-    duplicates = Total_admissions != Total_rows,
-    Event      = if_else(is.na(Pt_Study_no_olig), 0, 1),
-    Event      = if_else(is.na(Pt_Study_no_crch), 0, 2) + Event
-    ) %>% 
-  group_by(`UR number`, Event) %>% 
-  arrange(-Total_rows, `UR number`, Event, Admission) %>% 
-  fill(-`UR number`, -Event, .direction = "updown") %>% 
-  distinct() %>% 
-  group_by(`UR number`) %>% 
-  mutate(
-    Total_rows = n(),
-    duplicates = Total_admissions != Total_rows
-    ) %>% 
-  ungroup() %>% 
-  filter(!is.na(Admission)) %>% 
-  select(
-    `UR number`, starts_with("Pt_Study_no"),
-    starts_with("Incl_criteria"), starts_with("Epis_"), starts_with("Total_no_"),
-    Dates_screened:Child, Age:Dc_destination, 
-    Admission, Total_admissions, starts_with("Comment")
-  ) %>% 
-  arrange(`UR number`, Admission)
-
-if (nrow(screening_log$full) != nrow(screening_log$screen_in)) {
-  stop(paste(
-    "Duplicate UR numbers found. Actual:", nrow(screening_log$full), 
-    "Expected: ", nrow(screening_log$screen_in)))
-}
-if (anyNA(screening_log$full$`UR number`)) {
-  stop("Found NAs in merged UR numbers")
-}
-if (sum(!is.na(screening_log$full$Pt_Study_no_crch)) != 
-    length(unique(filter(xlsx_data$creatinine$screen_log, !is.na(Pt_Study_no))$Pt_Study_no))) {
-  stop("Number of LT patients has changed")
-}
-if (sum(!is.na(screening_log$full$Pt_Study_no_olig)) != 
-    length(unique(filter(xlsx_data$oliguria$screen_log, !is.na(Pt_Study_no))$Pt_Study_no))) {
-  stop("Number of L patients has changed")
-}
-
-kable(
-  t(head(screening_log$full)),
-  caption = "Screening Log",
-  booktabs = TRUE)
-```
-
-## Data Overview
-
-```{r data_overview}
-screening_log$full %>% 
-  summarise(
-    Admissions = n(),
-    `Unique Patients` = n_distinct(`UR number`)) %>% 
-  kable(., caption = "Total", booktabs = TRUE)
-
-screening_log$full %>% 
-  group_by(Excl_criteria_ok) %>% 
-  summarise(
-    Admissions = n(),
-    `Unique Patients` = n_distinct(`UR number`)) %>% 
-  kable(., caption = "All", booktabs = TRUE)
-## Unique patients does not add up!!
-# OK!
-
-screening_log$full %>% 
-  filter(Excl_criteria_ok == "Y") %>% 
-  select(`UR number`, starts_with("Total_no_")) %>% 
-  mutate(
-    cr_epis = !is.na(Total_no_cr_epis),
-    olig_epis = !is.na(Total_no_olig_epis)) %>% 
-  group_by(cr_epis, olig_epis) %>% 
-  summarise(
-    Admissions = n(),
-    `Unique Patients` = n_distinct(`UR number`)
-  ) %>% 
-  arrange(-cr_epis, -olig_epis) %>% 
-  kable(., caption = "Included", booktabs = TRUE)
-
-screening_log$full %>% 
-  filter(Excl_criteria_ok == "Y") %>% 
-  select(`UR number`, starts_with("Total_no_")) %>% 
-  group_by(Total_no_cr_epis, Total_no_olig_epis) %>% 
-  summarise(
-    Admissions = n(),
-    `Unique Patients` = n_distinct(`UR number`)
-  ) %>% 
-  kable(., caption = "Included", booktabs = TRUE)
-
-screening_log$full %>% 
-  filter(Excl_criteria_ok == "N") %>% 
-  select(`UR number`, Already_AKI:Child) %>% 
-  pivot_longer(-`UR number`, names_to = "Excl_reason", values_to = "Excluded") %>%
-  group_by(Excl_reason) %>% 
-  summarise(
-    Admissions = sum(Excluded == "Y", na.rm = TRUE),
-    `Unique Patients` = n_distinct((`UR number`[Excluded == "Y"]))) %>% 
-  arrange(-Admissions) %>% 
-  kable(., caption = "Excluded", booktabs = TRUE)
 ```
