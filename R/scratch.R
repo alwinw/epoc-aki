@@ -218,8 +218,8 @@ setdiff(
   filter(mer$scre,      Excl_criteria_ok == "Y", !is.na(Total_no_cr_epis))$`UR number`
 )
 
-length(filter(screening_log, Excl_criteria_ok == "Y", !is.na(Total_no_cr_epis))$`UR number`)
-length(filter(mer$scre,      Excl_criteria_ok == "Y", !is.na(Total_no_cr_epis))$`UR number`)
+length(filter(screening_log$full, Excl_criteria_ok == "Y", !is.na(Total_no_cr_epis))$`UR number`)
+length(filter(mer$scre, Excl_criteria_ok == "Y", !is.na(Total_no_cr_epis))$`UR number`)
 
 new <- screening_log$full %>% 
   filter(Excl_criteria_ok == "Y", !is.na(Total_no_cr_epis))
@@ -255,3 +255,9 @@ screening_log$screen_out %>%
 screening_log$full %>% 
   filter(`UR number` == discrepency) %>% 
   select(Pt_Study_no_crch, Excl_criteria_ok, Incl_criteria_ok_crch, Incl_criteria_ok_olig)
+
+errors = screening_log$screen_out$`UR number`[screening_log$errors_logi]
+
+screening_log$full %>% 
+  filter(`UR number` %in% errors) %>% View(.)
+  select(Pt_Study_no_crch, Excl_criteria_ok, Incl_criteria_ok_crch, Incl_criteria_ok_olig, Already_AKI)
