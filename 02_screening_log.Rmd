@@ -203,7 +203,7 @@ screening_log$full %>%
   arrange(-cr_epis, -olig_epis) %>%
   kable(., caption = "Included", booktabs = TRUE)
 
-test <- screening_log$full %>%
+screening_log$full %>%
   filter(Excl_criteria_ok == "Y") %>%
   select(`UR number`, starts_with("Total_no_")) %>%
   mutate(
@@ -216,26 +216,16 @@ test <- screening_log$full %>%
   summarise(
     Admissions = n(),
   ) %>%
-  ungroup() %>% 
-  # group_by(Total_no_cr_epis) %>% 
-  # mutate(`All cr epis` = sum(Admissions)) %>% 
-  # group_by(Total_no_olig_epis) %>% 
-  # mutate(`All olig epis` = sum(Admissions)) %>% 
+  ungroup() %>%
+  bind_rows(group_by(.,Total_no_cr_epis) %>%
+              summarise(Admissions=sum(Admissions)) %>%
+              mutate(Total_no_olig_epis='Total')) %>%
+  bind_rows(group_by(.,Total_no_olig_epis) %>%
+              summarise(Admissions=sum(Admissions)) %>%
+              mutate(Total_no_cr_epis='Total')) %>% 
   pivot_wider(names_from = Total_no_olig_epis, values_from = Admissions) %>% 
-
-  mutate(`All olig epis` = rowSums(.[2:ncol(.)], na.rm = TRUE))
-  pivot_longer(ends_with("olig epis"), names_to = "Total_no_olig_epis", values_to = "Admissions")
-  
-  
-  pivot_wider(names_from = )
-  
-  
-  pivot_longer(starts_with("Total_no"), names_to = "type", values_to = "number") %>% 
-  group_by(name) %>% 
-  
-  pivot_wider(names_from = Total_no_olig_epis, values_from = Admissions) %>% 
-  rename(Total_no = Total_no_cr_epis) %>% 
-  kable(., caption = "Included", booktabs = TRUE)
+  rename(Epis = Total_no_cr_epis) %>% 
+  kable(., caption = "Creatinine and Oliguria breakdown", booktabs = TRUE)
 
 screening_log$full %>%
   filter(Excl_criteria_ok == "N") %>%
