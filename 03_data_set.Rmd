@@ -64,6 +64,32 @@ date_time_cols <- function(dataframe) {
 ```
 
 ```{r merge_data_sets}
+creatinine_data <- xlsx_data$creatinine$data_set %>% 
+  rename(
+    Epis_no = Cr_epis_no,
+    Date_epis = Date_Cr_epis,
+    Time_epis = Time_Cr_epis,
+  ) %>% 
+  mutate(
+    Epis_cr_change = "Y",
+    Epis_olig = NA
+  )
+
+oliguria_data <- xlsx_data$oliguria$data_set %>% 
+  rename(
+    Epis_no = Olig_epis_no,
+    Date_epis = Date_olig_epis,
+    Time_epis = Time_olig_epis,
+  ) %>% 
+  mutate(
+    Epis_cr_change = NA,
+    Epis_olig = "Y"
+  )
+
+data_set <- rbind(creatinine_data,  oliguria_data) %>% 
+  fill(Pt_Study_no, .direction = "down")
+
+data_set_cols <- colnames(data_set)
 
 
 ```
