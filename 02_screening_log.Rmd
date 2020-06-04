@@ -127,7 +127,7 @@ screening_log$full <- screening_log$full %>%
   mutate(
     Total_rows = n(),
     duplicates = Total_admissions != Total_rows,
-    Event      = if_else(is.na(Pt_Study_no_olig), 0, 1),
+    Event      = if_else(is.na(Pt_Study_no_olig), 0, 1),  # TODO replace with Epis_cr_change and rerun
     Event      = if_else(is.na(Pt_Study_no_crch), 0, 2) + Event
     ) %>%
   group_by(`UR number`, Event) %>%
@@ -145,7 +145,7 @@ screening_log$full <- screening_log$full %>%
     `UR number`, starts_with("Pt_Study_no"),
     starts_with("Incl_criteria"), starts_with("Epis_"), starts_with("Total_no_"),
     Dates_screened:Child, Age:Dc_destination,
-    Admission, Total_admissions, starts_with("Comment")
+    Admission, Total_admissions, Event, starts_with("Comment")
   ) %>%
   arrange(`UR number`, Admission)
 
@@ -172,36 +172,33 @@ kable(
   booktabs = TRUE)
 ```
 
-## Data Overview
+## Admission Overview
 
 ```{r data_overview}
-# Using n_distinct() does not seem to be working as expected?
+# Using n_distinct() does not seem to be working as expected with grouping?
 screening_log$full %>%
-  summarise(
-    Admissions = n(),
-    `Unique Patients` = n_distinct(`UR number`)) %>%
-  kable(., caption = "Total", booktabs = TRUE)
-
-screening_log$full %>%
-  group_by(Excl_criteria_ok) %>%
-  summarise(
-    Admissions = n(),
-    `Unique Patients` = n_distinct(`UR number`)) %>%
-  kable(., caption = "All", booktabs = TRUE)
-
-screening_log$full %>%
-  filter(Excl_criteria_ok == "Y") %>%
-  select(`UR number`, starts_with("Total_no_")) %>%
-  mutate(
-    cr_epis = !is.na(Total_no_cr_epis),
-    olig_epis = !is.na(Total_no_olig_epis)) %>%
-  group_by(cr_epis, olig_epis) %>%
   summarise(
     Admissions = n(),
     `Unique Patients` = n_distinct(`UR number`)
-  ) %>%
-  arrange(-cr_epis, -olig_epis) %>%
-  kable(., caption = "Included", booktabs = TRUE)
+  ) %>% 
+  kable(., caption = "Total Admissions", booktabs = TRUE)
+
+screening_log$full %>%
+  group_by(Excl_criteria_ok) %>%
+  summarise(Admissions = n()) %>% 
+  arrange(desc(Excl_criteria_ok)) %>% 
+  kable(., caption = "Patients included and excluded", booktabs = TRUE)
+
+screening_log$full %>% 
+  filter(Excl_criteria_ok == "Y") %>% 
+  select(`UR number`, starts_with("Epis")) %>% 
+  replace_na(list(
+    Epis_cr_change = "N",
+    Epis_olig = "N")) %>% 
+  group_by(Epis_cr_change, Epis_olig) %>% 
+  summarise(Admissions = n()) %>% 
+  arrange(desc(Epis_cr_change), desc(Epis_olig)) %>% 
+  kable(., caption = "Creatinine change and Oliguria Epis Total Admissions")
 
 screening_log$full %>%
   filter(Excl_criteria_ok == "Y") %>%
@@ -225,7 +222,7 @@ screening_log$full %>%
               mutate(Total_no_cr_epis='Total')) %>% 
   pivot_wider(names_from = Total_no_olig_epis, values_from = Admissions) %>% 
   rename(Epis = Total_no_cr_epis) %>% 
-  kable(., caption = "Creatinine and Oliguria breakdown", booktabs = TRUE)
+  kable(., caption = "Creatinine change and Oliguria Episodes per Admission", booktabs = TRUE)
 
 screening_log$full %>%
   filter(Excl_criteria_ok == "N") %>%
@@ -236,5 +233,5 @@ screening_log$full %>%
     Admissions = sum(Excluded == "Y", na.rm = TRUE),
     `Unique Patients` = n_distinct((`UR number`[Excluded == "Y"]))) %>%
   arrange(-Admissions) %>%
-  kable(., caption = "Excluded", booktabs = TRUE)
+  kable(., caption = "Excluded Admissions", booktabs = TRUE)
 ```
