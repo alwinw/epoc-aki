@@ -30,7 +30,9 @@ test <- data_set %>%
   select(starts_with("date") | starts_with("time") | ends_with("time")) %>% 
   mutate(
     T0_corresp_DateTime = ceiling_date(DateTime_epis, "hour"),
-    T0_corresp_check = format(T0_corresp_time, format = "%H:%M:%S") == 
-      format(T0_corresp_DateTime, format = "%H:%M:%S")
+    `T-4_corresp_DateTime` = T0_corresp_DateTime - hours(4),
+    T_corresp_check = 
+      format(T0_corresp_time, format = "%H:%M:%S") == format(T0_corresp_DateTime, format = "%H:%M:%S") &
+      format(`T-4_corresp_DateTime`, format = "%H:%M:%S") == format(`T-4_corresp_DateTime`, format = "%H:%M:%S")
   ) %>% 
-  filter(!T0_corresp_check)
+  filter(!T_corresp_check)

@@ -92,7 +92,7 @@ dttm_col = inner_join(
   by = "match") %>% 
   select(date, time, match)
 
-data_set <- rbind(creatinine_data,  oliguria_data) %>% 
+raw_data_set <- rbind(creatinine_data,  oliguria_data) %>% 
   fill(Pt_Study_no, .direction = "down") %>% 
   pivot_longer(
     all_of(c(dttm_col$date, dttm_col$time)),
@@ -120,7 +120,57 @@ data_set <- rbind(creatinine_data,  oliguria_data) %>%
   pivot_wider(
     names_from = "DateTimeName",
     values_from = "datetime"
+  ) %>% 
+  mutate(
+    T0_corresp_DateTime = ceiling_date(DateTime_epis, "hour"),
+    `T-4_corresp_DateTime` = T0_corresp_DateTime - hours(4),
+    T_corresp_check = 
+      format(T0_corresp_time, format = "%H:%M:%S") == format(T0_corresp_DateTime, format = "%H:%M:%S") &
+      format(`T-4_corresp_DateTime`, format = "%H:%M:%S") == format(`T-4_corresp_DateTime`, format = "%H:%M:%S")
   )
 
+if (any(!raw_data_set$T_corresp_check)) {
+  raw_data_set %>% 
+    select(Pt_Study_no, T_corresp_check, starts_with("date"), starts_with("time"), ends_with("time")) %>% 
+    filter(!T_corresp_check) %>% 
+    print(.)
+  stop("Found inconsistent times!")
+}
 
+raw_data_set_cols <- unique(gsub("^time|time$|^date|date$", "DateTime", colnames(creatinine_data), ignore.case = TRUE))
+
+data_set <- raw_data_set[, raw_data_set_cols]
+
+```
+
+## Episode Overview
+
+```{r data_overview}
+data_set %>% 
+  group_by(Epis_cr_change, Epis_olig) %>% 
+  summarise(Episodes = n()) %>% 
+  pivot_longer(
+    starts_with("Epis_"),
+    names_to = "Epis",
+    values_to = "EpisValue"
+  ) %>% 
+  filter(!is.na(EpisValue)) %>% 
+  select(Epis, Episodes) %>% 
+  kable(., caption = "All Episodes", booktabs = TRUE)
+
+data_set %>% 
+  group_by(Epis_cr_change, Epis_olig, Pt_Study_no) %>% 
+  top_n(1, Epis_no) %>% 
+  group_by(Epis_cr_change, Epis_olig, Epis_no) %>% 
+  summarise(Episodes = n()) %>% 
+  pivot_longer(
+    c(Epis_cr_change, Epis_olig),
+    names_to = "Epis",
+    values_to = "EpisValue"
+  ) %>% 
+  filter(!is.na(EpisValue)) %>% 
+  select(Epis, Epis_no, Episodes) %>% 
+  kable(., caption = "Number of Episodes", booktabs = TRUE)
+
+# Should match the screening log!!
 ```
