@@ -1,4 +1,4 @@
---- 
+---
 title: "Creatinine Time Series Analysis"
 author: "Alwin Wang"
 date: "`r Sys.Date()`"
@@ -30,25 +30,25 @@ Environment set-up
 
     - The list of `R` packages used is in `R-requirements.txt`
     - These are loaded using
-    
+
     ```{r loadLibraryFunction}
     load_library <- function(req_file, bib_file = NULL) {
       packages <- readLines(req_file)
       new.packages <-
         packages[!(packages %in% installed.packages()[, "Package"])]
-      
+
       if (length(new.packages))
         install.packages(new.packages)
       invisible(suppressMessages(suppressWarnings(
         lapply(packages, library, character.only = TRUE)
       )))
-      
+
       if (!is.null(bib_file))
         knitr::write_bib(packages, file = bib_file)
       return(NULL)
     }
     ```
-    
+
     ```{r load_library}
     invisible(suppressMessages(
       load_library("R-requirements.txt", "R-references.bib")
@@ -56,7 +56,7 @@ Environment set-up
     ```
 
 3. The full session information is presented below
-  
+
     ```{r sessionInfo}
     sessionInfo()
     ```
