@@ -10,7 +10,7 @@ COMET-Extract-APD 23 Oct 2018.xlsx
   - Apache scores 1 per admission assessment (`AP2score`, `AP3score`)
 * Other sheets are empty
 
-Creatinine change in oliguria 27.9.18.xlsx
+Creatinine change in oliguria 4.1.20
 * Observation study for creatinine change in oliguria
 * Patient Demographics sheet
   - Coded LXXX patient study numbers
@@ -31,7 +31,7 @@ Creatinine change in oliguria 27.9.18.xlsx
 
 Demographics pts screened out.xlsx
 * Screened out due to no creatinine or oliguria episode
-* Add a `LOxxx` number
+* Add a `LXxxx` number
 
 ED_ICU_Creatinine_Furosemide.xlsx
 * Time series data of creatinine and medication
@@ -39,13 +39,29 @@ ED_ICU_Creatinine_Furosemide.xlsx
 Record of patients.xlsx
 * Scratch working and records of analysis
 
-Small changes in creatinine 27.9.18.xlsx
-* Similar to Creatinine sheet
+Small changes in creatinine 5.6.20.xlsx
+* Observation study for small changes in creatinine
+* Patient Demographics sheet
+  - Coded LTXXX patient study numbers
+  - Classification variables
+  - Apache scores potentially inconsistent (`APACHE_II`, `APACHE_III`)
+* Dataset
+  - Creatinine change determined by looking at the medical records
+  - T-4 variables (4 hours before episode)
+  - T-0 variables (at episode)
+* AKI & outcomes
+  - Binary AKI occurance
+  - Type of AKI
+  - Other output variables
+* Screening log
+  - All patients screened for the study
+  - Inclusion and exclusion criteria
+  - Link between `UR number` and `Pt_Study_no`
 
 --------------------------------------------------------------------------------
 
 Merged data should contain:
-* Coded Patient ID (`Lxx`, `LTxx`, `LOxx`)
+* Coded Patient ID (`Lxx`, `LTxx`, `LXxx`)
 * Demographic Variables (`Age`, `Male`, `Wt`, etc)
   - Should match between `Lxx` and `LTxx`
 * Hospital Admission
