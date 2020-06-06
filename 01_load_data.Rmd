@@ -125,6 +125,7 @@ knitr::kable(
 xlsx_data$creatinine$screen_log[errors_logi, "Dates_screened"] =
   xlsx_data$oliguria$screen_log[errors_logi, "Dates_screened"]
 
+
 xlsx_data$creatinine$screen_log[errors_logi, "Excl_criteria_ok"] = "N"
 xlsx_data$creatinine$screen_log[errors_logi, "Incl_criteria_ok"] = NA
 xlsx_data$creatinine$screen_log[errors_logi, "Already_AKI"] = "Y"
@@ -136,6 +137,9 @@ xlsx_data$oliguria$screen_log[errors_logi, "Incl_criteria_ok"] = NA
 xlsx_data$oliguria$screen_log[errors_logi, "Already_AKI"] = "Y"
 xlsx_data$oliguria$screen_log[errors_logi, "Epis_olig"] = NA
 xlsx_data$oliguria$screen_log[errors_logi, "Total_no_olig_epis"] = NA
+
+# TODO: Also set Pt_Study_no to be NA and adjust the Total_no_XXX_epis
+# TODO: Remove from the data set as well
 
 rm(errors_logi, creatinine_errors, oliguria_errors)
 ```

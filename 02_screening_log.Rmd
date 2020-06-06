@@ -180,24 +180,24 @@ screening_log$full %>%
   summarise(
     Admissions = n(),
     `Unique Patients` = n_distinct(`UR number`)
-  ) %>% 
+  ) %>%
   kable(., caption = "Total Admissions", booktabs = TRUE)
 
 screening_log$full %>%
   group_by(Excl_criteria_ok) %>%
-  summarise(Admissions = n()) %>% 
-  arrange(desc(Excl_criteria_ok)) %>% 
+  summarise(Admissions = n()) %>%
+  arrange(desc(Excl_criteria_ok)) %>%
   kable(., caption = "Patients included and excluded", booktabs = TRUE)
 
-screening_log$full %>% 
-  filter(Excl_criteria_ok == "Y") %>% 
-  select(`UR number`, starts_with("Epis")) %>% 
+screening_log$full %>%
+  filter(Excl_criteria_ok == "Y") %>%
+  select(`UR number`, starts_with("Epis")) %>%
   replace_na(list(
     Epis_cr_change = "N",
-    Epis_olig = "N")) %>% 
-  group_by(Epis_cr_change, Epis_olig) %>% 
-  summarise(Admissions = n()) %>% 
-  arrange(desc(Epis_cr_change), desc(Epis_olig)) %>% 
+    Epis_olig = "N")) %>%
+  group_by(Epis_cr_change, Epis_olig) %>%
+  summarise(Admissions = n()) %>%
+  arrange(desc(Epis_cr_change), desc(Epis_olig)) %>%
   kable(., caption = "Creatinine change and Oliguria Epis Total Admissions")
 
 screening_log$full %>%
@@ -208,7 +208,7 @@ screening_log$full %>%
       is.na(Total_no_cr_epis), " 0 cr epis", sprintf("%2d cr epis", Total_no_cr_epis)),
     Total_no_olig_epis = if_else(
       is.na(Total_no_olig_epis), " 0 olig epis", sprintf("%2d olig epis", Total_no_olig_epis)),
-  ) %>% 
+  ) %>%
   group_by(Total_no_cr_epis, Total_no_olig_epis) %>%
   summarise(
     Admissions = n(),
@@ -219,9 +219,9 @@ screening_log$full %>%
               mutate(Total_no_olig_epis='Total')) %>%
   bind_rows(group_by(.,Total_no_olig_epis) %>%
               summarise(Admissions=sum(Admissions)) %>%
-              mutate(Total_no_cr_epis='Total')) %>% 
-  pivot_wider(names_from = Total_no_olig_epis, values_from = Admissions) %>% 
-  rename(Epis = Total_no_cr_epis) %>% 
+              mutate(Total_no_cr_epis='Total')) %>%
+  pivot_wider(names_from = Total_no_olig_epis, values_from = Admissions) %>%
+  rename(Epis = Total_no_cr_epis) %>%
   kable(., caption = "Creatinine change and Oliguria Episodes per Admission", booktabs = TRUE)
 
 screening_log$full %>%
