@@ -134,7 +134,7 @@ if (any(!raw_data_set$T_corresp_check)) {
     select(Pt_Study_no, T_corresp_check, starts_with("date"), starts_with("time"), ends_with("time")) %>% 
     filter(!T_corresp_check) %>% 
     print(.)
-  stop("Found inconsistent times!")
+    stop("Found inconsistent times!")
 }
 
 raw_data_set_cols <- unique(gsub("^time|time$|^date|date$", "DateTime", colnames(creatinine_data), ignore.case = TRUE))
@@ -145,7 +145,7 @@ data_set <- raw_data_set[, raw_data_set_cols]
 
 ## Episode Overview
 
-```{r data_overview}
+```{r epis_overview}
 data_set %>% 
   group_by(Epis_cr_change, Epis_olig) %>% 
   summarise(Episodes = n()) %>% 
