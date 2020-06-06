@@ -32,7 +32,7 @@ Environment set-up
     - These are loaded using
 
     ```{r loadLibraryFunction}
-    load_library <- function(req_file, bib_file = NULL) {
+    load_library <- function(req_file = "R-requirements.txt", bib_file = NULL) {
       packages <- readLines(req_file)
       new.packages <-
         packages[!(packages %in% installed.packages()[, "Package"])]
