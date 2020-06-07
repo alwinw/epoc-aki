@@ -1,6 +1,6 @@
 ---
 title: "Creatinine Time Series Analysis"
-author: "Alwin Wang"
+author: "Alwin Wang, Lisa Toh"
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 output: bookdown::gitbook

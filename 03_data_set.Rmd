@@ -16,53 +16,6 @@ find_cols <- function(text, replace, colnames) {
 }
 ```
 
-```{r dateTimeFun}
-date_time_cols <- function(dataframe) {
-  dttm_col = inner_join(
-    find_cols("date", "DateTime", colnames(dataframe)),
-    find_cols("time", "DateTime", colnames(dataframe)),
-    by = "match") %>%
-    select(date, time, match)
-  # Instead, consider using mutate_at to convert date and time columns and paste
-  # then into the date columns. Then use rename at to convert to a datetime name
-  # and then remove the time columns.
-
-  modified_df <- dataframe %>%
-    select(-last_col()) %>%
-    # filter(!(Pt_Study_no %in% excluded_Pt_Study_no)) %>%
-    pivot_longer(
-      cols = c(dttm_col$date, dttm_col$time),
-      names_to = "dttm_name",
-      values_to = "dttm"
-    ) %>%
-    mutate(
-      type = if_else(grepl("date", dttm_name, ignore.case = TRUE), "date", "time"),
-      dttm_name = gsub("date|time", "DateTime", dttm_name, ignore.case = TRUE)
-    ) %>%
-    pivot_wider(
-      names_from = "type",
-      values_from = "dttm"
-    ) %>%
-    mutate(
-      datetime = ifelse(
-        (is.na(date) | is.na(time)),
-        NA,
-        paste(
-          format(date, format = "%Y-%m-%d"),
-          format(time, format = "%H:%M:%S")
-        )),
-      date = NULL,
-      time = NULL
-    ) %>%
-    pivot_wider(
-      names_from = "dttm_name",
-      values_from = "datetime"
-    )
-
-  return(modified_df)
-}
-```
-
 ```{r merge_data_sets}
 creatinine_data <- xlsx_data$creatinine$data_set %>%
   rename(
@@ -142,6 +95,7 @@ raw_data_set_cols <- unique(gsub("^time|time$|^date|date$", "DateTime", colnames
 data_set <- raw_data_set[, raw_data_set_cols] %>%
   filter(!(Pt_Study_no %in% xlsx_data$excluded_Pt_Study_no))
 
+rm(creatinine_data, oliguria_data, dttm_col, raw_data_set, raw_data_set_cols, find_cols)
 ```
 
 ## Episode Overview

@@ -80,7 +80,7 @@ xlsx_data$creatinine$screen_log <- xlsx_data$creatinine$screen_log %>%
   ungroup() %>%
   arrange(`UR number`, Dates_screened)
 
-rm(xlsx_paths)
+rm(xlsx_paths, excel_date_to_character, last_column_name_comment)
 ```
 
 ## Anonymise Data
