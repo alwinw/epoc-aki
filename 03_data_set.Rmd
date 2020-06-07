@@ -110,6 +110,8 @@ raw_data_set <- data_set_joint %>%
       format(`T-4_corresp_DateTime`, format = "%H:%M:%S") == format(`T-4_corresp_DateTime`, format = "%H:%M:%S")
   )
 
+# TODO Add time markers
+
 if (any(!raw_data_set$T_corresp_check)) {
   raw_data_set %>%
     select(Pt_Study_no, T_corresp_check, starts_with("date"), starts_with("time"), ends_with("time")) %>%

@@ -175,6 +175,12 @@ kable(
 rm(join_demo_screen_log_sheets, screen_logs)
 ```
 
+## APACHE Database
+
+```{r apache}
+# TODO
+```
+
 ## Admission Overview
 
 ```{r data_overview}
