@@ -59,6 +59,8 @@ xlsx_data$creat_furo <- list(
 
 xlsx_data$creatinine$screen_log    <- last_column_name_comment(xlsx_data$creatinine$screen_log   )
 xlsx_data$oliguria  $screen_log    <- last_column_name_comment(xlsx_data$oliguria  $screen_log   )
+xlsx_data$creatinine$outcomes      <- last_column_name_comment(xlsx_data$creatinine$outcomes     )
+xlsx_data$oliguria  $outcomes      <- last_column_name_comment(xlsx_data$oliguria  $outcomes     )
 xlsx_data$screen_out$no_creatinine <- last_column_name_comment(xlsx_data$screen_out$no_creatinine)
 xlsx_data$screen_out$no_oliguria   <- last_column_name_comment(xlsx_data$screen_out$no_oliguria  )
 xlsx_data$screen_out$neither_cr_ol <- last_column_name_comment(xlsx_data$screen_out$neither_cr_ol)
@@ -80,7 +82,7 @@ xlsx_data$creatinine$screen_log <- xlsx_data$creatinine$screen_log %>%
   ungroup() %>%
   arrange(`UR number`, Dates_screened)
 
-rm(xlsx_paths)
+rm(xlsx_paths, excel_date_to_character, last_column_name_comment)
 ```
 
 ## Anonymise Data
