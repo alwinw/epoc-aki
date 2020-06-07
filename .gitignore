@@ -1,14 +1,15 @@
 # Custom
-data/*.xlsx
-resources/laurent's_code_examples
-resources/*.pdf
-_book/
 _book_output/
-*.tex
+_book/
 creatinine-time-series.Rmd
-!*.yml
+data/
 libs/
+resources/*.pdf
 resources/*.RData
+resources/laurent's_code_examples
+*.tex
+!*.md
+!*.yml
 
 # History files
 .Rhistory
