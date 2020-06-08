@@ -9,3 +9,5 @@ bookdown
 citr
 tinytex
 servr
+fuzzyjoin
+forecast

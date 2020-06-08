@@ -53,6 +53,7 @@ Environment set-up
     invisible(suppressMessages(
       load_library("R-requirements.txt", "R-references.bib")
     ))
+    theme_set(theme_bw())
     ```
 
 3. The full session information is presented below
