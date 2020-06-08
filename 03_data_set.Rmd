@@ -125,7 +125,7 @@ raw_data_set_cols <- unique(gsub("^time|time$|^date|date$", "DateTime", colnames
 data_set <- raw_data_set[, raw_data_set_cols] %>%
   filter(!(Pt_Study_no %in% xlsx_data$excluded_Pt_Study_no))
 
-rm(creatinine_data, oliguria_data, dttm_col, data_set_joint, raw_data_set, raw_data_set_cols, find_cols)
+rm(dttm_col, data_set_joint, raw_data_set, raw_data_set_cols, find_cols)
 ```
 
 ## Episode Overview

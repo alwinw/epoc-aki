@@ -22,9 +22,9 @@ Environment set-up
 
 1. `R` and `RStudio`
 
-    - This analysis is carried out using `R version 3.6.3 (2020-02-29)`
+    - This analysis is carried out using `R version 4.0.0 (2020-04-24)`
     - The package `tidyverse version 1.3.0` was extensively used
-    - The IDE `RStudio version 1.4.377` was used to help preview this book
+    - The IDE `RStudio version 1.3.959` was used to help preview this book
 
 2. `R` packages
 
