@@ -23,20 +23,28 @@ creatinine_ts <- rbind(blood_gas_ts, bio_chem_ts) %>%
   # apply correction if  bio chem or blood gas
   group_by(`UR number`) %>% 
   mutate(ICU_Admission = cumsum(TC_ICU_ADMISSION_DTTM != lag(TC_ICU_ADMISSION_DTTM, default = 0))) %>% 
-  arrange(ICU_Admission, `UR number`, TC_ICU_ADMISSION_DTTM, Pathology_Result_DTTM)
+  arrange(-ICU_Admission, `UR number`, TC_ICU_ADMISSION_DTTM, Pathology_Result_DTTM)
 
 UR <- UR_number_list[2]
+UR <- unique(xlsx_data$creat_furo$blood_gas$`UR number`)[1]  # Clear outlier
+UR <- unique(xlsx_data$creat_furo$blood_gas$`UR number`)[2]  # Three admissions
+
 
 ggplot(
   filter(creatinine_ts, `UR number` == UR), 
   aes(x = Pathology_Result_DTTM, 
       y = Creatinine_level, 
       group = TC_ICU_ADMISSION_DTTM,
-      # colour = TC_ICU_ADMISSION_DTTM,
-      # fill = TC_ICU_ADMISSION_DTTM
+      colour = Pathology,
+      fill = Pathology
       )
   ) +
   geom_line() +
-  geom_point()
+  geom_point() +
+  geom_smooth(method='loess', formula = 'y ~x', span = 0.5, se = TRUE) +
+  # geom_smooth(method = lm, formula = y ~ splines::bs(x, 3)) +
+  facet_wrap(vars(ICU_Admission), nrow = 1, scales = "free_x")
 
 # Need to fix time zones!
+
+# Consider median filter e.g. robfilter
