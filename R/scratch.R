@@ -41,10 +41,14 @@ ggplot(
   ) +
   geom_line() +
   geom_point() +
-  geom_smooth(method='loess', formula = 'y ~x', span = 0.5, se = TRUE) +
+  geom_smooth(method='loess', formula = 'y ~x', span = 0.3, se = FALSE, colour = "grey", linetype = "dashed") +
   # geom_smooth(method = lm, formula = y ~ splines::bs(x, 3)) +
   facet_wrap(vars(ICU_Admission), nrow = 1, scales = "free_x")
 
 # Need to fix time zones!
 
 # Consider median filter e.g. robfilter
+
+test <- filter(creatinine_ts, `UR number` == UR)
+
+test_zoo <- zoo(test$Creatinine_level, test$Pathology_Result_DTTM)

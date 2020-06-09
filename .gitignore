@@ -4,10 +4,9 @@ _book/
 creatinine-time-series.Rmd
 data/
 libs/
-resources/*.pdf
-resources/*.RData
-resources/laurent's_code_examples
+resources/*
 *.tex
+!resources/*.R
 !*.md
 !*.yml
 

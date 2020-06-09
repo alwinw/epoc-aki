@@ -20,7 +20,7 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # Requres devtools, 
 # Print xlsx files in folder
 print(list.files(pattern = ".xlsx"))
 # Oliguria
-olixlsx = "Creatinine change in oliguria 27.9.18.xlsx" 
+olixlsx = "Creatinine change in oliguria 27.9.18.xlsx"
 oli <- list(
   demo = read_excel(olixlsx, "Patient Demographics"),
   data = read_excel(olixlsx, "Data set"),
@@ -49,19 +49,19 @@ scr_out <- list(
 cre$scre <- cre$scre %>%
   arrange(`UR number`, Dates_screened)
 cremultscree <- grepl("/", cre$scre$Dates_screened)
-cre$scre$Dates_screened[!cremultscree] <- 
+cre$scre$Dates_screened[!cremultscree] <-
   as.character(as.Date(as.numeric(
     cre$scre$Dates_screened[!cremultscree]),
     origin = "1899-12-30"), format = "%d/%m/%y")
-oli$scre <- oli$scre %>% 
+oli$scre <- oli$scre %>%
   arrange(`UR number`, Dates_screened)
 olimultscree <- grepl("/", oli$scre$Dates_screened)
-oli$scre$Dates_screened[!olimultscree] <- 
+oli$scre$Dates_screened[!olimultscree] <-
   as.character(as.Date(as.numeric(
     oli$scre$Dates_screened[!olimultscree]),
     origin = "1899-12-30"), format = "%d/%m/%y")
 # Check if the screening of patients was the same in cr and oli
-asdf <- select(cre$scre, `UR number`, Dates_screened, Excl_criteria_ok) == 
+asdf <- select(cre$scre, `UR number`, Dates_screened, Excl_criteria_ok) ==
   select(oli$scre, `UR number`, Dates_screened, Excl_criteria_ok)
 creerr <- cre$scre[!(asdf[,2] & asdf[,3]),]
 olierr <- oli$scre[!(asdf[,2] & asdf[,3]),]
@@ -80,7 +80,7 @@ qwer <- filter(oli$scre, `UR number` %in% exclUR)
 View(asdf)
 View(qwer)
 #exclude pts from scr_out no oli
-scr_out$nool <- scr_out$nool %>% 
+scr_out$nool <- scr_out$nool %>%
   filter(!(UR %in% exclUR))
 # Merge screening logs of oliguria and cr change
 mercols <- colnames(cre$scre)[colnames(cre$scre) %in% colnames(oli$scre)]
@@ -94,7 +94,7 @@ mer <- list(
 # Make sure no errors from the join!
 if (sum(is.na(mer$scre$`UR number`)) != 0)
   warning("NA in UR Numbers")
-if ((nrow(filter(cre$scre, !(`UR number` %in% exclUR))) != nrow(mer$scre)) | 
+if ((nrow(filter(cre$scre, !(`UR number` %in% exclUR))) != nrow(mer$scre)) |
     (nrow(filter(oli$scre, !(`UR number` %in% exclUR))) != nrow(mer$scre)))
   warning("Number of rows is different, PANIC!")
 
@@ -103,7 +103,7 @@ if ((nrow(filter(cre$scre, !(`UR number` %in% exclUR))) != nrow(mer$scre)) |
 rm(asdf, creerr, olierr, qwer,
    cremultscree, crexlsx, demxlsx, mercols, olimultscree, olixlsx)
 # Print the result
-cat(paste("\n", 
+cat(paste("\n",
           "Total Admissions:         ", nrow(mer$scre), "\n",
           "Total Unique UR Number:   ", length(unique(mer$scre$`UR number`)), "\n",
           "Total Excluded Admissions:", nrow(filter(mer$scre, Excl_criteria_ok == "N")), "\n",
@@ -149,14 +149,14 @@ cat(paste("\n",
 
 #number of cr eps not adding up to data sheet
 #identify which pt is the problem
-test <- cre$data %>% 
-  fill(Pt_Study_no) %>% 
-  group_by(Pt_Study_no) %>% top_n(1, Cr_epis_no) %>% 
+test <- cre$data %>%
+  fill(Pt_Study_no) %>%
+  group_by(Pt_Study_no) %>% top_n(1, Cr_epis_no) %>%
   filter(!(Pt_Study_no %in% exclLT)) %>%
   select(Pt_Study_no, Cr_epis_no)
 test <- arrange(test, Pt_Study_no)
 View(test)
-test2 <- mer$scre %>% filter(!is.na(Pt_Study_no_cre)) %>% 
+test2 <- mer$scre %>% filter(!is.na(Pt_Study_no_cre)) %>%
   select(Pt_Study_no_cre, Total_no_cr_epis)
 colnames(test2) <- c("Pt_Study_no", "Cr_epis_no")
 test2 <- arrange(test2, Pt_Study_no)
@@ -184,7 +184,7 @@ if (nrow(mer$cre) != nrow(cre$data))
   warning("Incorrect number of rows in merged Cr change!")
 #  Make the datetime fields using POSIXct
 mer$cre <- mer$cre %>%
-  filter(!(Pt_Study_no %in% exclLT)) %>% 
+  filter(!(Pt_Study_no %in% exclLT)) %>%
   rowwise() %>%
   mutate(
     DateTime_Cr_epis    = DateTime(Date_Cr_epis,    Time_Cr_epis),
@@ -197,7 +197,7 @@ mer$cre <- mer$cre %>%
     DateTime_post_ABG   = DateTime(T0_ABG_date,     T0_ABG_time),
     DateTime_max_cr     = DateTime(Max_Cr_Date,     Max_Cr_Time)
   ) %>%
-  ungroup() %>% 
+  ungroup() %>%
   mutate(
     ICU_LOS = as.duration(DateTime_ICU_admit %--% DateTime_ICU_dc) / ddays(1),
     Hosp_LOS = as.duration(DateTime_hosp_admit %--% DateTime_hosp_dc) / ddays(1),
@@ -239,7 +239,7 @@ if (nrow(mer$oli) != nrow(oli$data))
   warning("Incorrect number of rows in merged Cr change!")
 #  Make the datetime fields using POSIXct
 mer$oli <- mer$oli %>%
-  filter(!(Pt_Study_no %in% exclL)) %>% 
+  filter(!(Pt_Study_no %in% exclL)) %>%
   rowwise() %>%
   mutate(
     DateTime_olig_epis  = DateTime(Date_olig_epis,  Time_olig_episode),
@@ -252,7 +252,7 @@ mer$oli <- mer$oli %>%
     DateTime_post_ABG   = DateTime(T0_ABG_date, T0_ABG_time),
     DateTime_max_cr = DateTime(Max_Cr_Date, Max_Cr_Time)
   ) %>%
-  ungroup() %>% 
+  ungroup() %>%
   mutate(
     ICU_LOS = as.duration(DateTime_ICU_admit %--% DateTime_ICU_dc) / ddays(1),
     Hosp_LOS = as.duration(DateTime_hosp_admit %--% DateTime_hosp_dc) / ddays(1),
@@ -286,13 +286,13 @@ mer$oli <- mer$oli %>%
 if (sum(mer$scre$Total_no_cr_epis, na.rm = TRUE) != nrow(mer$cre)) {
   warning("Wrong number of rows between merged screening and Cr change xlsx")
   crcheck1 <- mer$cre %>%
-    group_by(Pt_Study_no) %>% 
+    group_by(Pt_Study_no) %>%
     top_n(1, Cr_epis_no) %>%
     arrange(Pt_Study_no) %>%
     select(Pt_Study_no, Cr_epis_no)
-  crcheck2 <- mer$scre %>% 
+  crcheck2 <- mer$scre %>%
     filter(!is.na(Pt_Study_no_cre)) %>%
-    arrange(Pt_Study_no_cre) %>% 
+    arrange(Pt_Study_no_cre) %>%
     select(Pt_Study_no_cre, Total_no_cr_epis)
   crcheck <- data.frame(
     crcheck1[,1], crcheck1[,2] - crcheck2[,2])
@@ -301,13 +301,13 @@ if (sum(mer$scre$Total_no_cr_epis, na.rm = TRUE) != nrow(mer$cre)) {
 if (sum(mer$scre$Total_no_olig_epis, na.rm = TRUE) != nrow(mer$oli)) {
   warning("Wrong number of rows between merged screening and Olig xlsx")
   olicheck1 <- mer$oli %>%
-    group_by(Pt_Study_no) %>% 
+    group_by(Pt_Study_no) %>%
     top_n(1, Olig_epis_no) %>%
     arrange(Pt_Study_no) %>%
     select(Pt_Study_no, Olig_epis_no)
-  olicheck2 <- mer$scre %>% 
+  olicheck2 <- mer$scre %>%
     filter(!is.na(Pt_Study_no_oli)) %>%
-    arrange(Pt_Study_no_oli) %>% 
+    arrange(Pt_Study_no_oli) %>%
     select(Pt_Study_no_oli, Total_no_olig_epis)
   olicheck <- data.frame(
     olicheck1[,1], olicheck1[,2] - olicheck2[,2])
@@ -337,11 +337,11 @@ creoliboth1$Pt_Study_no_oli == creoliboth2$Pt_Study_no
 #creoliboth1 and 2 should be identical for the demo and outcomes columns
 
 #number of cr and oli epis for pts with both types of ep
-totalcreboth <- creboth %>% group_by(Pt_Study_no) %>% 
-  top_n(1, Cr_epis_no) 
+totalcreboth <- creboth %>% group_by(Pt_Study_no) %>%
+  top_n(1, Cr_epis_no)
 table(totalcreboth$Cr_epis_no)
-totaloliboth <- oliboth %>% group_by(Pt_Study_no) %>% 
-  top_n(1, Olig_epis_no) 
+totaloliboth <- oliboth %>% group_by(Pt_Study_no) %>%
+  top_n(1, Olig_epis_no)
 table(totaloliboth$Olig_epis_no)
 
 creepismax <- max(totalcreboth$Cr_epis_no)
@@ -349,14 +349,14 @@ oliepismax <-  max(totaloliboth$Olig_epis_no)
 heatmap <- list()
 heatmap$matrix <- matrix(
   0, nrow = oliepismax, ncol = creepismax)
-heatmap$id <- select(mer$scre, Pt_Study_no_cre, Pt_Study_no_oli) %>% 
+heatmap$id <- select(mer$scre, Pt_Study_no_cre, Pt_Study_no_oli) %>%
   filter(!is.na(Pt_Study_no_cre) | !is.na(Pt_Study_no_oli))
-heatmap$cre <- totalcreboth %>% 
-  select(Pt_Study_no, Cr_epis_no) %>% 
+heatmap$cre <- totalcreboth %>%
+  select(Pt_Study_no, Cr_epis_no) %>%
   rename(Pt_Study_no_cre = Pt_Study_no)
 heatmap$cre <- left_join(heatmap$cre, heatmap$id, by = "Pt_Study_no_cre")
-heatmap$oli <- totaloliboth %>% 
-  select(Pt_Study_no, Olig_epis_no) %>% 
+heatmap$oli <- totaloliboth %>%
+  select(Pt_Study_no, Olig_epis_no) %>%
   rename(Pt_Study_no_oli = Pt_Study_no)
 heatmap$oli <- left_join(heatmap$oli, heatmap$id, by = "Pt_Study_no_oli")
 heatmap$join <- full_join(
@@ -376,13 +376,13 @@ colSums(heatmap$matrix)
 heatmap$plot <- melt(heatmap$matrix)
 colnames(heatmap$plot) <- c("Oliguria", "Creatinine", "Number")
 
-ggplot(heatmap$plot, aes(Creatinine, Oliguria)) + 
+ggplot(heatmap$plot, aes(Creatinine, Oliguria)) +
   geom_point(aes(size = Number, colour = Number)) +
   # geom_label(aes(size = Number, label = Number)) +
   scale_y_reverse()
 
 #ggplot the heatmap
-croliepsplot <- ggplot(heatmap$plot, aes(Creatinine, Oliguria)) + 
+croliepsplot <- ggplot(heatmap$plot, aes(Creatinine, Oliguria)) +
   geom_tile(aes(colour = Number, fill = Number)) +
   geom_text(aes(label = Number), colour = "black") +
   scale_y_reverse(expand = c(0,0)) +
@@ -392,7 +392,7 @@ croliepsplot <- ggplot(heatmap$plot, aes(Creatinine, Oliguria)) +
   scale_x_continuous(position = "top", breaks = 1:7, expand = c(0,0)) +
   labs(fill = "Scale") +
   theme_bw() +
-  labs(title = "Number of patients with various combinations of 
+  labs(title = "Number of patients with various combinations of
        creatinine change and oliguria episodes",
        x = "Number of creatinine change episodes",
        y = "Number of oliguria episodes") +
@@ -402,7 +402,7 @@ croliepsplot <- ggplot(heatmap$plot, aes(Creatinine, Oliguria)) +
         panel.border = element_blank(),
         axis.ticks = element_blank())
 croliepsplot
-ggsave("Combo cr and oli eps number plot.png", croliepsplot, 
+ggsave("Combo cr and oli eps number plot.png", croliepsplot,
        dpi = 300, width = 12, height = 8, scale = 1.2, units = "cm")
 
 # use rev() to reverse the order of the colour e.g. rev(brewer.pal(n, palette))
@@ -411,12 +411,12 @@ ggsave("Combo cr and oli eps number plot.png", croliepsplot,
 cr_full  <- mer$cre
 oli_full <- mer$oli
 scr_full <- mer$scre
-cr_first <- cr_full %>% 
-  group_by(Pt_Study_no) %>% 
+cr_first <- cr_full %>%
+  group_by(Pt_Study_no) %>%
   top_n(-1, Cr_epis_no)
 nrow(cr_first)
-oli_first <- oli_full %>% 
-  group_by(Pt_Study_no) %>% 
+oli_first <- oli_full %>%
+  group_by(Pt_Study_no) %>%
   top_n(-1, Olig_epis_no)
 nrow(oli_first)
 cr_first_AKI <- cr_first %>% filter(AKI_ICU == 1)
@@ -512,13 +512,13 @@ oliaroundcrep <- cr_full %>%
   filter(T0oliguria == 1 & T4oliguria == 1)
 nrow(oliaroundcrep) #19
 #for AUROCs of oliguria episodes, exclude pts where AKI occurred before oli ep
-oli_full1 <- oli_full %>% 
+oli_full1 <- oli_full %>%
   filter(Pt_Study_no != "L11") %>%
   filter(Pt_Study_no != "L17") %>%
   filter(Pt_Study_no != "L50") %>%
   filter(Pt_Study_no != "L81") %>%
   filter(Pt_Study_no != "L97")
-oli_first1 <- oli_first %>% 
+oli_first1 <- oli_first %>%
   filter(Pt_Study_no != "L11") %>%
   filter(Pt_Study_no != "L17") %>%
   filter(Pt_Study_no != "L50") %>%
@@ -531,9 +531,9 @@ oli_last1 <- oli_last %>%
   filter(Pt_Study_no != "L81") %>%
   filter(Pt_Study_no != "L97")
 #change in UO ml/kg/h from T-4 to T0 for all oliguria eps for AUROCs
-oli_full1 <- oli_full1 %>% 
+oli_full1 <- oli_full1 %>%
   mutate(deltaUO = ((`T-4_UO`/4)/Wt) - ((T0_UO/4)/Wt))
-oli_full1 %>% filter(deltaUO <=0) %>% 
+oli_full1 %>% filter(deltaUO <=0) %>%
   select(Pt_Study_no, Olig_epis_no, `T-4_UO`, T0_UO, deltaUO) %>% View()
 oli_deltaUO <- oli_full1 %>%
   filter(!(Pt_Study_no %in% c("L20", "L33", "L54", "L100", "L107", "L124")))
@@ -552,11 +552,11 @@ sum(cr_first$Male)/nrow(cr_first) *100
 sum(scr_out$nocr$Male)
 sum(is.na(scr_out$nocr$Male))
 sum(scr_out$nocr$Male)/nrow(scr_out$nocr) *100
-gendertable <- as.table(rbind(c(sum(scr_out$nocr$Male), 
-                                sum(cr_first$Male)), 
-                              c(nrow(scr_out$nocr)-sum(scr_out$nocr$Male), 
+gendertable <- as.table(rbind(c(sum(scr_out$nocr$Male),
+                                sum(cr_first$Male)),
+                              c(nrow(scr_out$nocr)-sum(scr_out$nocr$Male),
                                 nrow(cr_first)-sum(cr_first$Male))))
-dimnames(gendertable) <- list(c("M", "F"), c("no cr", "cr"))      
+dimnames(gendertable) <- list(c("M", "F"), c("no cr", "cr"))
 gendertable
 chisq.test(gendertable, correct = FALSE)
 #Weight
@@ -572,12 +572,12 @@ sum(cr_first$Wtmeasured) / nrow(cr_first) *100
 sum(na.omit(scr_out$nocr$Wtmeasured))
 sum(is.na(scr_out$nocr$Wtmeasured))
 sum(na.omit(scr_out$nocr$Wtmeasured))/ nrow(scr_out$nocr) *100
-wtmeasuredtable <- as.table(rbind(c(sum(na.omit(scr_out$nocr$Wtmeasured)), 
-                                    sum(cr_first$Wtmeasured)), 
+wtmeasuredtable <- as.table(rbind(c(sum(na.omit(scr_out$nocr$Wtmeasured)),
+                                    sum(cr_first$Wtmeasured)),
                                   c(nrow(scr_out$nocr)-sum(is.na(scr_out$nocr$Wtmeasured))-
-                                      sum(na.omit(scr_out$nocr$Wtmeasured)), 
+                                      sum(na.omit(scr_out$nocr$Wtmeasured)),
                                     nrow(cr_first)-sum(cr_first$Wtmeasured))))
-dimnames(wtmeasuredtable) <- list(c("Measured", "Estimated"), c("no cr", "cr"))      
+dimnames(wtmeasuredtable) <- list(c("Measured", "Estimated"), c("no cr", "cr"))
 wtmeasuredtable
 chisq.test(wtmeasuredtable, correct = FALSE)
 #mech vent
@@ -587,11 +587,11 @@ sum(cr_first$Mecvenadm) / nrow(cr_first) *100
 sum(scr_out$nocr$Mecvenadm)
 sum(is.na(scr_out$nocr$Mecvenadm))
 sum(scr_out$nocr$Mecvenadm) / nrow(scr_out$nocr) *100
-mvtable <- as.table(rbind(c(sum(scr_out$nocr$Mecvenadm), 
-                            sum(cr_first$Mecvenadm)), 
-                          c(nrow(scr_out$nocr)-sum(scr_out$nocr$Mecvenadm), 
+mvtable <- as.table(rbind(c(sum(scr_out$nocr$Mecvenadm),
+                            sum(cr_first$Mecvenadm)),
+                          c(nrow(scr_out$nocr)-sum(scr_out$nocr$Mecvenadm),
                             nrow(cr_first)-sum(cr_first$Mecvenadm))))
-dimnames(mvtable) <- list(c("MV", "Not MV"), c("no cr", "cr"))      
+dimnames(mvtable) <- list(c("MV", "Not MV"), c("no cr", "cr"))
 mvtable
 chisq.test(mvtable, correct = FALSE)
 #APACHE II
@@ -617,11 +617,11 @@ sum(is.na(scr_out$nocr$Surgadmission))
 sum(scr_out$nocr$Surgadmission) / nrow(scr_out$nocr) *100
 nrow(scr_out$nocr) - sum(scr_out$nocr$Surgadmission)
 (nrow(scr_out$nocr) - sum(scr_out$nocr$Surgadmission))/nrow(scr_out$nocr) *100
-surgadmtable <- as.table(rbind(c(sum(scr_out$nocr$Surgadmission), 
-                                 sum(cr_first$Surgadmission)), 
-                               c(nrow(scr_out$nocr)-sum(scr_out$nocr$Surgadmission), 
+surgadmtable <- as.table(rbind(c(sum(scr_out$nocr$Surgadmission),
+                                 sum(cr_first$Surgadmission)),
+                               c(nrow(scr_out$nocr)-sum(scr_out$nocr$Surgadmission),
                                  nrow(cr_first)-sum(cr_first$Surgadmission))))
-dimnames(surgadmtable) <- list(c("Surgical", "Medical"), c("no cr", "cr"))      
+dimnames(surgadmtable) <- list(c("Surgical", "Medical"), c("no cr", "cr"))
 surgadmtable
 chisq.test(surgadmtable, correct = FALSE)
 #HOPC ICU admission
@@ -713,116 +713,116 @@ sum(scr_out$nocr$PCs_cardio) +
   sum(scr_out$nocr$PCs_haem) +
   sum(scr_out$nocr$PCs_metabolic)
 sum(scr_out$nocr$Surgadmission)
-PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCm_cardio), 
-                            sum(cr_first$PCm_cardio)), 
-                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCm_cardio), 
+PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCm_cardio),
+                            sum(cr_first$PCm_cardio)),
+                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCm_cardio),
                             nrow(cr_first) - sum(cr_first$PCm_cardio))))
-dimnames(PCtable) <- list(c("mCardio", "other"), c("nocr", "cr"))      
+dimnames(PCtable) <- list(c("mCardio", "other"), c("nocr", "cr"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCm_resp), 
-                            sum(cr_first$PCm_resp)), 
-                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCm_resp), 
+PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCm_resp),
+                            sum(cr_first$PCm_resp)),
+                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCm_resp),
                             nrow(cr_first) - sum(cr_first$PCm_resp))))
-dimnames(PCtable) <- list(c("mResp", "other"), c("nocr", "cr"))      
+dimnames(PCtable) <- list(c("mResp", "other"), c("nocr", "cr"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCm_GI), 
-                            sum(cr_first$PCm_GI)), 
-                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCm_GI), 
+PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCm_GI),
+                            sum(cr_first$PCm_GI)),
+                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCm_GI),
                             nrow(cr_first) - sum(cr_first$PCm_GI))))
-dimnames(PCtable) <- list(c("mGI", "other"), c("nocr", "cr"))      
+dimnames(PCtable) <- list(c("mGI", "other"), c("nocr", "cr"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCm_neuro), 
-                            sum(cr_first$PCm_neuro)), 
-                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCm_neuro), 
+PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCm_neuro),
+                            sum(cr_first$PCm_neuro)),
+                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCm_neuro),
                             nrow(cr_first) - sum(cr_first$PCm_neuro))))
-dimnames(PCtable) <- list(c("mNeuro", "other"), c("nocr", "cr"))      
+dimnames(PCtable) <- list(c("mNeuro", "other"), c("nocr", "cr"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCm_sepsis), 
-                            sum(cr_first$PCm_sepsis)), 
-                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCm_sepsis), 
+PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCm_sepsis),
+                            sum(cr_first$PCm_sepsis)),
+                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCm_sepsis),
                             nrow(cr_first) - sum(cr_first$PCm_sepsis))))
-dimnames(PCtable) <- list(c("mSepsis", "other"), c("nocr", "cr"))      
+dimnames(PCtable) <- list(c("mSepsis", "other"), c("nocr", "cr"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCm_trauma), 
-                            sum(cr_first$PCm_trauma)), 
-                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCm_trauma), 
+PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCm_trauma),
+                            sum(cr_first$PCm_trauma)),
+                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCm_trauma),
                             nrow(cr_first) - sum(cr_first$PCm_trauma))))
-dimnames(PCtable) <- list(c("mTrauma", "other"), c("nocr", "cr"))      
+dimnames(PCtable) <- list(c("mTrauma", "other"), c("nocr", "cr"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCm_metabolic), 
-                            sum(cr_first$PCm_metabolic)), 
-                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCm_metabolic), 
+PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCm_metabolic),
+                            sum(cr_first$PCm_metabolic)),
+                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCm_metabolic),
                             nrow(cr_first) - sum(cr_first$PCm_metabolic))))
-dimnames(PCtable) <- list(c("mMetabolic", "other"), c("nocr", "cr"))      
+dimnames(PCtable) <- list(c("mMetabolic", "other"), c("nocr", "cr"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCm_renal), 
-                            sum(cr_first$PCm_renal)), 
-                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCm_renal), 
+PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCm_renal),
+                            sum(cr_first$PCm_renal)),
+                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCm_renal),
                             nrow(cr_first) - sum(cr_first$PCm_renal))))
-dimnames(PCtable) <- list(c("mRenal", "other"), c("nocr", "cr"))      
+dimnames(PCtable) <- list(c("mRenal", "other"), c("nocr", "cr"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCs_cardio), 
-                            sum(cr_first$PCs_cardio)), 
-                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCs_cardio), 
+PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCs_cardio),
+                            sum(cr_first$PCs_cardio)),
+                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCs_cardio),
                             nrow(cr_first) - sum(cr_first$PCs_cardio))))
-dimnames(PCtable) <- list(c("sCardio", "other"), c("nocr", "cr"))      
+dimnames(PCtable) <- list(c("sCardio", "other"), c("nocr", "cr"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCs_resp), 
-                            sum(cr_first$PCs_resp)), 
-                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCs_resp), 
+PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCs_resp),
+                            sum(cr_first$PCs_resp)),
+                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCs_resp),
                             nrow(cr_first) - sum(cr_first$PCs_resp))))
-dimnames(PCtable) <- list(c("sResp", "other"), c("nocr", "cr"))      
+dimnames(PCtable) <- list(c("sResp", "other"), c("nocr", "cr"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCs_GI), 
-                            sum(cr_first$PCs_GI)), 
-                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCs_GI), 
+PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCs_GI),
+                            sum(cr_first$PCs_GI)),
+                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCs_GI),
                             nrow(cr_first) - sum(cr_first$PCs_GI))))
-dimnames(PCtable) <- list(c("sGI", "other"), c("nocr", "cr"))      
+dimnames(PCtable) <- list(c("sGI", "other"), c("nocr", "cr"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCs_neuro), 
-                            sum(cr_first$PCs_neuro)), 
-                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCs_neuro), 
+PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCs_neuro),
+                            sum(cr_first$PCs_neuro)),
+                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCs_neuro),
                             nrow(cr_first) - sum(cr_first$PCs_neuro))))
-dimnames(PCtable) <- list(c("sNeuro", "other"), c("nocr", "cr"))      
+dimnames(PCtable) <- list(c("sNeuro", "other"), c("nocr", "cr"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCs_renal), 
-                            sum(cr_first$PCs_renal)), 
-                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCs_renal), 
+PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCs_renal),
+                            sum(cr_first$PCs_renal)),
+                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCs_renal),
                             nrow(cr_first) - sum(cr_first$PCs_renal))))
-dimnames(PCtable) <- list(c("sRenal", "other"), c("nocr", "cr"))      
+dimnames(PCtable) <- list(c("sRenal", "other"), c("nocr", "cr"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCs_gynae), 
-                            sum(cr_first$PCs_gynae)), 
-                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCs_gynae), 
+PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCs_gynae),
+                            sum(cr_first$PCs_gynae)),
+                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCs_gynae),
                             nrow(cr_first) - sum(cr_first$PCs_gynae))))
-dimnames(PCtable) <- list(c("sGynae", "other"), c("nocr", "cr"))      
+dimnames(PCtable) <- list(c("sGynae", "other"), c("nocr", "cr"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCs_msk), 
-                            sum(cr_first$PCs_msk)), 
-                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCs_msk), 
+PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCs_msk),
+                            sum(cr_first$PCs_msk)),
+                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCs_msk),
                             nrow(cr_first) - sum(cr_first$PCs_msk))))
-dimnames(PCtable) <- list(c("sMSK", "other"), c("nocr", "cr"))      
+dimnames(PCtable) <- list(c("sMSK", "other"), c("nocr", "cr"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCs_metabolic), 
-                            sum(cr_first$PCs_metabolic)), 
-                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCs_metabolic), 
+PCtable <- as.table(rbind(c(sum(scr_out$nocr$PCs_metabolic),
+                            sum(cr_first$PCs_metabolic)),
+                          c(nrow(scr_out$nocr) - sum(scr_out$nocr$PCs_metabolic),
                             nrow(cr_first) - sum(cr_first$PCs_metabolic))))
-dimnames(PCtable) <- list(c("sMetabolic", "other"), c("nocr", "cr"))      
+dimnames(PCtable) <- list(c("sMetabolic", "other"), c("nocr", "cr"))
 PCtable
 fisher.test(PCtable)
 #demographics - compare those with oli ep to those without 165 v 222 ----
@@ -839,11 +839,11 @@ sum(oli_first$Male)/nrow(oli_first) *100
 sum(scr_out$nool$Male)
 sum(is.na(scr_out$nool$Male))
 sum(scr_out$nool$Male)/nrow(scr_out$nool) *100
-gendertable <- as.table(rbind(c(sum(scr_out$nool$Male), 
-                                sum(oli_first$Male)), 
-                              c(nrow(scr_out$nool)-sum(scr_out$nool$Male), 
+gendertable <- as.table(rbind(c(sum(scr_out$nool$Male),
+                                sum(oli_first$Male)),
+                              c(nrow(scr_out$nool)-sum(scr_out$nool$Male),
                                 nrow(oli_first)-sum(oli_first$Male))))
-dimnames(gendertable) <- list(c("M", "F"), c("no oli", "oli"))      
+dimnames(gendertable) <- list(c("M", "F"), c("no oli", "oli"))
 gendertable
 chisq.test(gendertable, correct = FALSE)
 #Weight
@@ -859,12 +859,12 @@ sum(oli_first$Wtmeasured) / nrow(oli_first) *100
 sum(na.omit(scr_out$nool$Wtmeasured))
 sum(is.na(scr_out$nool$Wtmeasured))
 sum(na.omit(scr_out$nool$Wtmeasured))/ nrow(scr_out$nool) *100
-wtmeasuredtable <- as.table(rbind(c(sum(na.omit(scr_out$nool$Wtmeasured)), 
-                                    sum(oli_first$Wtmeasured)), 
+wtmeasuredtable <- as.table(rbind(c(sum(na.omit(scr_out$nool$Wtmeasured)),
+                                    sum(oli_first$Wtmeasured)),
                                   c(nrow(scr_out$nool)-sum(is.na(scr_out$nool$Wtmeasured))-
-                                      sum(na.omit(scr_out$nool$Wtmeasured)), 
+                                      sum(na.omit(scr_out$nool$Wtmeasured)),
                                     nrow(oli_first)-sum(oli_first$Wtmeasured))))
-dimnames(wtmeasuredtable) <- list(c("Measured", "Estimated"), c("no oli", "oli"))      
+dimnames(wtmeasuredtable) <- list(c("Measured", "Estimated"), c("no oli", "oli"))
 wtmeasuredtable
 chisq.test(wtmeasuredtable, correct = FALSE)
 #mech vent
@@ -874,11 +874,11 @@ sum(oli_first$Mecvenadm) / nrow(oli_first) *100
 sum(scr_out$nool$Mecvenadm)
 sum(is.na(scr_out$nool$Mecvenadm))
 sum(scr_out$nool$Mecvenadm) / nrow(scr_out$nool) *100
-mvtable <- as.table(rbind(c(sum(scr_out$nool$Mecvenadm), 
-                            sum(oli_first$Mecvenadm)), 
-                          c(nrow(scr_out$nool)-sum(scr_out$nool$Mecvenadm), 
+mvtable <- as.table(rbind(c(sum(scr_out$nool$Mecvenadm),
+                            sum(oli_first$Mecvenadm)),
+                          c(nrow(scr_out$nool)-sum(scr_out$nool$Mecvenadm),
                             nrow(oli_first)-sum(oli_first$Mecvenadm))))
-dimnames(mvtable) <- list(c("MV", "Not MV"), c("no oli", "oli"))      
+dimnames(mvtable) <- list(c("MV", "Not MV"), c("no oli", "oli"))
 mvtable
 chisq.test(mvtable, correct = FALSE)
 #APACHE II
@@ -904,11 +904,11 @@ sum(is.na(scr_out$nool$Surgadmission))
 sum(scr_out$nool$Surgadmission) / nrow(scr_out$nool) *100
 nrow(scr_out$nool) - sum(scr_out$nool$Surgadmission)
 (nrow(scr_out$nool) - sum(scr_out$nool$Surgadmission))/nrow(scr_out$nool) *100
-surgadmtable <- as.table(rbind(c(sum(scr_out$nool$Surgadmission), 
-                                 sum(oli_first$Surgadmission)), 
-                               c(nrow(scr_out$nool)-sum(scr_out$nool$Surgadmission), 
+surgadmtable <- as.table(rbind(c(sum(scr_out$nool$Surgadmission),
+                                 sum(oli_first$Surgadmission)),
+                               c(nrow(scr_out$nool)-sum(scr_out$nool$Surgadmission),
                                  nrow(oli_first)-sum(oli_first$Surgadmission))))
-dimnames(surgadmtable) <- list(c("Surgical", "Medical"), c("no oli", "oli"))      
+dimnames(surgadmtable) <- list(c("Surgical", "Medical"), c("no oli", "oli"))
 surgadmtable
 chisq.test(surgadmtable, correct = FALSE)
 #HOPC ICU admission
@@ -1000,116 +1000,116 @@ sum(scr_out$nool$PCs_cardio) +
   sum(scr_out$nool$PCs_haem) +
   sum(scr_out$nool$PCs_metabolic)
 sum(scr_out$nool$Surgadmission)
-PCtable <- as.table(rbind(c(sum(scr_out$nool$PCm_cardio), 
-                            sum(oli_first$PCm_cardio)), 
-                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCm_cardio), 
+PCtable <- as.table(rbind(c(sum(scr_out$nool$PCm_cardio),
+                            sum(oli_first$PCm_cardio)),
+                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCm_cardio),
                             nrow(oli_first) - sum(oli_first$PCm_cardio))))
-dimnames(PCtable) <- list(c("mCardio", "other"), c("nool", "oli"))      
+dimnames(PCtable) <- list(c("mCardio", "other"), c("nool", "oli"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$nool$PCm_resp), 
-                            sum(oli_first$PCm_resp)), 
-                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCm_resp), 
+PCtable <- as.table(rbind(c(sum(scr_out$nool$PCm_resp),
+                            sum(oli_first$PCm_resp)),
+                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCm_resp),
                             nrow(oli_first) - sum(oli_first$PCm_resp))))
-dimnames(PCtable) <- list(c("mResp", "other"), c("nool", "oli"))      
+dimnames(PCtable) <- list(c("mResp", "other"), c("nool", "oli"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$nool$PCm_GI), 
-                            sum(oli_first$PCm_GI)), 
-                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCm_GI), 
+PCtable <- as.table(rbind(c(sum(scr_out$nool$PCm_GI),
+                            sum(oli_first$PCm_GI)),
+                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCm_GI),
                             nrow(oli_first) - sum(oli_first$PCm_GI))))
-dimnames(PCtable) <- list(c("mGI", "other"), c("nool", "oli"))      
+dimnames(PCtable) <- list(c("mGI", "other"), c("nool", "oli"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$nool$PCm_neuro), 
-                            sum(oli_first$PCm_neuro)), 
-                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCm_neuro), 
+PCtable <- as.table(rbind(c(sum(scr_out$nool$PCm_neuro),
+                            sum(oli_first$PCm_neuro)),
+                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCm_neuro),
                             nrow(oli_first) - sum(oli_first$PCm_neuro))))
-dimnames(PCtable) <- list(c("mNeuro", "other"), c("nool", "oli"))      
+dimnames(PCtable) <- list(c("mNeuro", "other"), c("nool", "oli"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$nool$PCm_sepsis), 
-                            sum(oli_first$PCm_sepsis)), 
-                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCm_sepsis), 
+PCtable <- as.table(rbind(c(sum(scr_out$nool$PCm_sepsis),
+                            sum(oli_first$PCm_sepsis)),
+                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCm_sepsis),
                             nrow(oli_first) - sum(oli_first$PCm_sepsis))))
-dimnames(PCtable) <- list(c("mSepsis", "other"), c("nool", "oli"))      
+dimnames(PCtable) <- list(c("mSepsis", "other"), c("nool", "oli"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$nool$PCm_trauma), 
-                            sum(oli_first$PCm_trauma)), 
-                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCm_trauma), 
+PCtable <- as.table(rbind(c(sum(scr_out$nool$PCm_trauma),
+                            sum(oli_first$PCm_trauma)),
+                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCm_trauma),
                             nrow(oli_first) - sum(oli_first$PCm_trauma))))
-dimnames(PCtable) <- list(c("mTrauma", "other"), c("nool", "oli"))      
+dimnames(PCtable) <- list(c("mTrauma", "other"), c("nool", "oli"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$nool$PCm_metabolic), 
-                            sum(oli_first$PCm_metabolic)), 
-                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCm_metabolic), 
+PCtable <- as.table(rbind(c(sum(scr_out$nool$PCm_metabolic),
+                            sum(oli_first$PCm_metabolic)),
+                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCm_metabolic),
                             nrow(oli_first) - sum(oli_first$PCm_metabolic))))
-dimnames(PCtable) <- list(c("mMetabolic", "other"), c("nool", "oli"))      
+dimnames(PCtable) <- list(c("mMetabolic", "other"), c("nool", "oli"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$nool$PCm_renal), 
-                            sum(oli_first$PCm_renal)), 
-                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCm_renal), 
+PCtable <- as.table(rbind(c(sum(scr_out$nool$PCm_renal),
+                            sum(oli_first$PCm_renal)),
+                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCm_renal),
                             nrow(oli_first) - sum(oli_first$PCm_renal))))
-dimnames(PCtable) <- list(c("mRenal", "other"), c("nool", "oli"))      
+dimnames(PCtable) <- list(c("mRenal", "other"), c("nool", "oli"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$nool$PCs_cardio), 
-                            sum(oli_first$PCs_cardio)), 
-                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCs_cardio), 
+PCtable <- as.table(rbind(c(sum(scr_out$nool$PCs_cardio),
+                            sum(oli_first$PCs_cardio)),
+                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCs_cardio),
                             nrow(oli_first) - sum(oli_first$PCs_cardio))))
-dimnames(PCtable) <- list(c("sCardio", "other"), c("nool", "oli"))      
+dimnames(PCtable) <- list(c("sCardio", "other"), c("nool", "oli"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$nool$PCs_resp), 
-                            sum(oli_first$PCs_resp)), 
-                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCs_resp), 
+PCtable <- as.table(rbind(c(sum(scr_out$nool$PCs_resp),
+                            sum(oli_first$PCs_resp)),
+                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCs_resp),
                             nrow(oli_first) - sum(oli_first$PCs_resp))))
-dimnames(PCtable) <- list(c("sResp", "other"), c("nool", "oli"))      
+dimnames(PCtable) <- list(c("sResp", "other"), c("nool", "oli"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$nool$PCs_GI), 
-                            sum(oli_first$PCs_GI)), 
-                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCs_GI), 
+PCtable <- as.table(rbind(c(sum(scr_out$nool$PCs_GI),
+                            sum(oli_first$PCs_GI)),
+                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCs_GI),
                             nrow(oli_first) - sum(oli_first$PCs_GI))))
-dimnames(PCtable) <- list(c("sGI", "other"), c("nool", "oli"))      
+dimnames(PCtable) <- list(c("sGI", "other"), c("nool", "oli"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$nool$PCs_neuro), 
-                            sum(oli_first$PCs_neuro)), 
-                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCs_neuro), 
+PCtable <- as.table(rbind(c(sum(scr_out$nool$PCs_neuro),
+                            sum(oli_first$PCs_neuro)),
+                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCs_neuro),
                             nrow(oli_first) - sum(oli_first$PCs_neuro))))
-dimnames(PCtable) <- list(c("sNeuro", "other"), c("nool", "oli"))      
+dimnames(PCtable) <- list(c("sNeuro", "other"), c("nool", "oli"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$nool$PCs_renal), 
-                            sum(oli_first$PCs_renal)), 
-                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCs_renal), 
+PCtable <- as.table(rbind(c(sum(scr_out$nool$PCs_renal),
+                            sum(oli_first$PCs_renal)),
+                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCs_renal),
                             nrow(oli_first) - sum(oli_first$PCs_renal))))
-dimnames(PCtable) <- list(c("sRenal", "other"), c("nool", "oli"))      
+dimnames(PCtable) <- list(c("sRenal", "other"), c("nool", "oli"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$nool$PCs_gynae), 
-                            sum(oli_first$PCs_gynae)), 
-                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCs_gynae), 
+PCtable <- as.table(rbind(c(sum(scr_out$nool$PCs_gynae),
+                            sum(oli_first$PCs_gynae)),
+                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCs_gynae),
                             nrow(oli_first) - sum(oli_first$PCs_gynae))))
-dimnames(PCtable) <- list(c("sGynae", "other"), c("nool", "oli"))      
+dimnames(PCtable) <- list(c("sGynae", "other"), c("nool", "oli"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$nool$PCs_msk), 
-                            sum(oli_first$PCs_msk)), 
-                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCs_msk), 
+PCtable <- as.table(rbind(c(sum(scr_out$nool$PCs_msk),
+                            sum(oli_first$PCs_msk)),
+                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCs_msk),
                             nrow(oli_first) - sum(oli_first$PCs_msk))))
-dimnames(PCtable) <- list(c("sMSK", "other"), c("nool", "oli"))      
+dimnames(PCtable) <- list(c("sMSK", "other"), c("nool", "oli"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$nool$PCs_metabolic), 
-                            sum(oli_first$PCs_metabolic)), 
-                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCs_metabolic), 
+PCtable <- as.table(rbind(c(sum(scr_out$nool$PCs_metabolic),
+                            sum(oli_first$PCs_metabolic)),
+                          c(nrow(scr_out$nool) - sum(scr_out$nool$PCs_metabolic),
                             nrow(oli_first) - sum(oli_first$PCs_metabolic))))
-dimnames(PCtable) <- list(c("sMetabolic", "other"), c("nool", "oli"))      
+dimnames(PCtable) <- list(c("sMetabolic", "other"), c("nool", "oli"))
 PCtable
 fisher.test(PCtable)
 
@@ -1125,11 +1125,11 @@ sum(cr_first_AKI$Male)
 sum(is.na(cr_first_AKI$Male))
 sum(cr_first_AKI$Male)/nrow(cr_first_AKI) *100
 sum(cr_first_noAKI$Male)
-gendertable <- as.table(rbind(c(sum(cr_first_AKI$Male), 
-                                sum(cr_first_noAKI$Male)), 
-                              c(nrow(cr_first_AKI)-sum(cr_first_AKI$Male), 
+gendertable <- as.table(rbind(c(sum(cr_first_AKI$Male),
+                                sum(cr_first_noAKI$Male)),
+                              c(nrow(cr_first_AKI)-sum(cr_first_AKI$Male),
                                 nrow(cr_first_noAKI)-sum(cr_first_noAKI$Male))))
-dimnames(gendertable) <- list(c("M", "F"), c("AKI", "no AKI"))      
+dimnames(gendertable) <- list(c("M", "F"), c("AKI", "no AKI"))
 gendertable
 chisq.test(gendertable, correct = FALSE)
 #weight
@@ -1143,11 +1143,11 @@ sum(cr_first_AKI$Wtmeasured)
 sum(is.na(cr_first_AKI$Wtmeasured))
 sum(cr_first_AKI$Wtmeasured)/nrow(cr_first_AKI) *100
 sum(cr_first_noAKI$Wtmeasured)
-wtmeasuredtable <- as.table(rbind(c(sum(na.omit(cr_first_AKI$Wtmeasured)), 
-                                    sum(cr_first_noAKI$Wtmeasured)), 
-                                  c(nrow(cr_first_AKI)- sum(na.omit(cr_first_AKI$Wtmeasured)), 
+wtmeasuredtable <- as.table(rbind(c(sum(na.omit(cr_first_AKI$Wtmeasured)),
+                                    sum(cr_first_noAKI$Wtmeasured)),
+                                  c(nrow(cr_first_AKI)- sum(na.omit(cr_first_AKI$Wtmeasured)),
                                     nrow(cr_first_noAKI)-sum(cr_first_noAKI$Wtmeasured))))
-dimnames(wtmeasuredtable) <- list(c("Measured", "Estimated"), c("AKI", "no AKI"))      
+dimnames(wtmeasuredtable) <- list(c("Measured", "Estimated"), c("AKI", "no AKI"))
 wtmeasuredtable
 chisq.test(wtmeasuredtable, correct = FALSE)
 #mech vent
@@ -1155,11 +1155,11 @@ sum(cr_first_AKI$Mecvenadm)
 sum(is.na(cr_first_AKI$Mecvenadm))
 sum(cr_first_AKI$Mecvenadm) / nrow(cr_first_AKI) *100
 sum(cr_first_noAKI$Mecvenadm)
-mvtable <- as.table(rbind(c(sum(cr_first_AKI$Mecvenadm), 
-                            sum(cr_first_noAKI$Mecvenadm)), 
-                          c(nrow(cr_first_AKI)-sum(cr_first_AKI$Mecvenadm), 
+mvtable <- as.table(rbind(c(sum(cr_first_AKI$Mecvenadm),
+                            sum(cr_first_noAKI$Mecvenadm)),
+                          c(nrow(cr_first_AKI)-sum(cr_first_AKI$Mecvenadm),
                             nrow(cr_first_noAKI)-sum(cr_first_noAKI$Mecvenadm))))
-dimnames(mvtable) <- list(c("MV", "Not MV"), c("AKI", "no AKI"))      
+dimnames(mvtable) <- list(c("MV", "Not MV"), c("AKI", "no AKI"))
 mvtable
 chisq.test(mvtable, correct = FALSE)
 #APACHE II
@@ -1181,11 +1181,11 @@ sum(cr_first_AKI$Surgadmission)/nrow(cr_first_AKI) *100
 nrow(cr_first_AKI) - sum(cr_first_AKI$Surgadmission)
 (nrow(cr_first_AKI) - sum(cr_first_AKI$Surgadmission)) /nrow(cr_first_AKI) *100
 sum(cr_first_noAKI$Surgadmission)
-surgadmtable <- as.table(rbind(c(sum(cr_first_AKI$Surgadmission), 
-                                 sum(cr_first_noAKI$Surgadmission)), 
-                               c(nrow(cr_first_AKI)-sum(cr_first_AKI$Surgadmission), 
+surgadmtable <- as.table(rbind(c(sum(cr_first_AKI$Surgadmission),
+                                 sum(cr_first_noAKI$Surgadmission)),
+                               c(nrow(cr_first_AKI)-sum(cr_first_AKI$Surgadmission),
                                  nrow(cr_first_noAKI)-sum(cr_first_noAKI$Surgadmission))))
-dimnames(surgadmtable) <- list(c("Surgical", "Medical"), c("AKI", "no AKI"))      
+dimnames(surgadmtable) <- list(c("Surgical", "Medical"), c("AKI", "no AKI"))
 surgadmtable
 chisq.test(surgadmtable, correct = FALSE)
 #HOPC ICU admission
@@ -1277,102 +1277,102 @@ sum(cr_first_noAKI$PCs_cardio) +
   sum(cr_first_noAKI$PCs_haem) +
   sum(cr_first_noAKI$PCs_metabolic)
 sum(cr_first_noAKI$Surgadmission)
-PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCm_cardio), 
-                            sum(cr_first_AKI$PCm_cardio)), 
-                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCm_cardio), 
+PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCm_cardio),
+                            sum(cr_first_AKI$PCm_cardio)),
+                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCm_cardio),
                             nrow(cr_first_AKI) - sum(cr_first_AKI$PCm_cardio))))
-dimnames(PCtable) <- list(c("mCardio", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("mCardio", "other"), c("no AKI", "AKI"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCm_resp), 
-                            sum(cr_first_AKI$PCm_resp)), 
-                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCm_resp), 
+PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCm_resp),
+                            sum(cr_first_AKI$PCm_resp)),
+                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCm_resp),
                             nrow(cr_first_AKI) - sum(cr_first_AKI$PCm_resp))))
-dimnames(PCtable) <- list(c("mResp", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("mResp", "other"), c("no AKI", "AKI"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCm_GI), 
-                            sum(cr_first_AKI$PCm_GI)), 
-                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCm_GI), 
+PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCm_GI),
+                            sum(cr_first_AKI$PCm_GI)),
+                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCm_GI),
                             nrow(cr_first_AKI) - sum(cr_first_AKI$PCm_GI))))
-dimnames(PCtable) <- list(c("mGI", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("mGI", "other"), c("no AKI", "AKI"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCm_neuro), 
-                            sum(cr_first_AKI$PCm_neuro)), 
-                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCm_neuro), 
+PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCm_neuro),
+                            sum(cr_first_AKI$PCm_neuro)),
+                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCm_neuro),
                             nrow(cr_first_AKI) - sum(cr_first_AKI$PCm_neuro))))
-dimnames(PCtable) <- list(c("mNeuro", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("mNeuro", "other"), c("no AKI", "AKI"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCm_sepsis), 
-                            sum(cr_first_AKI$PCm_sepsis)), 
-                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCm_sepsis), 
+PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCm_sepsis),
+                            sum(cr_first_AKI$PCm_sepsis)),
+                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCm_sepsis),
                             nrow(cr_first_AKI) - sum(cr_first_AKI$PCm_sepsis))))
-dimnames(PCtable) <- list(c("mSepsis", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("mSepsis", "other"), c("no AKI", "AKI"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCm_trauma), 
-                            sum(cr_first_AKI$PCm_trauma)), 
-                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCm_trauma), 
+PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCm_trauma),
+                            sum(cr_first_AKI$PCm_trauma)),
+                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCm_trauma),
                             nrow(cr_first_AKI) - sum(cr_first_AKI$PCm_trauma))))
-dimnames(PCtable) <- list(c("mTrauma", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("mTrauma", "other"), c("no AKI", "AKI"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCm_metabolic), 
-                            sum(cr_first_AKI$PCm_metabolic)), 
-                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCm_metabolic), 
+PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCm_metabolic),
+                            sum(cr_first_AKI$PCm_metabolic)),
+                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCm_metabolic),
                             nrow(cr_first_AKI) - sum(cr_first_AKI$PCm_metabolic))))
-dimnames(PCtable) <- list(c("mMetabolic", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("mMetabolic", "other"), c("no AKI", "AKI"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCm_renal), 
-                            sum(cr_first_AKI$PCm_renal)), 
-                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCm_renal), 
+PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCm_renal),
+                            sum(cr_first_AKI$PCm_renal)),
+                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCm_renal),
                             nrow(cr_first_AKI) - sum(cr_first_AKI$PCm_renal))))
-dimnames(PCtable) <- list(c("mRenal", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("mRenal", "other"), c("no AKI", "AKI"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCs_cardio), 
-                            sum(cr_first_AKI$PCs_cardio)), 
-                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCs_cardio), 
+PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCs_cardio),
+                            sum(cr_first_AKI$PCs_cardio)),
+                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCs_cardio),
                             nrow(cr_first_AKI) - sum(cr_first_AKI$PCs_cardio))))
-dimnames(PCtable) <- list(c("sCardio", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("sCardio", "other"), c("no AKI", "AKI"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCs_resp), 
-                            sum(cr_first_AKI$PCs_resp)), 
-                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCs_resp), 
+PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCs_resp),
+                            sum(cr_first_AKI$PCs_resp)),
+                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCs_resp),
                             nrow(cr_first_AKI) - sum(cr_first_AKI$PCs_resp))))
-dimnames(PCtable) <- list(c("sResp", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("sResp", "other"), c("no AKI", "AKI"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCs_GI), 
-                            sum(cr_first_AKI$PCs_GI)), 
-                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCs_GI), 
+PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCs_GI),
+                            sum(cr_first_AKI$PCs_GI)),
+                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCs_GI),
                             nrow(cr_first_AKI) - sum(cr_first_AKI$PCs_GI))))
-dimnames(PCtable) <- list(c("sGI", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("sGI", "other"), c("no AKI", "AKI"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCs_neuro), 
-                            sum(cr_first_AKI$PCs_neuro)), 
-                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCs_neuro), 
+PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCs_neuro),
+                            sum(cr_first_AKI$PCs_neuro)),
+                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCs_neuro),
                             nrow(cr_first_AKI) - sum(cr_first_AKI$PCs_neuro))))
-dimnames(PCtable) <- list(c("sNeuro", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("sNeuro", "other"), c("no AKI", "AKI"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCs_renal), 
-                            sum(cr_first_AKI$PCs_renal)), 
-                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCs_renal), 
+PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCs_renal),
+                            sum(cr_first_AKI$PCs_renal)),
+                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCs_renal),
                             nrow(cr_first_AKI) - sum(cr_first_AKI$PCs_renal))))
-dimnames(PCtable) <- list(c("sRenal", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("sRenal", "other"), c("no AKI", "AKI"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCs_msk), 
-                            sum(cr_first_AKI$PCs_msk)), 
-                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCs_msk), 
+PCtable <- as.table(rbind(c(sum(cr_first_noAKI$PCs_msk),
+                            sum(cr_first_AKI$PCs_msk)),
+                          c(nrow(cr_first_noAKI) - sum(cr_first_noAKI$PCs_msk),
                             nrow(cr_first_AKI) - sum(cr_first_AKI$PCs_msk))))
-dimnames(PCtable) <- list(c("sMSK", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("sMSK", "other"), c("no AKI", "AKI"))
 PCtable
 fisher.test(PCtable)
 
@@ -1388,11 +1388,11 @@ sum(oli_first_AKI$Male)
 sum(is.na(oli_first_AKI$Male))
 sum(oli_first_AKI$Male)/nrow(oli_first_AKI) *100
 sum(oli_first_noAKI$Male)
-gendertable <- as.table(rbind(c(sum(oli_first_AKI$Male), 
-                                sum(oli_first_noAKI$Male)), 
-                              c(nrow(oli_first_AKI)-sum(oli_first_AKI$Male), 
+gendertable <- as.table(rbind(c(sum(oli_first_AKI$Male),
+                                sum(oli_first_noAKI$Male)),
+                              c(nrow(oli_first_AKI)-sum(oli_first_AKI$Male),
                                 nrow(oli_first_noAKI)-sum(oli_first_noAKI$Male))))
-dimnames(gendertable) <- list(c("M", "F"), c("AKI", "no AKI"))      
+dimnames(gendertable) <- list(c("M", "F"), c("AKI", "no AKI"))
 gendertable
 chisq.test(gendertable, correct = FALSE)
 #weight
@@ -1406,11 +1406,11 @@ sum(oli_first_AKI$Wtmeasured)
 sum(is.na(oli_first_AKI$Wtmeasured))
 sum(oli_first_AKI$Wtmeasured)/nrow(oli_first_AKI) *100
 sum(oli_first_noAKI$Wtmeasured)
-wtmeasuredtable <- as.table(rbind(c(sum(na.omit(oli_first_AKI$Wtmeasured)), 
-                                    sum(oli_first_noAKI$Wtmeasured)), 
-                                  c(nrow(oli_first_AKI)- sum(na.omit(oli_first_AKI$Wtmeasured)), 
+wtmeasuredtable <- as.table(rbind(c(sum(na.omit(oli_first_AKI$Wtmeasured)),
+                                    sum(oli_first_noAKI$Wtmeasured)),
+                                  c(nrow(oli_first_AKI)- sum(na.omit(oli_first_AKI$Wtmeasured)),
                                     nrow(oli_first_noAKI)-sum(oli_first_noAKI$Wtmeasured))))
-dimnames(wtmeasuredtable) <- list(c("Measured", "Estimated"), c("AKI", "no AKI"))      
+dimnames(wtmeasuredtable) <- list(c("Measured", "Estimated"), c("AKI", "no AKI"))
 wtmeasuredtable
 chisq.test(wtmeasuredtable, correct = FALSE)
 #mech vent
@@ -1418,11 +1418,11 @@ sum(oli_first_AKI$Mecvenadm)
 sum(is.na(oli_first_AKI$Mecvenadm))
 sum(oli_first_AKI$Mecvenadm) / nrow(oli_first_AKI) *100
 sum(oli_first_noAKI$Mecvenadm)
-mvtable <- as.table(rbind(c(sum(oli_first_AKI$Mecvenadm), 
-                            sum(oli_first_noAKI$Mecvenadm)), 
-                          c(nrow(oli_first_AKI)-sum(oli_first_AKI$Mecvenadm), 
+mvtable <- as.table(rbind(c(sum(oli_first_AKI$Mecvenadm),
+                            sum(oli_first_noAKI$Mecvenadm)),
+                          c(nrow(oli_first_AKI)-sum(oli_first_AKI$Mecvenadm),
                             nrow(oli_first_noAKI)-sum(oli_first_noAKI$Mecvenadm))))
-dimnames(mvtable) <- list(c("MV", "Not MV"), c("AKI", "no AKI"))      
+dimnames(mvtable) <- list(c("MV", "Not MV"), c("AKI", "no AKI"))
 mvtable
 chisq.test(mvtable, correct = FALSE)
 #APACHE II
@@ -1444,11 +1444,11 @@ sum(oli_first_AKI$Surgadmission)/nrow(oli_first_AKI) *100
 nrow(oli_first_AKI) - sum(oli_first_AKI$Surgadmission)
 (nrow(oli_first_AKI) - sum(oli_first_AKI$Surgadmission)) /nrow(oli_first_AKI) *100
 sum(oli_first_noAKI$Surgadmission)
-surgadmtable <- as.table(rbind(c(sum(oli_first_AKI$Surgadmission), 
-                                 sum(oli_first_noAKI$Surgadmission)), 
-                               c(nrow(oli_first_AKI)-sum(oli_first_AKI$Surgadmission), 
+surgadmtable <- as.table(rbind(c(sum(oli_first_AKI$Surgadmission),
+                                 sum(oli_first_noAKI$Surgadmission)),
+                               c(nrow(oli_first_AKI)-sum(oli_first_AKI$Surgadmission),
                                  nrow(oli_first_noAKI)-sum(oli_first_noAKI$Surgadmission))))
-dimnames(surgadmtable) <- list(c("Surgical", "Medical"), c("AKI", "no AKI"))      
+dimnames(surgadmtable) <- list(c("Surgical", "Medical"), c("AKI", "no AKI"))
 surgadmtable
 chisq.test(surgadmtable, correct = FALSE)
 #HOPC ICU admission
@@ -1540,109 +1540,109 @@ sum(oli_first_noAKI$PCs_cardio) +
   sum(oli_first_noAKI$PCs_haem) +
   sum(oli_first_noAKI$PCs_metabolic)
 sum(oli_first_noAKI$Surgadmission)
-PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCm_cardio), 
-                            sum(oli_first_AKI$PCm_cardio)), 
-                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCm_cardio), 
+PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCm_cardio),
+                            sum(oli_first_AKI$PCm_cardio)),
+                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCm_cardio),
                             nrow(oli_first_AKI) - sum(oli_first_AKI$PCm_cardio))))
-dimnames(PCtable) <- list(c("mCardio", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("mCardio", "other"), c("no AKI", "AKI"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCm_resp), 
-                            sum(oli_first_AKI$PCm_resp)), 
-                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCm_resp), 
+PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCm_resp),
+                            sum(oli_first_AKI$PCm_resp)),
+                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCm_resp),
                             nrow(oli_first_AKI) - sum(oli_first_AKI$PCm_resp))))
-dimnames(PCtable) <- list(c("mResp", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("mResp", "other"), c("no AKI", "AKI"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCm_GI), 
-                            sum(oli_first_AKI$PCm_GI)), 
-                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCm_GI), 
+PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCm_GI),
+                            sum(oli_first_AKI$PCm_GI)),
+                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCm_GI),
                             nrow(oli_first_AKI) - sum(oli_first_AKI$PCm_GI))))
-dimnames(PCtable) <- list(c("mGI", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("mGI", "other"), c("no AKI", "AKI"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCm_neuro), 
-                            sum(oli_first_AKI$PCm_neuro)), 
-                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCm_neuro), 
+PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCm_neuro),
+                            sum(oli_first_AKI$PCm_neuro)),
+                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCm_neuro),
                             nrow(oli_first_AKI) - sum(oli_first_AKI$PCm_neuro))))
-dimnames(PCtable) <- list(c("mNeuro", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("mNeuro", "other"), c("no AKI", "AKI"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCm_sepsis), 
-                            sum(oli_first_AKI$PCm_sepsis)), 
-                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCm_sepsis), 
+PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCm_sepsis),
+                            sum(oli_first_AKI$PCm_sepsis)),
+                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCm_sepsis),
                             nrow(oli_first_AKI) - sum(oli_first_AKI$PCm_sepsis))))
-dimnames(PCtable) <- list(c("mSepsis", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("mSepsis", "other"), c("no AKI", "AKI"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCm_trauma), 
-                            sum(oli_first_AKI$PCm_trauma)), 
-                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCm_trauma), 
+PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCm_trauma),
+                            sum(oli_first_AKI$PCm_trauma)),
+                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCm_trauma),
                             nrow(oli_first_AKI) - sum(oli_first_AKI$PCm_trauma))))
-dimnames(PCtable) <- list(c("mTrauma", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("mTrauma", "other"), c("no AKI", "AKI"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCm_metabolic), 
-                            sum(oli_first_AKI$PCm_metabolic)), 
-                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCm_metabolic), 
+PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCm_metabolic),
+                            sum(oli_first_AKI$PCm_metabolic)),
+                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCm_metabolic),
                             nrow(oli_first_AKI) - sum(oli_first_AKI$PCm_metabolic))))
-dimnames(PCtable) <- list(c("mMetabolic", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("mMetabolic", "other"), c("no AKI", "AKI"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCm_renal), 
-                            sum(oli_first_AKI$PCm_renal)), 
-                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCm_renal), 
+PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCm_renal),
+                            sum(oli_first_AKI$PCm_renal)),
+                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCm_renal),
                             nrow(oli_first_AKI) - sum(oli_first_AKI$PCm_renal))))
-dimnames(PCtable) <- list(c("mRenal", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("mRenal", "other"), c("no AKI", "AKI"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCs_cardio), 
-                            sum(oli_first_AKI$PCs_cardio)), 
-                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCs_cardio), 
+PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCs_cardio),
+                            sum(oli_first_AKI$PCs_cardio)),
+                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCs_cardio),
                             nrow(oli_first_AKI) - sum(oli_first_AKI$PCs_cardio))))
-dimnames(PCtable) <- list(c("sCardio", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("sCardio", "other"), c("no AKI", "AKI"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCs_resp), 
-                            sum(oli_first_AKI$PCs_resp)), 
-                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCs_resp), 
+PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCs_resp),
+                            sum(oli_first_AKI$PCs_resp)),
+                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCs_resp),
                             nrow(oli_first_AKI) - sum(oli_first_AKI$PCs_resp))))
-dimnames(PCtable) <- list(c("sResp", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("sResp", "other"), c("no AKI", "AKI"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCs_GI), 
-                            sum(oli_first_AKI$PCs_GI)), 
-                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCs_GI), 
+PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCs_GI),
+                            sum(oli_first_AKI$PCs_GI)),
+                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCs_GI),
                             nrow(oli_first_AKI) - sum(oli_first_AKI$PCs_GI))))
-dimnames(PCtable) <- list(c("sGI", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("sGI", "other"), c("no AKI", "AKI"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCs_neuro), 
-                            sum(oli_first_AKI$PCs_neuro)), 
-                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCs_neuro), 
+PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCs_neuro),
+                            sum(oli_first_AKI$PCs_neuro)),
+                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCs_neuro),
                             nrow(oli_first_AKI) - sum(oli_first_AKI$PCs_neuro))))
-dimnames(PCtable) <- list(c("sNeuro", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("sNeuro", "other"), c("no AKI", "AKI"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCs_renal), 
-                            sum(oli_first_AKI$PCs_renal)), 
-                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCs_renal), 
+PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCs_renal),
+                            sum(oli_first_AKI$PCs_renal)),
+                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCs_renal),
                             nrow(oli_first_AKI) - sum(oli_first_AKI$PCs_renal))))
-dimnames(PCtable) <- list(c("sRenal", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("sRenal", "other"), c("no AKI", "AKI"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCs_gynae), 
-                            sum(oli_first_AKI$PCs_gynae)), 
-                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCs_gynae), 
+PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCs_gynae),
+                            sum(oli_first_AKI$PCs_gynae)),
+                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCs_gynae),
                             nrow(oli_first_AKI) - sum(oli_first_AKI$PCs_gynae))))
-dimnames(PCtable) <- list(c("sRenal", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("sRenal", "other"), c("no AKI", "AKI"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCs_msk), 
-                            sum(oli_first_AKI$PCs_msk)), 
-                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCs_msk), 
+PCtable <- as.table(rbind(c(sum(oli_first_noAKI$PCs_msk),
+                            sum(oli_first_AKI$PCs_msk)),
+                          c(nrow(oli_first_noAKI) - sum(oli_first_noAKI$PCs_msk),
                             nrow(oli_first_AKI) - sum(oli_first_AKI$PCs_msk))))
-dimnames(PCtable) <- list(c("sMSK", "other"), c("no AKI", "AKI"))      
+dimnames(PCtable) <- list(c("sMSK", "other"), c("no AKI", "AKI"))
 PCtable
 fisher.test(PCtable)
 #demographics - Compare those with Cr ep to those with neither change 279 vs 74 ----
@@ -1655,11 +1655,11 @@ wilcox.test(cr_first$Age, scr_out$neit$Age)
 sum(scr_out$neit$Male)
 sum(is.na(scr_out$neit$Male))
 sum(scr_out$neit$Male)/nrow(scr_out$neit) *100
-gendertable <- as.table(rbind(c(sum(scr_out$neit$Male), 
-                                sum(cr_first$Male)), 
-                              c(nrow(scr_out$neit)-sum(scr_out$neit$Male), 
+gendertable <- as.table(rbind(c(sum(scr_out$neit$Male),
+                                sum(cr_first$Male)),
+                              c(nrow(scr_out$neit)-sum(scr_out$neit$Male),
                                 nrow(cr_first)-sum(cr_first$Male))))
-dimnames(gendertable) <- list(c("M", "F"), c("neither", "cr"))      
+dimnames(gendertable) <- list(c("M", "F"), c("neither", "cr"))
 gendertable
 chisq.test(gendertable, correct = FALSE)
 #Weight
@@ -1670,23 +1670,23 @@ wilcox.test(cr_first$Wt, scr_out$neit$Wt)
 sum(na.omit(scr_out$neit$Wtmeasured))
 sum(is.na(scr_out$neit$Wtmeasured))
 sum(na.omit(scr_out$neit$Wtmeasured))/ nrow(scr_out$neit) *100
-wtmeasuredtable <- as.table(rbind(c(sum(na.omit(scr_out$neit$Wtmeasured)), 
-                                    sum(cr_first$Wtmeasured)), 
+wtmeasuredtable <- as.table(rbind(c(sum(na.omit(scr_out$neit$Wtmeasured)),
+                                    sum(cr_first$Wtmeasured)),
                                   c(nrow(scr_out$neit)-sum(is.na(scr_out$neit$Wtmeasured))-
-                                      sum(na.omit(scr_out$neit$Wtmeasured)), 
+                                      sum(na.omit(scr_out$neit$Wtmeasured)),
                                     nrow(cr_first)-sum(cr_first$Wtmeasured))))
-dimnames(wtmeasuredtable) <- list(c("Measured", "Estimated"), c("neither", "cr"))      
+dimnames(wtmeasuredtable) <- list(c("Measured", "Estimated"), c("neither", "cr"))
 wtmeasuredtable
 chisq.test(wtmeasuredtable, correct = FALSE)
 #mech vent
 sum(scr_out$neit$Mecvenadm)
 sum(is.na(scr_out$neit$Mecvenadm))
 sum(scr_out$neit$Mecvenadm) / nrow(scr_out$neit) *100
-mvtable <- as.table(rbind(c(sum(scr_out$neit$Mecvenadm), 
-                            sum(cr_first$Mecvenadm)), 
-                          c(nrow(scr_out$neit)-sum(scr_out$neit$Mecvenadm), 
+mvtable <- as.table(rbind(c(sum(scr_out$neit$Mecvenadm),
+                            sum(cr_first$Mecvenadm)),
+                          c(nrow(scr_out$neit)-sum(scr_out$neit$Mecvenadm),
                             nrow(cr_first)-sum(cr_first$Mecvenadm))))
-dimnames(mvtable) <- list(c("MV", "Not MV"), c("neither", "cr"))      
+dimnames(mvtable) <- list(c("MV", "Not MV"), c("neither", "cr"))
 mvtable
 chisq.test(mvtable, correct = FALSE)
 #surg vs med adm
@@ -1695,11 +1695,11 @@ sum(is.na(scr_out$neit$Surgadmission))
 sum(scr_out$neit$Surgadmission) / nrow(scr_out$neit) *100
 nrow(scr_out$neit) - sum(scr_out$neit$Surgadmission)
 (nrow(scr_out$neit) - sum(scr_out$neit$Surgadmission))/nrow(scr_out$neit) *100
-surgadmtable <- as.table(rbind(c(sum(scr_out$neit$Surgadmission), 
-                                 sum(cr_first$Surgadmission)), 
-                               c(nrow(scr_out$neit)-sum(scr_out$neit$Surgadmission), 
+surgadmtable <- as.table(rbind(c(sum(scr_out$neit$Surgadmission),
+                                 sum(cr_first$Surgadmission)),
+                               c(nrow(scr_out$neit)-sum(scr_out$neit$Surgadmission),
                                  nrow(cr_first)-sum(cr_first$Surgadmission))))
-dimnames(surgadmtable) <- list(c("Surgical", "Medical"), c("neither", "cr"))      
+dimnames(surgadmtable) <- list(c("Surgical", "Medical"), c("neither", "cr"))
 surgadmtable
 chisq.test(surgadmtable, correct = FALSE)
 #APACHE II
@@ -1755,147 +1755,147 @@ sum(scr_out$neit$PCs_cardio) +
   sum(scr_out$neit$PCs_haem) +
   sum(scr_out$neit$PCs_metabolic)
 sum(scr_out$neit$Surgadmission)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_cardio), 
-                            sum(cr_first$PCm_cardio)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_cardio), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_cardio),
+                            sum(cr_first$PCm_cardio)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_cardio),
                             nrow(cr_first) - sum(cr_first$PCm_cardio))))
-dimnames(PCtable) <- list(c("mCardio", "other"), c("neit", "cr"))      
+dimnames(PCtable) <- list(c("mCardio", "other"), c("neit", "cr"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_resp), 
-                            sum(cr_first$PCm_resp)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_resp), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_resp),
+                            sum(cr_first$PCm_resp)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_resp),
                             nrow(cr_first) - sum(cr_first$PCm_resp))))
-dimnames(PCtable) <- list(c("mResp", "other"), c("neit", "cr"))      
+dimnames(PCtable) <- list(c("mResp", "other"), c("neit", "cr"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_GI), 
-                            sum(cr_first$PCm_GI)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_GI), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_GI),
+                            sum(cr_first$PCm_GI)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_GI),
                             nrow(cr_first) - sum(cr_first$PCm_GI))))
-dimnames(PCtable) <- list(c("mGI", "other"), c("neit", "cr"))      
+dimnames(PCtable) <- list(c("mGI", "other"), c("neit", "cr"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_neuro), 
-                            sum(cr_first$PCm_neuro)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_neuro), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_neuro),
+                            sum(cr_first$PCm_neuro)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_neuro),
                             nrow(cr_first) - sum(cr_first$PCm_neuro))))
-dimnames(PCtable) <- list(c("mNeuro", "other"), c("neit", "cr"))      
+dimnames(PCtable) <- list(c("mNeuro", "other"), c("neit", "cr"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_sepsis), 
-                            sum(cr_first$PCm_sepsis)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_sepsis), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_sepsis),
+                            sum(cr_first$PCm_sepsis)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_sepsis),
                             nrow(cr_first) - sum(cr_first$PCm_sepsis))))
-dimnames(PCtable) <- list(c("mSepsis", "other"), c("neit", "cr"))      
+dimnames(PCtable) <- list(c("mSepsis", "other"), c("neit", "cr"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_trauma), 
-                            sum(cr_first$PCm_trauma)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_trauma), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_trauma),
+                            sum(cr_first$PCm_trauma)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_trauma),
                             nrow(cr_first) - sum(cr_first$PCm_trauma))))
-dimnames(PCtable) <- list(c("mTrauma", "other"), c("neit", "cr"))      
+dimnames(PCtable) <- list(c("mTrauma", "other"), c("neit", "cr"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_metabolic), 
-                            sum(cr_first$PCm_metabolic)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_metabolic), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_metabolic),
+                            sum(cr_first$PCm_metabolic)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_metabolic),
                             nrow(cr_first) - sum(cr_first$PCm_metabolic))))
-dimnames(PCtable) <- list(c("mMetabolic", "other"), c("neit", "cr"))      
+dimnames(PCtable) <- list(c("mMetabolic", "other"), c("neit", "cr"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_renal), 
-                            sum(cr_first$PCm_renal)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_renal), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_renal),
+                            sum(cr_first$PCm_renal)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_renal),
                             nrow(cr_first) - sum(cr_first$PCm_renal))))
-dimnames(PCtable) <- list(c("mRenal", "other"), c("neit", "cr"))      
+dimnames(PCtable) <- list(c("mRenal", "other"), c("neit", "cr"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_cardio), 
-                            sum(cr_first$PCs_cardio)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_cardio), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_cardio),
+                            sum(cr_first$PCs_cardio)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_cardio),
                             nrow(cr_first) - sum(cr_first$PCs_cardio))))
-dimnames(PCtable) <- list(c("sCardio", "other"), c("neit", "cr"))      
+dimnames(PCtable) <- list(c("sCardio", "other"), c("neit", "cr"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_resp), 
-                            sum(cr_first$PCs_resp)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_resp), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_resp),
+                            sum(cr_first$PCs_resp)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_resp),
                             nrow(cr_first) - sum(cr_first$PCs_resp))))
-dimnames(PCtable) <- list(c("sResp", "other"), c("neit", "cr"))      
+dimnames(PCtable) <- list(c("sResp", "other"), c("neit", "cr"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_GI), 
-                            sum(cr_first$PCs_GI)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_GI), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_GI),
+                            sum(cr_first$PCs_GI)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_GI),
                             nrow(cr_first) - sum(cr_first$PCs_GI))))
-dimnames(PCtable) <- list(c("sGI", "other"), c("neit", "cr"))      
+dimnames(PCtable) <- list(c("sGI", "other"), c("neit", "cr"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_neuro), 
-                            sum(cr_first$PCs_neuro)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_neuro), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_neuro),
+                            sum(cr_first$PCs_neuro)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_neuro),
                             nrow(cr_first) - sum(cr_first$PCs_neuro))))
-dimnames(PCtable) <- list(c("sNeuro", "other"), c("neit", "cr"))      
+dimnames(PCtable) <- list(c("sNeuro", "other"), c("neit", "cr"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_renal), 
-                            sum(cr_first$PCs_renal)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_renal), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_renal),
+                            sum(cr_first$PCs_renal)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_renal),
                             nrow(cr_first) - sum(cr_first$PCs_renal))))
-dimnames(PCtable) <- list(c("sRenal", "other"), c("neit", "cr"))      
+dimnames(PCtable) <- list(c("sRenal", "other"), c("neit", "cr"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_msk), 
-                            sum(cr_first$PCs_msk)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_msk), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_msk),
+                            sum(cr_first$PCs_msk)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_msk),
                             nrow(cr_first) - sum(cr_first$PCs_msk))))
-dimnames(PCtable) <- list(c("sMSK", "other"), c("neit", "cr"))      
+dimnames(PCtable) <- list(c("sMSK", "other"), c("neit", "cr"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_metabolic), 
-                            sum(cr_first$PCs_metabolic)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_metabolic), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_metabolic),
+                            sum(cr_first$PCs_metabolic)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_metabolic),
                             nrow(cr_first) - sum(cr_first$PCs_metabolic))))
-dimnames(PCtable) <- list(c("sMetabolic", "other"), c("neit", "cr"))      
+dimnames(PCtable) <- list(c("sMetabolic", "other"), c("neit", "cr"))
 PCtable
 fisher.test(PCtable)
 #demographics - Compare those with oliguria to those with neither change 165 vs 74----
 #Age
 wilcox.test(oli_first$Age, scr_out$neit$Age)
 #Male
-gendertable <- as.table(rbind(c(sum(scr_out$neit$Male), 
-                                sum(oli_first$Male)), 
-                              c(nrow(scr_out$neit)-sum(scr_out$neit$Male), 
+gendertable <- as.table(rbind(c(sum(scr_out$neit$Male),
+                                sum(oli_first$Male)),
+                              c(nrow(scr_out$neit)-sum(scr_out$neit$Male),
                                 nrow(oli_first)-sum(oli_first$Male))))
-dimnames(gendertable) <- list(c("M", "F"), c("neither", "oli"))      
+dimnames(gendertable) <- list(c("M", "F"), c("neither", "oli"))
 gendertable
 chisq.test(gendertable, correct = FALSE)
 #Weight
 wilcox.test(oli_first$Wt, scr_out$neit$Wt)
 #weight measured
-wtmeasuredtable <- as.table(rbind(c(sum(na.omit(scr_out$neit$Wtmeasured)), 
-                                    sum(oli_first$Wtmeasured)), 
+wtmeasuredtable <- as.table(rbind(c(sum(na.omit(scr_out$neit$Wtmeasured)),
+                                    sum(oli_first$Wtmeasured)),
                                   c(nrow(scr_out$neit)-sum(is.na(scr_out$neit$Wtmeasured))-
-                                      sum(na.omit(scr_out$neit$Wtmeasured)), 
+                                      sum(na.omit(scr_out$neit$Wtmeasured)),
                                     nrow(oli_first)-sum(oli_first$Wtmeasured))))
-dimnames(wtmeasuredtable) <- list(c("Measured", "Estimated"), c("neither", "Oli"))      
+dimnames(wtmeasuredtable) <- list(c("Measured", "Estimated"), c("neither", "Oli"))
 wtmeasuredtable
 chisq.test(wtmeasuredtable, correct = FALSE)
 #mech vent
-mvtable <- as.table(rbind(c(sum(scr_out$neit$Mecvenadm), 
-                            sum(oli_first$Mecvenadm)), 
-                          c(nrow(scr_out$neit)-sum(scr_out$neit$Mecvenadm), 
+mvtable <- as.table(rbind(c(sum(scr_out$neit$Mecvenadm),
+                            sum(oli_first$Mecvenadm)),
+                          c(nrow(scr_out$neit)-sum(scr_out$neit$Mecvenadm),
                             nrow(oli_first)-sum(oli_first$Mecvenadm))))
-dimnames(mvtable) <- list(c("MV", "Not MV"), c("neither", "oli"))      
+dimnames(mvtable) <- list(c("MV", "Not MV"), c("neither", "oli"))
 mvtable
 chisq.test(mvtable, correct = FALSE)
 #surg vs med adm
-surgadmtable <- as.table(rbind(c(sum(scr_out$neit$Surgadmission), 
-                                 sum(oli_first$Surgadmission)), 
-                               c(nrow(scr_out$neit)-sum(scr_out$neit$Surgadmission), 
+surgadmtable <- as.table(rbind(c(sum(scr_out$neit$Surgadmission),
+                                 sum(oli_first$Surgadmission)),
+                               c(nrow(scr_out$neit)-sum(scr_out$neit$Surgadmission),
                                  nrow(oli_first)-sum(oli_first$Surgadmission))))
-dimnames(surgadmtable) <- list(c("Surgical", "Medical"), c("neither", "oli"))      
+dimnames(surgadmtable) <- list(c("Surgical", "Medical"), c("neither", "oli"))
 surgadmtable
 chisq.test(surgadmtable, correct = FALSE)
 #APACHE II
@@ -1903,116 +1903,116 @@ wilcox.test(oli_first$APACHE_II, scr_out$neit$APACHE_II)
 #APACHE III
 wilcox.test(oli_first$APACHE_III, scr_out$neit$APACHE_III)
 #HOPC ICU admission
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_cardio), 
-                            sum(oli_first$PCm_cardio)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_cardio), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_cardio),
+                            sum(oli_first$PCm_cardio)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_cardio),
                             nrow(oli_first) - sum(oli_first$PCm_cardio))))
-dimnames(PCtable) <- list(c("mCardio", "other"), c("neit", "oli"))      
+dimnames(PCtable) <- list(c("mCardio", "other"), c("neit", "oli"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_resp), 
-                            sum(oli_first$PCm_resp)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_resp), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_resp),
+                            sum(oli_first$PCm_resp)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_resp),
                             nrow(oli_first) - sum(oli_first$PCm_resp))))
-dimnames(PCtable) <- list(c("mResp", "other"), c("neit", "oli"))      
+dimnames(PCtable) <- list(c("mResp", "other"), c("neit", "oli"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_GI), 
-                            sum(oli_first$PCm_GI)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_GI), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_GI),
+                            sum(oli_first$PCm_GI)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_GI),
                             nrow(oli_first) - sum(oli_first$PCm_GI))))
-dimnames(PCtable) <- list(c("mGI", "other"), c("neit", "oli"))      
+dimnames(PCtable) <- list(c("mGI", "other"), c("neit", "oli"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_neuro), 
-                            sum(oli_first$PCm_neuro)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_neuro), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_neuro),
+                            sum(oli_first$PCm_neuro)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_neuro),
                             nrow(oli_first) - sum(oli_first$PCm_neuro))))
-dimnames(PCtable) <- list(c("mNeuro", "other"), c("neit", "oli"))      
+dimnames(PCtable) <- list(c("mNeuro", "other"), c("neit", "oli"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_sepsis), 
-                            sum(oli_first$PCm_sepsis)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_sepsis), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_sepsis),
+                            sum(oli_first$PCm_sepsis)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_sepsis),
                             nrow(oli_first) - sum(oli_first$PCm_sepsis))))
-dimnames(PCtable) <- list(c("mSepsis", "other"), c("neit", "oli"))      
+dimnames(PCtable) <- list(c("mSepsis", "other"), c("neit", "oli"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_trauma), 
-                            sum(oli_first$PCm_trauma)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_trauma), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_trauma),
+                            sum(oli_first$PCm_trauma)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_trauma),
                             nrow(oli_first) - sum(oli_first$PCm_trauma))))
-dimnames(PCtable) <- list(c("mTrauma", "other"), c("neit", "oli"))      
+dimnames(PCtable) <- list(c("mTrauma", "other"), c("neit", "oli"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_metabolic), 
-                            sum(oli_first$PCm_metabolic)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_metabolic), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_metabolic),
+                            sum(oli_first$PCm_metabolic)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_metabolic),
                             nrow(oli_first) - sum(oli_first$PCm_metabolic))))
-dimnames(PCtable) <- list(c("mMetabolic", "other"), c("neit", "oli"))      
+dimnames(PCtable) <- list(c("mMetabolic", "other"), c("neit", "oli"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_renal), 
-                            sum(oli_first$PCm_renal)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_renal), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_renal),
+                            sum(oli_first$PCm_renal)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_renal),
                             nrow(oli_first) - sum(oli_first$PCm_renal))))
-dimnames(PCtable) <- list(c("mRenal", "other"), c("neit", "oli"))      
+dimnames(PCtable) <- list(c("mRenal", "other"), c("neit", "oli"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_cardio), 
-                            sum(oli_first$PCs_cardio)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_cardio), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_cardio),
+                            sum(oli_first$PCs_cardio)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_cardio),
                             nrow(oli_first) - sum(oli_first$PCs_cardio))))
-dimnames(PCtable) <- list(c("sCardio", "other"), c("neit", "oli"))      
+dimnames(PCtable) <- list(c("sCardio", "other"), c("neit", "oli"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_resp), 
-                            sum(oli_first$PCs_resp)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_resp), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_resp),
+                            sum(oli_first$PCs_resp)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_resp),
                             nrow(oli_first) - sum(oli_first$PCs_resp))))
-dimnames(PCtable) <- list(c("sResp", "other"), c("neit", "oli"))      
+dimnames(PCtable) <- list(c("sResp", "other"), c("neit", "oli"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_GI), 
-                            sum(oli_first$PCs_GI)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_GI), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_GI),
+                            sum(oli_first$PCs_GI)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_GI),
                             nrow(oli_first) - sum(oli_first$PCs_GI))))
-dimnames(PCtable) <- list(c("sGI", "other"), c("neit", "oli"))      
+dimnames(PCtable) <- list(c("sGI", "other"), c("neit", "oli"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_neuro), 
-                            sum(oli_first$PCs_neuro)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_neuro), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_neuro),
+                            sum(oli_first$PCs_neuro)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_neuro),
                             nrow(oli_first) - sum(oli_first$PCs_neuro))))
-dimnames(PCtable) <- list(c("sNeuro", "other"), c("neit", "oli"))      
+dimnames(PCtable) <- list(c("sNeuro", "other"), c("neit", "oli"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_renal), 
-                            sum(oli_first$PCs_renal)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_renal), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_renal),
+                            sum(oli_first$PCs_renal)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_renal),
                             nrow(oli_first) - sum(oli_first$PCs_renal))))
-dimnames(PCtable) <- list(c("sRenal", "other"), c("neit", "oli"))      
+dimnames(PCtable) <- list(c("sRenal", "other"), c("neit", "oli"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_gynae), 
-                            sum(oli_first$PCs_gynae)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_gynae), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_gynae),
+                            sum(oli_first$PCs_gynae)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_gynae),
                             nrow(oli_first) - sum(oli_first$PCs_gynae))))
-dimnames(PCtable) <- list(c("sRenal", "other"), c("neit", "oli"))      
+dimnames(PCtable) <- list(c("sRenal", "other"), c("neit", "oli"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_msk), 
-                            sum(oli_first$PCs_msk)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_msk), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_msk),
+                            sum(oli_first$PCs_msk)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_msk),
                             nrow(oli_first) - sum(oli_first$PCs_msk))))
-dimnames(PCtable) <- list(c("sMSK", "other"), c("neit", "oli"))      
+dimnames(PCtable) <- list(c("sMSK", "other"), c("neit", "oli"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_metabolic), 
-                            sum(oli_first$PCs_metabolic)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_metabolic), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_metabolic),
+                            sum(oli_first$PCs_metabolic)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_metabolic),
                             nrow(oli_first) - sum(oli_first$PCs_metabolic))))
-dimnames(PCtable) <- list(c("sMetabolic", "other"), c("neit", "oli"))      
+dimnames(PCtable) <- list(c("sMetabolic", "other"), c("neit", "oli"))
 PCtable
 fisher.test(PCtable)
 #demographics - compare those with both cr and oli vs neither 131 vs 74 ----
@@ -2025,11 +2025,11 @@ sum(creoliboth1$Male)
 sum(is.na(creoliboth1$Male))
 sum(creoliboth1$Male)/nrow(creoliboth1) *100
 nrow(creoliboth1) - sum(creoliboth1$Male)
-gendertable <- as.table(rbind(c(sum(scr_out$neit$Male), 
-                                sum(creoliboth1$Male)), 
-                              c(nrow(scr_out$neit)-sum(scr_out$neit$Male), 
+gendertable <- as.table(rbind(c(sum(scr_out$neit$Male),
+                                sum(creoliboth1$Male)),
+                              c(nrow(scr_out$neit)-sum(scr_out$neit$Male),
                                 nrow(creoliboth1)-sum(creoliboth1$Male))))
-dimnames(gendertable) <- list(c("M", "F"), c("neither", "both"))      
+dimnames(gendertable) <- list(c("M", "F"), c("neither", "both"))
 gendertable
 chisq.test(gendertable, correct = FALSE)
 #weight
@@ -2040,23 +2040,23 @@ wilcox.test(creoliboth1$Age, scr_out$neit$Wt)
 sum(creoliboth1$Wtmeasured)
 sum(is.na(creoliboth1$Wtmeasured))
 sum(creoliboth1$Wtmeasured)/nrow(creoliboth1) *100
-wtmeasuredtable <- as.table(rbind(c(sum(na.omit(scr_out$neit$Wtmeasured)), 
-                                    sum(creoliboth1$Wtmeasured)), 
+wtmeasuredtable <- as.table(rbind(c(sum(na.omit(scr_out$neit$Wtmeasured)),
+                                    sum(creoliboth1$Wtmeasured)),
                                   c(nrow(scr_out$neit)-sum(is.na(scr_out$neit$Wtmeasured))-
-                                      sum(na.omit(scr_out$neit$Wtmeasured)), 
+                                      sum(na.omit(scr_out$neit$Wtmeasured)),
                                     nrow(creoliboth1)-sum(creoliboth1$Wtmeasured))))
-dimnames(wtmeasuredtable) <- list(c("Measured", "Estimated"), c("neither", "both"))      
+dimnames(wtmeasuredtable) <- list(c("Measured", "Estimated"), c("neither", "both"))
 wtmeasuredtable
 chisq.test(wtmeasuredtable, correct = FALSE)
 #mec vent
 sum(creoliboth1$Mecvenadm)
 sum(is.na(creoliboth1$Mecvenadm))
 sum(creoliboth1$Mecvenadm)/nrow(creoliboth1) *100
-mvtable <- as.table(rbind(c(sum(scr_out$neit$Mecvenadm), 
-                            sum(creoliboth1$Mecvenadm)), 
-                          c(nrow(scr_out$neit)-sum(scr_out$neit$Mecvenadm), 
+mvtable <- as.table(rbind(c(sum(scr_out$neit$Mecvenadm),
+                            sum(creoliboth1$Mecvenadm)),
+                          c(nrow(scr_out$neit)-sum(scr_out$neit$Mecvenadm),
                             nrow(creoliboth1)-sum(creoliboth1$Mecvenadm))))
-dimnames(mvtable) <- list(c("MV", "Not MV"), c("neither", "both"))      
+dimnames(mvtable) <- list(c("MV", "Not MV"), c("neither", "both"))
 mvtable
 chisq.test(mvtable, correct = FALSE)
 #APACHE II
@@ -2073,11 +2073,11 @@ sum(is.na(creoliboth1$Surgadmission))
 sum(creoliboth1$Surgadmission)/nrow(creoliboth1) *100
 nrow(creoliboth1)- sum(creoliboth1$Surgadmission)
 (nrow(creoliboth1)- sum(creoliboth1$Surgadmission)) / nrow(creoliboth1) *100
-surgadmtable <- as.table(rbind(c(sum(scr_out$neit$Surgadmission), 
-                                 sum(creoliboth1$Surgadmission)), 
-                               c(nrow(scr_out$neit)-sum(scr_out$neit$Surgadmission), 
+surgadmtable <- as.table(rbind(c(sum(scr_out$neit$Surgadmission),
+                                 sum(creoliboth1$Surgadmission)),
+                               c(nrow(scr_out$neit)-sum(scr_out$neit$Surgadmission),
                                  nrow(creoliboth1)-sum(creoliboth1$Surgadmission))))
-dimnames(surgadmtable) <- list(c("Surgical", "Medical"), c("neither", "both"))      
+dimnames(surgadmtable) <- list(c("Surgical", "Medical"), c("neither", "both"))
 surgadmtable
 chisq.test(surgadmtable, correct = FALSE)
 #HOPC ICU admission
@@ -2125,109 +2125,109 @@ sum(creoliboth1$PCs_cardio) +
   sum(creoliboth1$PCs_haem) +
   sum(creoliboth1$PCs_metabolic)
 sum(creoliboth1$Surgadmission)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_cardio), 
-                            sum(creoliboth1$PCm_cardio)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_cardio), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_cardio),
+                            sum(creoliboth1$PCm_cardio)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_cardio),
                             nrow(creoliboth1) - sum(creoliboth1$PCm_cardio))))
-dimnames(PCtable) <- list(c("mCardio", "other"), c("neit", "both"))      
+dimnames(PCtable) <- list(c("mCardio", "other"), c("neit", "both"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_resp), 
-                            sum(creoliboth1$PCm_resp)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_resp), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_resp),
+                            sum(creoliboth1$PCm_resp)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_resp),
                             nrow(creoliboth1) - sum(creoliboth1$PCm_resp))))
-dimnames(PCtable) <- list(c("mResp", "other"), c("neit", "both"))      
+dimnames(PCtable) <- list(c("mResp", "other"), c("neit", "both"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_GI), 
-                            sum(creoliboth1$PCm_GI)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_GI), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_GI),
+                            sum(creoliboth1$PCm_GI)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_GI),
                             nrow(creoliboth1) - sum(creoliboth1$PCm_GI))))
-dimnames(PCtable) <- list(c("mGI", "other"), c("neit", "both"))      
+dimnames(PCtable) <- list(c("mGI", "other"), c("neit", "both"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_neuro), 
-                            sum(creoliboth1$PCm_neuro)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_neuro), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_neuro),
+                            sum(creoliboth1$PCm_neuro)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_neuro),
                             nrow(creoliboth1) - sum(creoliboth1$PCm_neuro))))
-dimnames(PCtable) <- list(c("mNeuro", "other"), c("neit", "both"))      
+dimnames(PCtable) <- list(c("mNeuro", "other"), c("neit", "both"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_sepsis), 
-                            sum(creoliboth1$PCm_sepsis)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_sepsis), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_sepsis),
+                            sum(creoliboth1$PCm_sepsis)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_sepsis),
                             nrow(creoliboth1) - sum(creoliboth1$PCm_sepsis))))
-dimnames(PCtable) <- list(c("mSepsis", "other"), c("neit", "both"))      
+dimnames(PCtable) <- list(c("mSepsis", "other"), c("neit", "both"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_trauma), 
-                            sum(creoliboth1$PCm_trauma)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_trauma), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_trauma),
+                            sum(creoliboth1$PCm_trauma)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_trauma),
                             nrow(creoliboth1) - sum(creoliboth1$PCm_trauma))))
-dimnames(PCtable) <- list(c("mTrauma", "other"), c("neit", "both"))      
+dimnames(PCtable) <- list(c("mTrauma", "other"), c("neit", "both"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_metabolic), 
-                            sum(creoliboth1$PCm_metabolic)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_metabolic), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_metabolic),
+                            sum(creoliboth1$PCm_metabolic)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_metabolic),
                             nrow(creoliboth1) - sum(creoliboth1$PCm_metabolic))))
-dimnames(PCtable) <- list(c("mMetabolic", "other"), c("neit", "both"))      
+dimnames(PCtable) <- list(c("mMetabolic", "other"), c("neit", "both"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_renal), 
-                            sum(creoliboth1$PCm_renal)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_renal), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCm_renal),
+                            sum(creoliboth1$PCm_renal)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCm_renal),
                             nrow(creoliboth1) - sum(creoliboth1$PCm_renal))))
-dimnames(PCtable) <- list(c("mRenal", "other"), c("neit", "both"))      
+dimnames(PCtable) <- list(c("mRenal", "other"), c("neit", "both"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_cardio), 
-                            sum(creoliboth1$PCs_cardio)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_cardio), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_cardio),
+                            sum(creoliboth1$PCs_cardio)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_cardio),
                             nrow(creoliboth1) - sum(creoliboth1$PCs_cardio))))
-dimnames(PCtable) <- list(c("sCardio", "other"), c("neit", "both"))      
+dimnames(PCtable) <- list(c("sCardio", "other"), c("neit", "both"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_resp), 
-                            sum(creoliboth1$PCs_resp)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_resp), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_resp),
+                            sum(creoliboth1$PCs_resp)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_resp),
                             nrow(creoliboth1) - sum(creoliboth1$PCs_resp))))
-dimnames(PCtable) <- list(c("sResp", "other"), c("neit", "both"))      
+dimnames(PCtable) <- list(c("sResp", "other"), c("neit", "both"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_GI), 
-                            sum(creoliboth1$PCs_GI)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_GI), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_GI),
+                            sum(creoliboth1$PCs_GI)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_GI),
                             nrow(creoliboth1) - sum(creoliboth1$PCs_GI))))
-dimnames(PCtable) <- list(c("sGI", "other"), c("neit", "both"))      
+dimnames(PCtable) <- list(c("sGI", "other"), c("neit", "both"))
 PCtable
 chisq.test(PCtable, correct = FALSE)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_neuro), 
-                            sum(creoliboth1$PCs_neuro)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_neuro), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_neuro),
+                            sum(creoliboth1$PCs_neuro)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_neuro),
                             nrow(creoliboth1) - sum(creoliboth1$PCs_neuro))))
-dimnames(PCtable) <- list(c("sNeuro", "other"), c("neit", "both"))      
+dimnames(PCtable) <- list(c("sNeuro", "other"), c("neit", "both"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_renal), 
-                            sum(creoliboth1$PCs_renal)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_renal), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_renal),
+                            sum(creoliboth1$PCs_renal)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_renal),
                             nrow(creoliboth1) - sum(creoliboth1$PCs_renal))))
-dimnames(PCtable) <- list(c("sRenal", "other"), c("neit", "both"))      
+dimnames(PCtable) <- list(c("sRenal", "other"), c("neit", "both"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_msk), 
-                            sum(creoliboth1$PCs_msk)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_msk), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_msk),
+                            sum(creoliboth1$PCs_msk)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_msk),
                             nrow(creoliboth1) - sum(creoliboth1$PCs_msk))))
-dimnames(PCtable) <- list(c("sMSK", "other"), c("neit", "both"))      
+dimnames(PCtable) <- list(c("sMSK", "other"), c("neit", "both"))
 PCtable
 fisher.test(PCtable)
-PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_metabolic), 
-                            sum(creoliboth1$PCs_metabolic)), 
-                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_metabolic), 
+PCtable <- as.table(rbind(c(sum(scr_out$neit$PCs_metabolic),
+                            sum(creoliboth1$PCs_metabolic)),
+                          c(nrow(scr_out$neit) - sum(scr_out$neit$PCs_metabolic),
                             nrow(creoliboth1) - sum(creoliboth1$PCs_metabolic))))
-dimnames(PCtable) <- list(c("sMetabolic", "other"), c("neit", "both"))      
+dimnames(PCtable) <- list(c("sMetabolic", "other"), c("neit", "both"))
 PCtable
 fisher.test(PCtable)
 
@@ -2241,11 +2241,11 @@ sum(olionly_first$AKI_ICU)
 sum(is.na(olionly_first$AKI_ICU))
 sum(olionly_first$AKI_ICU == "0")
 sum(olionly_first$AKI_ICU)/ 108 *100
-AKItable <- as.table(rbind(c(sum(cr_first$AKI_ICU), 
-                             sum(olionly_first$AKI_ICU)), 
-                           c(nrow(cr_first) - sum(cr_first$AKI_ICU), 
+AKItable <- as.table(rbind(c(sum(cr_first$AKI_ICU),
+                             sum(olionly_first$AKI_ICU)),
+                           c(nrow(cr_first) - sum(cr_first$AKI_ICU),
                              108 - sum(olionly_first$AKI_ICU))))
-dimnames(AKItable) <- list(c("AKI", "no AKI"), c("cr", "no cr"))      
+dimnames(AKItable) <- list(c("AKI", "no AKI"), c("cr", "no cr"))
 AKItable
 chisq.test(AKItable, correct = FALSE)
 #AKI stages
@@ -2262,25 +2262,25 @@ sum(is.na(olionly_first$AKI_stage))
 sum(na.omit(olionly_first$AKI_stage == "1"))
 sum(na.omit(olionly_first$AKI_stage == "2"))
 sum(na.omit(olionly_first$AKI_stage == "3"))
-AKIs1table <- as.table(rbind(c(sum(na.omit(cr_first$AKI_stage == "1")), 
-                               sum(na.omit(olionly_first$AKI_stage == "1"))), 
-                             c(sum(cr_first$AKI_ICU) - sum(na.omit(cr_first$AKI_stage == "1")), 
+AKIs1table <- as.table(rbind(c(sum(na.omit(cr_first$AKI_stage == "1")),
+                               sum(na.omit(olionly_first$AKI_stage == "1"))),
+                             c(sum(cr_first$AKI_ICU) - sum(na.omit(cr_first$AKI_stage == "1")),
                                sum(olionly_first$AKI_ICU) - sum(na.omit(olionly_first$AKI_stage == "1")))))
-dimnames(AKIs1table) <- list(c("AKIs1", "not AKIs1"), c("cr", "no cr"))      
+dimnames(AKIs1table) <- list(c("AKIs1", "not AKIs1"), c("cr", "no cr"))
 AKIs1table
 chisq.test(AKIs1table, correct = FALSE)
-AKIs2table <- as.table(rbind(c(sum(na.omit(cr_first$AKI_stage == "2")), 
-                               sum(na.omit(olionly_first$AKI_stage == "2"))), 
-                             c(sum(cr_first$AKI_ICU) - sum(na.omit(cr_first$AKI_stage == "2")), 
+AKIs2table <- as.table(rbind(c(sum(na.omit(cr_first$AKI_stage == "2")),
+                               sum(na.omit(olionly_first$AKI_stage == "2"))),
+                             c(sum(cr_first$AKI_ICU) - sum(na.omit(cr_first$AKI_stage == "2")),
                                sum(olionly_first$AKI_ICU) - sum(na.omit(olionly_first$AKI_stage == "2")))))
-dimnames(AKIs2table) <- list(c("AKIs2", "not AKIs2"), c("cr", "no cr"))      
+dimnames(AKIs2table) <- list(c("AKIs2", "not AKIs2"), c("cr", "no cr"))
 AKIs2table
 chisq.test(AKIs2table, correct = FALSE)
-AKIs3table <- as.table(rbind(c(sum(na.omit(cr_first$AKI_stage == "3")), 
-                               sum(na.omit(olionly_first$AKI_stage == "3"))), 
-                             c(sum(cr_first$AKI_ICU) - sum(na.omit(cr_first$AKI_stage == "3")), 
+AKIs3table <- as.table(rbind(c(sum(na.omit(cr_first$AKI_stage == "3")),
+                               sum(na.omit(olionly_first$AKI_stage == "3"))),
+                             c(sum(cr_first$AKI_ICU) - sum(na.omit(cr_first$AKI_stage == "3")),
                                sum(olionly_first$AKI_ICU) - sum(na.omit(olionly_first$AKI_stage == "3")))))
-dimnames(AKIs3table) <- list(c("AKIs3", "not AKIs3"), c("cr", "no cr"))      
+dimnames(AKIs3table) <- list(c("AKIs3", "not AKIs3"), c("cr", "no cr"))
 AKIs3table
 fisher.test(AKIs3table)
 #hours from ICU adm to AKI
@@ -2296,16 +2296,16 @@ sum(na.omit(cr_first$RRT == "0"))
 sum(na.omit(cr_first$RRT))/sum(cr_first$AKI_ICU) *100
 sum(is.na(olionly_first$RRT))
 sum(na.omit(olionly_first$RRT))
-RRTtable <- as.table(rbind(c(sum(na.omit(cr_first$RRT)), 
+RRTtable <- as.table(rbind(c(sum(na.omit(cr_first$RRT)),
                              sum(na.omit(olionly_first$RRT))),
                            c(sum(cr_first$AKI_ICU) - sum(na.omit(cr_first$RRT)),
                              sum(olionly_first$AKI_ICU) - sum(na.omit(olionly_first$RRT)))))
-dimnames(RRTtable) <- list(c("RRT", "not RRT"), c("cr", "no cr"))      
+dimnames(RRTtable) <- list(c("RRT", "not RRT"), c("cr", "no cr"))
 RRTtable
 fisher.test(RRTtable)
 #ICU LOS
 summary(cr_first$ICU_LOS)
-cr_first %>% filter(ICU_LOS <=0) %>% 
+cr_first %>% filter(ICU_LOS <=0) %>%
   select(Pt_Study_no, DateTime_ICU_admit, DateTime_ICU_dc, ICU_LOS) %>% View()
 shapiro.test(cr_first$ICU_LOS)
 shapiro.test(scr_out$nocr$ICU_LOS)
@@ -2324,12 +2324,12 @@ nrow(cr_first) - sum(cr_first$Dc_ICU_Alive)
 (nrow(cr_first) - sum(cr_first$Dc_ICU_Alive)) / nrow(cr_first) *100
 table(scr_out$nocr$dc_ICU_alive)
 sum(scr_out$nocr$dc_ICU_alive ==0)/nrow(scr_out$nocr)
-ICUmortalitytable <- as.table(rbind(c(sum(na.omit(scr_out$nocr$dc_ICU_alive)), 
-                                      sum(cr_first$Dc_ICU_Alive)), 
-                                    c(sum(scr_out$nocr$dc_ICU_alive == "0"), 
+ICUmortalitytable <- as.table(rbind(c(sum(na.omit(scr_out$nocr$dc_ICU_alive)),
+                                      sum(cr_first$Dc_ICU_Alive)),
+                                    c(sum(scr_out$nocr$dc_ICU_alive == "0"),
                                       sum(cr_first$Dc_ICU_Alive == "0")
                                     )))
-dimnames(ICUmortalitytable) <- list(c("Alive", "Deceased"), c("nocr", "cr"))      
+dimnames(ICUmortalitytable) <- list(c("Alive", "Deceased"), c("nocr", "cr"))
 ICUmortalitytable
 fisher.test(ICUmortalitytable)
 #hosp mortality
@@ -2337,12 +2337,12 @@ table(cr_first$Dc_Hosp_Alive)
 sum(is.na(cr_first$Dc_Hosp_Alive))
 table(scr_out$nocr$dc_hosp_alive)
 sum(scr_out$nocr$dc_hosp_alive ==0)/nrow(scr_out$nocr)
-Hospmortalitytable <- as.table(rbind(c(sum(scr_out$nocr$dc_hosp_alive), 
-                                       sum(na.omit(cr_first$Dc_Hosp_Alive))+sum(is.na(cr_first$Dc_Hosp_Alive))), 
-                                     c(sum(scr_out$nocr$dc_hosp_alive == "0"), 
+Hospmortalitytable <- as.table(rbind(c(sum(scr_out$nocr$dc_hosp_alive),
+                                       sum(na.omit(cr_first$Dc_Hosp_Alive))+sum(is.na(cr_first$Dc_Hosp_Alive))),
+                                     c(sum(scr_out$nocr$dc_hosp_alive == "0"),
                                        sum(na.omit(cr_first$Dc_Hosp_Alive == "0")))
 ))
-dimnames(Hospmortalitytable) <- list(c("Alive", "Deceased"), c("nocr", "cr"))      
+dimnames(Hospmortalitytable) <- list(c("Alive", "Deceased"), c("nocr", "cr"))
 Hospmortalitytable
 fisher.test(Hospmortalitytable)
 #outcomes - oli 165 vs no oli 222 ----
@@ -2354,11 +2354,11 @@ sum(cronly_first$AKI_ICU)
 sum(is.na(cronly_first$AKI_ICU))
 sum(cronly_first$AKI_ICU == "0")
 sum(cronly_first$AKI_ICU)/ 222 *100
-AKItable <- as.table(rbind(c(sum(oli_first$AKI_ICU), 
-                             sum(cronly_first$AKI_ICU)), 
-                           c(nrow(oli_first) - sum(oli_first$AKI_ICU), 
+AKItable <- as.table(rbind(c(sum(oli_first$AKI_ICU),
+                             sum(cronly_first$AKI_ICU)),
+                           c(nrow(oli_first) - sum(oli_first$AKI_ICU),
                              222 - sum(cronly_first$AKI_ICU))))
-dimnames(AKItable) <- list(c("AKI", "no AKI"), c("oli", "no oli"))      
+dimnames(AKItable) <- list(c("AKI", "no AKI"), c("oli", "no oli"))
 AKItable
 chisq.test(AKItable, correct = FALSE)
 #aki stages
@@ -2375,25 +2375,25 @@ sum(is.na(cronly_first$AKI_stage))
 sum(na.omit(cronly_first$AKI_stage == "1"))
 sum(na.omit(cronly_first$AKI_stage == "2"))
 sum(na.omit(cronly_first$AKI_stage == "3"))
-AKIs1table <- as.table(rbind(c(sum(na.omit(oli_first$AKI_stage == "1")), 
-                               sum(na.omit(cronly_first$AKI_stage == "1"))), 
-                             c(sum(oli_first$AKI_ICU) - sum(na.omit(oli_first$AKI_stage == "1")), 
+AKIs1table <- as.table(rbind(c(sum(na.omit(oli_first$AKI_stage == "1")),
+                               sum(na.omit(cronly_first$AKI_stage == "1"))),
+                             c(sum(oli_first$AKI_ICU) - sum(na.omit(oli_first$AKI_stage == "1")),
                                sum(cronly_first$AKI_ICU) - sum(na.omit(cronly_first$AKI_stage == "1")))))
-dimnames(AKIs1table) <- list(c("AKIs1", "not AKIs1"), c("oli", "no oli"))      
+dimnames(AKIs1table) <- list(c("AKIs1", "not AKIs1"), c("oli", "no oli"))
 AKIs1table
 chisq.test(AKIs1table, correct = FALSE)
-AKIs2table <- as.table(rbind(c(sum(na.omit(oli_first$AKI_stage == "2")), 
-                               sum(na.omit(cronly_first$AKI_stage == "2"))), 
-                             c(sum(oli_first$AKI_ICU) - sum(na.omit(oli_first$AKI_stage == "2")), 
+AKIs2table <- as.table(rbind(c(sum(na.omit(oli_first$AKI_stage == "2")),
+                               sum(na.omit(cronly_first$AKI_stage == "2"))),
+                             c(sum(oli_first$AKI_ICU) - sum(na.omit(oli_first$AKI_stage == "2")),
                                sum(cronly_first$AKI_ICU) - sum(na.omit(cronly_first$AKI_stage == "2")))))
-dimnames(AKIs2table) <- list(c("AKIs2", "not AKIs2"), c("oli", "no oli"))      
+dimnames(AKIs2table) <- list(c("AKIs2", "not AKIs2"), c("oli", "no oli"))
 AKIs2table
 chisq.test(AKIs2table, correct = FALSE)
-AKIs3table <- as.table(rbind(c(sum(na.omit(oli_first$AKI_stage == "3")), 
-                               sum(na.omit(cronly_first$AKI_stage == "3"))), 
-                             c(sum(oli_first$AKI_ICU) - sum(na.omit(oli_first$AKI_stage == "3")), 
+AKIs3table <- as.table(rbind(c(sum(na.omit(oli_first$AKI_stage == "3")),
+                               sum(na.omit(cronly_first$AKI_stage == "3"))),
+                             c(sum(oli_first$AKI_ICU) - sum(na.omit(oli_first$AKI_stage == "3")),
                                sum(cronly_first$AKI_ICU) - sum(na.omit(cronly_first$AKI_stage == "3")))))
-dimnames(AKIs3table) <- list(c("AKIs3", "not AKIs3"), c("oli", "no oli"))      
+dimnames(AKIs3table) <- list(c("AKIs3", "not AKIs3"), c("oli", "no oli"))
 AKIs3table
 chisq.test(AKIs3table, correct = FALSE)
 #hours from ICU adm to AKI
@@ -2409,16 +2409,16 @@ sum(na.omit(oli_first$RRT == "0"))
 sum(na.omit(oli_first$RRT))/sum(oli_first$AKI_ICU) *100
 sum(is.na(cronly_first$RRT))
 sum(na.omit(cronly_first$RRT))
-RRTtable <- as.table(rbind(c(sum(na.omit(oli_first$RRT)), 
+RRTtable <- as.table(rbind(c(sum(na.omit(oli_first$RRT)),
                              sum(na.omit(cronly_first$RRT))),
                            c(sum(oli_first$AKI_ICU) - sum(na.omit(oli_first$RRT)),
                              sum(cronly_first$AKI_ICU) - sum(na.omit(cronly_first$RRT)))))
-dimnames(RRTtable) <- list(c("RRT", "not RRT"), c("oli", "no oli"))      
+dimnames(RRTtable) <- list(c("RRT", "not RRT"), c("oli", "no oli"))
 RRTtable
 fisher.test(RRTtable)
 #ICU LOS
 summary(oli_first$ICU_LOS)
-oli_first %>% filter(ICU_LOS <=0) %>% 
+oli_first %>% filter(ICU_LOS <=0) %>%
   select(Pt_Study_no, DateTime_ICU_admit, DateTime_ICU_dc, ICU_LOS) %>% View()
 shapiro.test(oli_first$ICU_LOS)
 shapiro.test(scr_out$nool$ICU_LOS)
@@ -2437,12 +2437,12 @@ nrow(oli_first) - sum(oli_first$Dc_ICU_Alive)
 (nrow(oli_first) - sum(oli_first$Dc_ICU_Alive)) / nrow(oli_first) *100
 table(scr_out$nool$dc_ICU_alive)
 sum(scr_out$nool$dc_ICU_alive ==0)/nrow(scr_out$nool)
-ICUmortalitytable <- as.table(rbind(c(sum(na.omit(scr_out$nool$dc_ICU_alive)), 
-                                      sum(oli_first$Dc_ICU_Alive)), 
-                                    c(sum(scr_out$nool$dc_ICU_alive == "0"), 
+ICUmortalitytable <- as.table(rbind(c(sum(na.omit(scr_out$nool$dc_ICU_alive)),
+                                      sum(oli_first$Dc_ICU_Alive)),
+                                    c(sum(scr_out$nool$dc_ICU_alive == "0"),
                                       sum(oli_first$Dc_ICU_Alive == "0")
                                     )))
-dimnames(ICUmortalitytable) <- list(c("Alive", "Deceased"), c("nooli", "oli"))      
+dimnames(ICUmortalitytable) <- list(c("Alive", "Deceased"), c("nooli", "oli"))
 ICUmortalitytable
 chisq.test(ICUmortalitytable, correct = FALSE)
 #hosp mortality
@@ -2450,11 +2450,11 @@ table(oli_first$Dc_Hosp_Alive)
 sum(is.na(oli_first$Dc_Hosp_Alive))
 table(scr_out$nool$dc_hosp_alive)
 sum(scr_out$nool$dc_hosp_alive ==0)/nrow(scr_out$nool)
-Hospmortalitytable <- as.table(rbind(c(sum(scr_out$nool$dc_hosp_alive)-2, 
-                                       sum(na.omit(oli_first$Dc_Hosp_Alive))), 
-                                     c(sum(scr_out$nool$dc_hosp_alive == "0"), 
+Hospmortalitytable <- as.table(rbind(c(sum(scr_out$nool$dc_hosp_alive)-2,
+                                       sum(na.omit(oli_first$Dc_Hosp_Alive))),
+                                     c(sum(scr_out$nool$dc_hosp_alive == "0"),
                                        sum(na.omit(oli_first$Dc_Hosp_Alive == "0")))))
-dimnames(Hospmortalitytable) <- list(c("Alive", "Deceased"), c("nooli", "oli"))      
+dimnames(Hospmortalitytable) <- list(c("Alive", "Deceased"), c("nooli", "oli"))
 Hospmortalitytable
 chisq.test(Hospmortalitytable, correct = FALSE)
 #outcomes cr with aki 185 vs cr no aki 94 ----
@@ -2473,12 +2473,12 @@ sum(cr_first_AKI$Dc_ICU_Alive)
 sum(is.na(cr_first_AKI$Dc_ICU_Alive))
 sum(cr_first_AKI$Dc_ICU_Alive == "0")
 sum(cr_first_AKI$Dc_ICU_Alive == "0")/nrow(cr_first_AKI) *100
-ICUmortalitytable <- as.table(rbind(c(sum(na.omit(cr_first_noAKI$Dc_ICU_Alive)), 
-                                      sum(cr_first_AKI$Dc_ICU_Alive)), 
-                                    c(sum(cr_first_noAKI$Dc_ICU_Alive == "0"), 
+ICUmortalitytable <- as.table(rbind(c(sum(na.omit(cr_first_noAKI$Dc_ICU_Alive)),
+                                      sum(cr_first_AKI$Dc_ICU_Alive)),
+                                    c(sum(cr_first_noAKI$Dc_ICU_Alive == "0"),
                                       sum(cr_first_AKI$Dc_ICU_Alive == "0")
                                     )))
-dimnames(ICUmortalitytable) <- list(c("Alive", "Deceased"), c("no AKI", "AKI"))      
+dimnames(ICUmortalitytable) <- list(c("Alive", "Deceased"), c("no AKI", "AKI"))
 ICUmortalitytable
 chisq.test(ICUmortalitytable, correct = FALSE)
 #Hosp mort
@@ -2490,12 +2490,12 @@ sum(na.omit(cr_first_noAKI$Dc_Hosp_Alive))
 sum(is.na(cr_first_noAKI$Dc_Hosp_Alive))
 sum(na.omit(cr_first_noAKI$Dc_Hosp_Alive == "0"))
 sum(na.omit(cr_first_noAKI$Dc_Hosp_Alive == "0"))/nrow(cr_first_noAKI) *100
-Hospmortalitytable <- as.table(rbind(c(sum(na.omit(cr_first_noAKI$Dc_Hosp_Alive)), 
-                                       sum(na.omit(cr_first_AKI$Dc_Hosp_Alive))), 
-                                     c(sum(na.omit(cr_first_noAKI$Dc_Hosp_Alive == "0")), 
+Hospmortalitytable <- as.table(rbind(c(sum(na.omit(cr_first_noAKI$Dc_Hosp_Alive)),
+                                       sum(na.omit(cr_first_AKI$Dc_Hosp_Alive))),
+                                     c(sum(na.omit(cr_first_noAKI$Dc_Hosp_Alive == "0")),
                                        sum(na.omit(cr_first_AKI$Dc_Hosp_Alive == "0"))
                                      )))
-dimnames(Hospmortalitytable) <- list(c("Alive", "Deceased"), c("no AKI", "AKI"))      
+dimnames(Hospmortalitytable) <- list(c("Alive", "Deceased"), c("no AKI", "AKI"))
 Hospmortalitytable
 chisq.test(Hospmortalitytable, correct = FALSE)
 #outcomes oli with aki 128 vs oli no aki 37 ----
@@ -2515,12 +2515,12 @@ sum(oli_first_AKI$Dc_ICU_Alive)
 sum(is.na(oli_first_AKI$Dc_ICU_Alive))
 sum(oli_first_AKI$Dc_ICU_Alive == "0")
 sum(oli_first_AKI$Dc_ICU_Alive == "0")/nrow(oli_first_AKI) *100
-ICUmortalitytable <- as.table(rbind(c(sum(na.omit(oli_first_noAKI$Dc_ICU_Alive)), 
-                                      sum(oli_first_AKI$Dc_ICU_Alive)), 
-                                    c(sum(oli_first_noAKI$Dc_ICU_Alive == "0"), 
+ICUmortalitytable <- as.table(rbind(c(sum(na.omit(oli_first_noAKI$Dc_ICU_Alive)),
+                                      sum(oli_first_AKI$Dc_ICU_Alive)),
+                                    c(sum(oli_first_noAKI$Dc_ICU_Alive == "0"),
                                       sum(oli_first_AKI$Dc_ICU_Alive == "0")
                                     )))
-dimnames(ICUmortalitytable) <- list(c("Alive", "Deceased"), c("no AKI", "AKI"))      
+dimnames(ICUmortalitytable) <- list(c("Alive", "Deceased"), c("no AKI", "AKI"))
 ICUmortalitytable
 fisher.test(ICUmortalitytable)
 #Hosp mort
@@ -2528,12 +2528,12 @@ sum(na.omit(oli_first_AKI$Dc_Hosp_Alive))
 sum(is.na(oli_first_AKI$Dc_Hosp_Alive))
 sum(na.omit(oli_first_AKI$Dc_Hosp_Alive == "0"))
 sum(na.omit(oli_first_AKI$Dc_Hosp_Alive == "0"))/nrow(oli_first_AKI) *100
-Hospmortalitytable <- as.table(rbind(c(sum(na.omit(oli_first_noAKI$Dc_Hosp_Alive)), 
-                                       sum(na.omit(oli_first_AKI$Dc_Hosp_Alive))+sum(is.na(oli_first_AKI$Dc_Hosp_Alive))), 
-                                     c(sum(na.omit(oli_first_noAKI$Dc_Hosp_Alive == "0")), 
+Hospmortalitytable <- as.table(rbind(c(sum(na.omit(oli_first_noAKI$Dc_Hosp_Alive)),
+                                       sum(na.omit(oli_first_AKI$Dc_Hosp_Alive))+sum(is.na(oli_first_AKI$Dc_Hosp_Alive))),
+                                     c(sum(na.omit(oli_first_noAKI$Dc_Hosp_Alive == "0")),
                                        sum(na.omit(oli_first_AKI$Dc_Hosp_Alive == "0"))
                                      )))
-dimnames(Hospmortalitytable) <- list(c("Alive", "Deceased"), c("no AKI", "AKI"))      
+dimnames(Hospmortalitytable) <- list(c("Alive", "Deceased"), c("no AKI", "AKI"))
 Hospmortalitytable
 chisq.test(Hospmortalitytable, correct = FALSE)
 #outcomes - cr pts 279 vs neither 74 ----
@@ -2546,21 +2546,21 @@ summary(scr_out$neit$Hosp_LOS)
 shapiro.test(scr_out$neit$Hosp_LOS)
 wilcox.test(cr_first$Hosp_LOS, scr_out$neit$Hosp_LOS)
 #ICU mortality
-ICUmortalitytable <- as.table(rbind(c(sum(na.omit(scr_out$neit$dc_ICU_alive)), 
-                                      sum(cr_first$Dc_ICU_Alive)), 
-                                    c(sum(scr_out$neit$dc_ICU_alive == "0"), 
+ICUmortalitytable <- as.table(rbind(c(sum(na.omit(scr_out$neit$dc_ICU_alive)),
+                                      sum(cr_first$Dc_ICU_Alive)),
+                                    c(sum(scr_out$neit$dc_ICU_alive == "0"),
                                       sum(cr_first$Dc_ICU_Alive == "0")
                                     )))
-dimnames(ICUmortalitytable) <- list(c("Alive", "Deceased"), c("neit", "cr"))      
+dimnames(ICUmortalitytable) <- list(c("Alive", "Deceased"), c("neit", "cr"))
 ICUmortalitytable
 fisher.test(ICUmortalitytable)
 #hosp mort
-Hospmortalitytable <- as.table(rbind(c(sum(scr_out$neit$dc_hosp_alive), 
-                                       sum(na.omit(cr_first$Dc_Hosp_Alive))+3), 
-                                     c(sum(scr_out$neit$dc_hosp_alive == "0"), 
+Hospmortalitytable <- as.table(rbind(c(sum(scr_out$neit$dc_hosp_alive),
+                                       sum(na.omit(cr_first$Dc_Hosp_Alive))+3),
+                                     c(sum(scr_out$neit$dc_hosp_alive == "0"),
                                        sum(na.omit(cr_first$Dc_Hosp_Alive == "0")))
 ))
-dimnames(Hospmortalitytable) <- list(c("Alive", "Deceased"), c("neit", "cr"))      
+dimnames(Hospmortalitytable) <- list(c("Alive", "Deceased"), c("neit", "cr"))
 Hospmortalitytable
 fisher.test(Hospmortalitytable)
 #outcomes - oli 165 vs neither 74 ----
@@ -2569,21 +2569,21 @@ wilcox.test(oli_first$ICU_LOS, scr_out$neit$ICU_LOS)
 #hospital LOS
 wilcox.test(oli_first$Hosp_LOS, scr_out$neit$Hosp_LOS)
 #ICU mortality
-ICUmortalitytable <- as.table(rbind(c(sum(na.omit(scr_out$neit$dc_ICU_alive)), 
-                                      sum(oli_first$Dc_ICU_Alive)), 
-                                    c(sum(scr_out$neit$dc_ICU_alive == "0"), 
+ICUmortalitytable <- as.table(rbind(c(sum(na.omit(scr_out$neit$dc_ICU_alive)),
+                                      sum(oli_first$Dc_ICU_Alive)),
+                                    c(sum(scr_out$neit$dc_ICU_alive == "0"),
                                       sum(oli_first$Dc_ICU_Alive == "0")
                                     )))
-dimnames(ICUmortalitytable) <- list(c("Alive", "Deceased"), c("neit", "oli"))      
+dimnames(ICUmortalitytable) <- list(c("Alive", "Deceased"), c("neit", "oli"))
 ICUmortalitytable
 fisher.test(ICUmortalitytable)
 #hosp mortality
-Hospmortalitytable <- as.table(rbind(c(sum(scr_out$neit$dc_hosp_alive), 
-                                       sum(na.omit(oli_first$Dc_Hosp_Alive))), 
-                                     c(sum(scr_out$neit$dc_hosp_alive == "0"), 
+Hospmortalitytable <- as.table(rbind(c(sum(scr_out$neit$dc_hosp_alive),
+                                       sum(na.omit(oli_first$Dc_Hosp_Alive))),
+                                     c(sum(scr_out$neit$dc_hosp_alive == "0"),
                                        sum(na.omit(oli_first$Dc_Hosp_Alive == "0")))
 ))
-dimnames(Hospmortalitytable) <- list(c("Alive", "Deceased"), c("neit", "oli"))      
+dimnames(Hospmortalitytable) <- list(c("Alive", "Deceased"), c("neit", "oli"))
 Hospmortalitytable
 fisher.test(Hospmortalitytable)
 #outcomes - both 131 vs neither 74 ----
@@ -2600,12 +2600,12 @@ sum(creoliboth1$Dc_ICU_Alive)
 sum(is.na(creoliboth1$Dc_ICU_Alive))
 nrow(creoliboth1) - sum(creoliboth1$Dc_ICU_Alive)
 (nrow(creoliboth1) - sum(creoliboth1$Dc_ICU_Alive))/nrow(creoliboth1) *100
-ICUmortalitytable <- as.table(rbind(c(sum(na.omit(scr_out$neit$dc_ICU_alive)), 
-                                      sum(creoliboth1$Dc_ICU_Alive)), 
-                                    c(sum(scr_out$neit$dc_ICU_alive == "0"), 
+ICUmortalitytable <- as.table(rbind(c(sum(na.omit(scr_out$neit$dc_ICU_alive)),
+                                      sum(creoliboth1$Dc_ICU_Alive)),
+                                    c(sum(scr_out$neit$dc_ICU_alive == "0"),
                                       sum(creoliboth1$Dc_ICU_Alive == "0")
                                     )))
-dimnames(ICUmortalitytable) <- list(c("Alive", "Deceased"), c("neit", "both"))      
+dimnames(ICUmortalitytable) <- list(c("Alive", "Deceased"), c("neit", "both"))
 ICUmortalitytable
 fisher.test(ICUmortalitytable)
 #hospital mortality
@@ -2615,18 +2615,18 @@ creoliboth1 %>% filter(Dc_Hosp_Alive == 0) %>% nrow()
 nrow(creoliboth1) - sum(na.omit(creoliboth1$Dc_Hosp_Alive)) - sum(is.na(creoliboth1$Dc_Hosp_Alive))
 (nrow(creoliboth1) - sum(na.omit(creoliboth1$Dc_Hosp_Alive)) - sum(is.na(creoliboth1$Dc_Hosp_Alive)))/
   nrow(creoliboth1) *100
-Hospmortalitytable <- as.table(rbind(c(sum(scr_out$neit$dc_hosp_alive), 
-                                       sum(na.omit(creoliboth1$Dc_Hosp_Alive))), 
-                                     c(sum(scr_out$neit$dc_hosp_alive == "0"), 
+Hospmortalitytable <- as.table(rbind(c(sum(scr_out$neit$dc_hosp_alive),
+                                       sum(na.omit(creoliboth1$Dc_Hosp_Alive))),
+                                     c(sum(scr_out$neit$dc_hosp_alive == "0"),
                                        sum(na.omit(creoliboth1$Dc_Hosp_Alive == "0")))
 ))
-dimnames(Hospmortalitytable) <- list(c("Alive", "Deceased"), c("neit", "both"))      
+dimnames(Hospmortalitytable) <- list(c("Alive", "Deceased"), c("neit", "both"))
 Hospmortalitytable
 fisher.test(Hospmortalitytable)
 #--- Time from ICU adm to first cr/olig episode ----
 #all cr change pts n=279 -> invalid data n=4 -> analysis n=275
-cr_first1 <- cr_full %>% filter(Pt_Study_no != "LT1") %>% 
-  filter(Cr_ICU == 1) %>% 
+cr_first1 <- cr_full %>% filter(Pt_Study_no != "LT1") %>%
+  filter(Cr_ICU == 1) %>%
   group_by(Pt_Study_no) %>%
   top_n(-1, Cr_epis_no) %>%
   mutate(Time_First_Ep =
@@ -2635,7 +2635,7 @@ cr_first1$Time_First_Ep>0
 nrow(cr_first1)
 summary(cr_first1$Time_First_Ep)
 #all oliguria pts n=165 -> invalid data n=1 -> analysis n=164
-oli_first1 <- oli_full %>% filter(Pt_Study_no != "L1") %>% 
+oli_first1 <- oli_full %>% filter(Pt_Study_no != "L1") %>%
   group_by(Pt_Study_no) %>%
   top_n(-1, Olig_epis_no) %>%
   mutate(Time_First_Ep =
@@ -2645,8 +2645,8 @@ nrow(oli_first1)
 summary(oli_first1$Time_First_Ep)
 wilcox.test(cr_first1$Time_First_Ep, oli_first1$Time_First_Ep)
 #cr change only pts n=148 -> invalid data n=3 -> analysis n=145
-cronly_first1 <- cronly %>% filter(Pt_Study_no != "LT1") %>% 
-  filter(Cr_ICU == 1) %>% 
+cronly_first1 <- cronly %>% filter(Pt_Study_no != "LT1") %>%
+  filter(Cr_ICU == 1) %>%
   group_by(Pt_Study_no) %>%
   top_n(-1, Cr_epis_no) %>%
   mutate(Time_First_Ep =
@@ -2655,7 +2655,7 @@ cronly_first1$Time_First_Ep>0
 nrow(cronly_first1)
 summary(cronly_first1$Time_First_Ep)
 #oli only pts n=34
-olionly_first <- olionly_first %>% 
+olionly_first <- olionly_first %>%
   mutate(Time_First_Ep =
            as.duration(DateTime_ICU_admit %--% DateTime_olig_epis) / dhours(1))
 olionly_first$Time_First_Ep>0
@@ -2679,8 +2679,8 @@ summary(olifirst1aki$Time_First_Ep)
 summary(olifirst1noaki$Time_First_Ep)
 wilcox.test(olifirst1aki$Time_First_Ep, olifirst1noaki$Time_First_Ep)
 #pts with both cr and oli n=131 vs cr change only n= 148 -> 131 vs 145
-creboth1 <- creboth %>% filter(Pt_Study_no != "LT1") %>% 
-  filter(Cr_ICU == 1) %>% 
+creboth1 <- creboth %>% filter(Pt_Study_no != "LT1") %>%
+  filter(Cr_ICU == 1) %>%
   group_by(Pt_Study_no) %>%
   top_n(-1, Cr_epis_no) %>%
   mutate(Time_First_Ep =
@@ -2690,7 +2690,7 @@ nrow(creboth1)
 summary(creboth1$Time_First_Ep)
 wilcox.test(creboth1$Time_First_Ep, cronly_first1$Time_First_Ep)
 #pts with both cr and oli n=131 vs oli only n=34 -> 130 vs 34
-oliboth1 <- oliboth %>% filter(Pt_Study_no != "L1") %>% 
+oliboth1 <- oliboth %>% filter(Pt_Study_no != "L1") %>%
   group_by(Pt_Study_no) %>%
   top_n(-1, Olig_epis_no) %>%
   mutate(Time_First_Ep =
@@ -2748,64 +2748,64 @@ summary(epi.tests(craki48h, conf.level=0.95))
 table(cr_last$Cr_epis_no)
 table(cr_last_aki$Cr_epis_no)
 table(cr_last_no_aki$Cr_epis_no)
-creptable <- as.table(rbind(c(sum(cr_last_aki$Cr_epis_no == "1"), 
-                              sum(cr_last_no_aki$Cr_epis_no == "1")), 
+creptable <- as.table(rbind(c(sum(cr_last_aki$Cr_epis_no == "1"),
+                              sum(cr_last_no_aki$Cr_epis_no == "1")),
                             c(nrow(cr_last_aki) - sum(cr_last_aki$Cr_epis_no == "1"),
                               nrow(cr_last_no_aki) - sum(cr_last_no_aki$Cr_epis_no == "1"))))
 dimnames(creptable) <- list(c("1 ep", "not 1 ep"), c("AKI", "no AKI"))
 creptable
 chisq.test(creptable, correct = FALSE)
-creptable <- as.table(rbind(c(sum(cr_last_aki$Cr_epis_no == "2"), 
-                              sum(cr_last_no_aki$Cr_epis_no == "2")), 
+creptable <- as.table(rbind(c(sum(cr_last_aki$Cr_epis_no == "2"),
+                              sum(cr_last_no_aki$Cr_epis_no == "2")),
                             c(nrow(cr_last_aki) - sum(cr_last_aki$Cr_epis_no == "2"),
                               nrow(cr_last_no_aki) - sum(cr_last_no_aki$Cr_epis_no == "2"))))
 dimnames(creptable) <- list(c("2 ep", "not 2 ep"), c("AKI", "no AKI"))
 creptable
 chisq.test(creptable, correct = FALSE)
-creptable <- as.table(rbind(c(sum(cr_last_aki$Cr_epis_no == "3"), 
-                              sum(cr_last_no_aki$Cr_epis_no == "3")), 
+creptable <- as.table(rbind(c(sum(cr_last_aki$Cr_epis_no == "3"),
+                              sum(cr_last_no_aki$Cr_epis_no == "3")),
                             c(nrow(cr_last_aki) - sum(cr_last_aki$Cr_epis_no == "3"),
                               nrow(cr_last_no_aki) - sum(cr_last_no_aki$Cr_epis_no == "3"))))
 dimnames(creptable) <- list(c("3 ep", "not 3 ep"), c("AKI", "no AKI"))
 creptable
 chisq.test(creptable, correct = FALSE)
-creptable <- as.table(rbind(c(sum(cr_last_aki$Cr_epis_no == "4"), 
-                              sum(cr_last_no_aki$Cr_epis_no == "4")), 
+creptable <- as.table(rbind(c(sum(cr_last_aki$Cr_epis_no == "4"),
+                              sum(cr_last_no_aki$Cr_epis_no == "4")),
                             c(nrow(cr_last_aki) - sum(cr_last_aki$Cr_epis_no == "4"),
                               nrow(cr_last_no_aki) - sum(cr_last_no_aki$Cr_epis_no == "4"))))
 dimnames(creptable) <- list(c("4 ep", "not 4 ep"), c("AKI", "no AKI"))
 creptable
 chisq.test(creptable, correct = FALSE)
-creptable <- as.table(rbind(c(sum(cr_last_aki$Cr_epis_no == "5"), 
-                              sum(cr_last_no_aki$Cr_epis_no == "5")), 
+creptable <- as.table(rbind(c(sum(cr_last_aki$Cr_epis_no == "5"),
+                              sum(cr_last_no_aki$Cr_epis_no == "5")),
                             c(nrow(cr_last_aki) - sum(cr_last_aki$Cr_epis_no == "5"),
                               nrow(cr_last_no_aki) - sum(cr_last_no_aki$Cr_epis_no == "5"))))
 dimnames(creptable) <- list(c("5 ep", "not 5 ep"), c("AKI", "no AKI"))
 creptable
 fisher.test(creptable)
-creptable <- as.table(rbind(c(sum(cr_last_aki$Cr_epis_no == "6"), 
-                              sum(cr_last_no_aki$Cr_epis_no == "6")), 
+creptable <- as.table(rbind(c(sum(cr_last_aki$Cr_epis_no == "6"),
+                              sum(cr_last_no_aki$Cr_epis_no == "6")),
                             c(nrow(cr_last_aki) - sum(cr_last_aki$Cr_epis_no == "6"),
                               nrow(cr_last_no_aki) - sum(cr_last_no_aki$Cr_epis_no == "6"))))
 dimnames(creptable) <- list(c("6 ep", "not 6 ep"), c("AKI", "no AKI"))
 creptable
 fisher.test(creptable)
-creptable <- as.table(rbind(c(sum(cr_last_aki$Cr_epis_no == "7"), 
-                              sum(cr_last_no_aki$Cr_epis_no == "7")), 
+creptable <- as.table(rbind(c(sum(cr_last_aki$Cr_epis_no == "7"),
+                              sum(cr_last_no_aki$Cr_epis_no == "7")),
                             c(nrow(cr_last_aki) - sum(cr_last_aki$Cr_epis_no == "7"),
                               nrow(cr_last_no_aki) - sum(cr_last_no_aki$Cr_epis_no == "7"))))
 dimnames(creptable) <- list(c("7 ep", "not 7 ep"), c("AKI", "no AKI"))
 creptable
 fisher.test(creptable)
-creptable <- as.table(rbind(c(sum(cr_last_aki$Cr_epis_no == "8"), 
-                              sum(cr_last_no_aki$Cr_epis_no == "8")), 
+creptable <- as.table(rbind(c(sum(cr_last_aki$Cr_epis_no == "8"),
+                              sum(cr_last_no_aki$Cr_epis_no == "8")),
                             c(nrow(cr_last_aki) - sum(cr_last_aki$Cr_epis_no == "8"),
                               nrow(cr_last_no_aki) - sum(cr_last_no_aki$Cr_epis_no == "8"))))
 dimnames(creptable) <- list(c("8 ep", "not 8 ep"), c("AKI", "no AKI"))
 creptable
 fisher.test(creptable)
-creptable <- as.table(rbind(c(sum(cr_last_aki$Cr_epis_no == "10"), 
-                              sum(cr_last_no_aki$Cr_epis_no == "10")), 
+creptable <- as.table(rbind(c(sum(cr_last_aki$Cr_epis_no == "10"),
+                              sum(cr_last_no_aki$Cr_epis_no == "10")),
                             c(nrow(cr_last_aki) - sum(cr_last_aki$Cr_epis_no == "10"),
                               nrow(cr_last_no_aki) - sum(cr_last_no_aki$Cr_epis_no == "10"))))
 dimnames(creptable) <- list(c("10 ep", "not 10 ep"), c("AKI", "no AKI"))
@@ -2815,29 +2815,29 @@ fisher.test(creptable)
 table(oli_last$Olig_epis_no)
 table(oli_last_aki$Olig_epis_no)
 table(oli_last_no_aki$Olig_epis_no)
-olieptable <- as.table(rbind(c(sum(oli_last_aki$Olig_epis_no == "1"), 
-                               sum(oli_last_no_aki$Olig_epis_no == "1")), 
+olieptable <- as.table(rbind(c(sum(oli_last_aki$Olig_epis_no == "1"),
+                               sum(oli_last_no_aki$Olig_epis_no == "1")),
                              c(nrow(oli_last_aki) - sum(oli_last_aki$Olig_epis_no == "1"),
                                nrow(oli_last_no_aki) - sum(oli_last_no_aki$Olig_epis_no == "1"))))
 dimnames(olieptable) <- list(c("1 ep", "not 1 ep"), c("AKI", "no AKI"))
 olieptable
 chisq.test(olieptable, correct = FALSE)
-olieptable <- as.table(rbind(c(sum(oli_last_aki$Olig_epis_no == "2"), 
-                               sum(oli_last_no_aki$Olig_epis_no == "2")), 
+olieptable <- as.table(rbind(c(sum(oli_last_aki$Olig_epis_no == "2"),
+                               sum(oli_last_no_aki$Olig_epis_no == "2")),
                              c(nrow(oli_last_aki) - sum(oli_last_aki$Olig_epis_no == "2"),
                                nrow(oli_last_no_aki) - sum(oli_last_no_aki$Olig_epis_no == "2"))))
 dimnames(olieptable) <- list(c("2 ep", "not 2 ep"), c("AKI", "no AKI"))
 olieptable
 chisq.test(olieptable, correct = FALSE)
-olieptable <- as.table(rbind(c(sum(oli_last_aki$Olig_epis_no == "3"), 
-                               sum(oli_last_no_aki$Olig_epis_no == "3")), 
+olieptable <- as.table(rbind(c(sum(oli_last_aki$Olig_epis_no == "3"),
+                               sum(oli_last_no_aki$Olig_epis_no == "3")),
                              c(nrow(oli_last_aki) - sum(oli_last_aki$Olig_epis_no == "3"),
                                nrow(oli_last_no_aki) - sum(oli_last_no_aki$Olig_epis_no == "3"))))
 dimnames(olieptable) <- list(c("3 ep", "not 3 ep"), c("AKI", "no AKI"))
 olieptable
 fisher.test(olieptable)
-olieptable <- as.table(rbind(c(sum(oli_last_aki$Olig_epis_no == "4"), 
-                               sum(oli_last_no_aki$Olig_epis_no == "4")), 
+olieptable <- as.table(rbind(c(sum(oli_last_aki$Olig_epis_no == "4"),
+                               sum(oli_last_no_aki$Olig_epis_no == "4")),
                              c(nrow(oli_last_aki) - sum(oli_last_aki$Olig_epis_no == "4"),
                                nrow(oli_last_no_aki) - sum(oli_last_no_aki$Olig_epis_no == "4"))))
 dimnames(olieptable) <- list(c("4 ep", "not 4 ep"), c("AKI", "no AKI"))
@@ -2854,7 +2854,7 @@ wilcox.test(Olig_epis_no ~ AKI_ICU, oli_last)
 #making function for streamlining auc analysis ----
 rocfun <- function(df, col_pre, col_out) {
   predictor <- df[[col_pre]]
-  outcome   <- df[[col_out]] 
+  outcome   <- df[[col_out]]
   # ROC
   roc_out   <- roc(outcome, predictor)
   cat(paste("Predictor:", col_pre, "| Outcome:", col_out, "\n",
@@ -2923,7 +2923,7 @@ roc(cr_first$aki2or3in24h, cr_first$percent_delta_cr)
 wilcox.test(percent_delta_cr~aki2or3in24h, cr_first)
 roc(cr_first$aki2or3in48h, cr_first$percent_delta_cr)
 wilcox.test(percent_delta_cr~aki2or3in48h, cr_first)
-#last cr ep ---- 
+#last cr ep ----
 #delta cr
 roc(cr_last$AKI_ICU, cr_last$delta_cr)
 wilcox.test(delta_cr~AKI_ICU, cr_last)
@@ -3199,35 +3199,35 @@ wilcox.test(percent_delta_cr~aki2or3in48h, cr_first2h)
 #optimal cutpoints on aucs ----
 roc(cr_first$aki2or3in24h, cr_first$delta_cr)
 cr_first <- as.data.frame(cr_first)
-optimal.cutpoint.Youden <- optimal.cutpoints(X = "delta_cr", status = "aki2or3in24h", tag.healthy = 0, 
+optimal.cutpoint.Youden <- optimal.cutpoints(X = "delta_cr", status = "aki2or3in24h", tag.healthy = 0,
                                              methods = "Youden", data = cr_first, conf.level = 0.95,
                                              ci.fit=TRUE)
 summary(optimal.cutpoint.Youden)
 roc(cr_last$aki48h, cr_last$delta_cr)
 cr_last <- as.data.frame(cr_last)
-optimal.cutpoint.Youden <- optimal.cutpoints(X = "delta_cr", status = "aki48h", tag.healthy = 0, 
+optimal.cutpoint.Youden <- optimal.cutpoints(X = "delta_cr", status = "aki48h", tag.healthy = 0,
                                              methods = "Youden", data = cr_last, conf.level = 0.95)
 summary(optimal.cutpoint.Youden)
 roc(oli_full1$aki2or3in12h, oli_full1$T0_UO_wtadjusted)
 oli_full1 <- as.data.frame(oli_full1)
-optimal.cutpoint.Youden <- optimal.cutpoints(X = "T0_UO_wtadjusted", status = "aki2or3in12h", tag.healthy = 1, 
+optimal.cutpoint.Youden <- optimal.cutpoints(X = "T0_UO_wtadjusted", status = "aki2or3in12h", tag.healthy = 1,
                                              methods = "Youden", data = oli_full1, conf.level = 0.95)
 summary(optimal.cutpoint.Youden)
 roc(oli_first1$aki2or3in12h, oli_first1$T0_UO_wtadjusted)
 oli_first1 <- as.data.frame(oli_first1)
-optimal.cutpoint.Youden <- optimal.cutpoints(X = "T0_UO_wtadjusted", status = "aki2or3in12h", tag.healthy = 1, 
+optimal.cutpoint.Youden <- optimal.cutpoints(X = "T0_UO_wtadjusted", status = "aki2or3in12h", tag.healthy = 1,
                                              methods = "Youden", data = oli_first1, conf.level = 0.95)
 summary(optimal.cutpoint.Youden)
 roc(oli_first1$aki2or3in24h, oli_first1$T0_UO_wtadjusted)
-optimal.cutpoint.Youden <- optimal.cutpoints(X = "T0_UO_wtadjusted", status = "aki2or3in24h", tag.healthy = 1, 
+optimal.cutpoint.Youden <- optimal.cutpoints(X = "T0_UO_wtadjusted", status = "aki2or3in24h", tag.healthy = 1,
                                              methods = "Youden", data = oli_first1, conf.level = 0.95)
 summary(optimal.cutpoint.Youden)
 roc(oli_first1$aki2or3in48h, oli_first1$T0_UO_wtadjusted)
-optimal.cutpoint.Youden <- optimal.cutpoints(X = "T0_UO_wtadjusted", status = "aki2or3in48h", tag.healthy = 1, 
+optimal.cutpoint.Youden <- optimal.cutpoints(X = "T0_UO_wtadjusted", status = "aki2or3in48h", tag.healthy = 1,
                                              methods = "Youden", data = oli_first1, conf.level = 0.95)
 summary(optimal.cutpoint.Youden)
 roc(oli_full1$aki12h, oli_full1$delta_cr)
-optimal.cutpoint.Youden <- optimal.cutpoints(X = "delta_cr", status = "aki12h", tag.healthy = 0, 
+optimal.cutpoint.Youden <- optimal.cutpoints(X = "delta_cr", status = "aki12h", tag.healthy = 0,
                                              methods = "Youden", data = oli_full1, conf.level = 0.95)
 summary(optimal.cutpoint.Youden)
 #--- NEW ANALYSES ----
@@ -3278,9 +3278,9 @@ creoliboth2 %>%  filter(Time_betw_cr_oli>0) %>% nrow() #take data from cr_first 
 creoliboth2 %>%  filter(Time_betw_cr_oli<0) %>% nrow() #take data from oli_first n=18
 olipts <- creoliboth2 %>%  filter(Time_betw_cr_oli<0) %>% select(Pt_Study_no)
 
-t1 <- mer$scre %>% filter(Pt_Study_no_cre %in% crpts$Pt_Study_no) %>% 
+t1 <- mer$scre %>% filter(Pt_Study_no_cre %in% crpts$Pt_Study_no) %>%
   select(Pt_Study_no_cre, Pt_Study_no_oli) %>% arrange(Pt_Study_no_cre)
-t2 <- mer$scre %>% filter(Pt_Study_no_oli %in% olipts$Pt_Study_no) %>% 
+t2 <- mer$scre %>% filter(Pt_Study_no_oli %in% olipts$Pt_Study_no) %>%
   select(Pt_Study_no_cre, Pt_Study_no_oli) %>% arrange(Pt_Study_no_cre)
 View(t1)
 View(t2)
@@ -3307,7 +3307,7 @@ length(unique(data3$Pt_Study_no))
 sum(data3$data_cr_ep)
 summary(data3$Time_betw_ABG)
 #save dataframe
-save(data3,file="EpocData313ptsfirstepinICU.RData") 
+save(data3,file="EpocData313ptsfirstepinICU.RData")
 #creating new dataset of first ep with specific conditions n=277 ----
 #clean the full cr database with specific conditions
 cr_first_clean <- cr_full %>% filter(Time_betw_ICU_cr>=2)
@@ -3316,15 +3316,15 @@ cr_first_clean <- cr_first_clean %>% filter(Time_betw_ABG>=2) %>% filter(Time_be
 nrow(cr_first_clean) #450 rows
 cr_first_clean <- cr_first_clean %>% filter(Time_betw_ICU_cr<=48)
 nrow(cr_first_clean) #390 rows
-cr_first_clean <- cr_first_clean %>% 
-  group_by(Pt_Study_no) %>% 
+cr_first_clean <- cr_first_clean %>%
+  group_by(Pt_Study_no) %>%
   top_n(-1, Cr_epis_no) %>% ungroup()
 nrow(cr_first_clean) #227 rows = 227 patients
 #clean full oli database with specific conditions
 oli_first_clean <- oli_full %>% filter(Time_betw_ICU_oli<=48)
 nrow(oli_first_clean) #202
-oli_first_clean <- oli_first_clean %>% 
-  group_by(Pt_Study_no) %>% 
+oli_first_clean <- oli_first_clean %>%
+  group_by(Pt_Study_no) %>%
   top_n(-1, Olig_epis_no) %>% ungroup()
 nrow(oli_first_clean) #154
 #oliguria only clean
@@ -3335,28 +3335,28 @@ nrow(olionlyclean) #32 = 32 patients
 #cr pts excluded on specific conditions but also had oli ep
 group4 <-  mer$both %>% filter(! Pt_Study_no_cre %in% cr_first_clean$Pt_Study_no)
 nrow(group4) # 21 patients
-group4 <- oli_first_clean %>% filter(Pt_Study_no %in% group4$Pt_Study_no_oli) 
+group4 <- oli_first_clean %>% filter(Pt_Study_no %in% group4$Pt_Study_no_oli)
 nrow(group4) #18 pts
-# cr pts excluded on specific conditions who also had oli ep 
+# cr pts excluded on specific conditions who also had oli ep
 # but 3 pts also excluded from oli with specific conditions
 # 18 pts need to take data from oli_first_clean (group 4)
 
 # group 3
 # pts had first oli ep meeting conditions before first cr ep meeting conditions
 group1n3 <- left_join(cr_first_clean,
-                    mer$both %>% select(Pt_Study_no_oli, Pt_Study_no_cre) %>% 
+                    mer$both %>% select(Pt_Study_no_oli, Pt_Study_no_cre) %>%
                       rename(Pt_Study_no = Pt_Study_no_cre),
                     by = "Pt_Study_no")
 select(group1n3, Pt_Study_no, Pt_Study_no_oli)
 group1n3 <- left_join(group1n3,
-                    oli_first_clean %>% select(Pt_Study_no, DateTime_olig_epis) %>% 
+                    oli_first_clean %>% select(Pt_Study_no, DateTime_olig_epis) %>%
                       rename(Pt_Study_no_oli = Pt_Study_no),
                     by = "Pt_Study_no_oli")
 select(group1n3, Pt_Study_no, Pt_Study_no_oli, DateTime_Cr_epis, DateTime_olig_epis)
 group1n3 <- group1n3 %>% mutate(
   Time_betw_cr_oli = as.duration(DateTime_Cr_epis %--% DateTime_olig_epis) / dhours(1)
 )
-select(group1n3, Pt_Study_no, Pt_Study_no_oli, 
+select(group1n3, Pt_Study_no, Pt_Study_no_oli,
        DateTime_Cr_epis, DateTime_olig_epis, Time_betw_cr_oli)
 # if positive or NA, cr happened first
 nrow(group1n3 %>% filter(is.na(Time_betw_cr_oli) | Time_betw_cr_oli > 0)) #213 Cr first
@@ -3390,9 +3390,9 @@ nrow(group1) + nrow(group2) + nrow(group3) + nrow(group4) #277 pts
 
 # Double check we have the right number of patients
 mer$scre %>% filter(!is.na(Pt_Study_no_oli) | !is.na(Pt_Study_no_cre)) %>% nrow()
-mer$scre %>% filter(!is.na(Pt_Study_no_oli) | !is.na(Pt_Study_no_cre)) %>% 
+mer$scre %>% filter(!is.na(Pt_Study_no_oli) | !is.na(Pt_Study_no_cre)) %>%
   filter(!Pt_Study_no_oli %in% oli_first_clean$Pt_Study_no,
-         !Pt_Study_no_cre %in% cr_first_clean$Pt_Study_no) %>% 
+         !Pt_Study_no_cre %in% cr_first_clean$Pt_Study_no) %>%
   nrow()  # 36 have been excluded by special conditions
 313 - 36 #277 pts
 
@@ -3416,10 +3416,10 @@ summary(data4$Time_betw_ABG)
 #add binary variables for vasopressor
 data4 <- data4 %>% mutate(vaso_binary = ifelse(T0_Norad ==0 & T0_Metaraminol==0, 0, 1))
 #identify pts with aki2or3 in 12h
-data4 %>% filter(aki12h == 1) %>% 
+data4 %>% filter(aki12h == 1) %>%
   filter(akistagesv2 == 2 | akistagesv2==3) %>% select(Pt_Study_no) %>% View()
 #save dataframe
-save(data4,file="EpocData277ptsfirstepinICU.RData") 
+save(data4,file="EpocData277ptsfirstepinICU.RData")
 #full cohort demographics n=387 ----
 #make full dataframe n=387
 nrow(cr_first) #279
@@ -3434,20 +3434,20 @@ scr_out$nocr <-  as.data.frame(scr_out$nocr)
 fulldemo <- rbind( cr_first[ ,c("Age", "Male", "Wt", "Wtmeasured", "Surgadmission",
                                  "Mecvenadm", "APACHE_II", "APACHE_III", "ICU_LOS", "Hosp_LOS",
                                  "Dc_ICU_Alive", "Dc_Hosp_Alive", "PCm_cardio", "PCm_resp",
-                                "PCm_GI","PCm_neuro","PCm_sepsis","PCm_trauma","PCm_metabolic","PCm_Haem",                   
-                                "PCm_renal","PCm_other","PCm_msk",                       
-                                "PCs_cardio","PCs_resp","PCs_GI",                        
-                                "PCs_neuro","PCs_trauma","PCs_renal",                     
-                                "PCs_gynae","PCs_msk","PCs_haem",                      
+                                "PCm_GI","PCm_neuro","PCm_sepsis","PCm_trauma","PCm_metabolic","PCm_Haem",
+                                "PCm_renal","PCm_other","PCm_msk",
+                                "PCs_cardio","PCs_resp","PCs_GI",
+                                "PCs_neuro","PCs_trauma","PCs_renal",
+                                "PCs_gynae","PCs_msk","PCs_haem",
                                 "PCs_metabolic")],
-                       scr_out$nocr[ ,c("Age", "Male", "Wt", "Wtmeasured", "Surgadmission", 
+                       scr_out$nocr[ ,c("Age", "Male", "Wt", "Wtmeasured", "Surgadmission",
                                      "Mecvenadm", "APACHE_II", "APACHE_III", "ICU_LOS", "Hosp_LOS",
                                      "Dc_ICU_Alive", "Dc_Hosp_Alive","PCm_cardio", "PCm_resp",
-                                     "PCm_GI","PCm_neuro","PCm_sepsis","PCm_trauma","PCm_metabolic","PCm_Haem",                   
-                                     "PCm_renal","PCm_other","PCm_msk",                       
-                                     "PCs_cardio","PCs_resp","PCs_GI",                        
-                                     "PCs_neuro","PCs_trauma","PCs_renal",                     
-                                     "PCs_gynae","PCs_msk","PCs_haem",                      
+                                     "PCm_GI","PCm_neuro","PCm_sepsis","PCm_trauma","PCm_metabolic","PCm_Haem",
+                                     "PCm_renal","PCm_other","PCm_msk",
+                                     "PCs_cardio","PCs_resp","PCs_GI",
+                                     "PCs_neuro","PCs_trauma","PCs_renal",
+                                     "PCs_gynae","PCs_msk","PCs_haem",
                                      "PCs_metabolic")])
 dim(fulldemo)
 colnames(fulldemo)
@@ -3524,7 +3524,7 @@ sum(is.na(fulldemo$Dc_Hosp_Alive))
 sum(na.omit(fulldemo$Dc_Hosp_Alive))
 sum(na.omit(fulldemo$Dc_Hosp_Alive)==0)
 sum(na.omit(fulldemo$Dc_Hosp_Alive)==0)/nrow(fulldemo) *100
-#ICU adm to AKI Dx 
+#ICU adm to AKI Dx
 #merge cr_first and olionly_first
 icutoaki <- rbind(cr_first[, c("Age", "ICUadmtoAKIDx")], olionly_first[,c("Age", "ICUadmtoAKIDx")])
 shapiro.test(icutoaki$ICUadmtoAKIDx)
@@ -3574,12 +3574,12 @@ sum(na.omit(cronly_first$Dc_Hosp_Alive)==0)/nrow(cronly_first) *100
 #import APACHEs from APD extract ----
 # Load APD extract
 print(list.files(pattern = ".xlsx"))
-apdextract <- read_excel("APD231018.xlsx", "Admissions") 
+apdextract <- read_excel("APD231018.xlsx", "Admissions")
 # colnames(apdextract)
 apdextract <- apdextract[
-  c("HRN/NIH", "ICU_ADM_DTM", 
-    "AP2score", "AP3score")] 
-apdextract <- apdextract%>% 
+  c("HRN/NIH", "ICU_ADM_DTM",
+    "AP2score", "AP3score")]
+apdextract <- apdextract%>%
   mutate(AP2score = as.numeric(AP2score),
          AP3score = as.numeric(AP3score))
 # type = "cre"; df = cr_first; apddf = apdextract; scre = mer$scre
@@ -3599,60 +3599,60 @@ mergeapscore <- function(type, df, apddf, scre) {
   apddf <- rename(apddf, `UR number` = `HRN/NIH`)
   df <- left_join(df, apddf, c("UR number")) %>% ungroup()
   # Check difference between DateTime_ICU_admit and ICU_ADM_DTM
-  df <- df %>% 
-    mutate(ICU_admit_diff = 
-             as.duration(DateTime_ICU_admit %--% force_tz(ICU_ADM_DTM, "Australia/Melbourne")) / dhours(1)) %>% 
+  df <- df %>%
+    mutate(ICU_admit_diff =
+             as.duration(DateTime_ICU_admit %--% force_tz(ICU_ADM_DTM, "Australia/Melbourne")) / dhours(1)) %>%
     mutate(ICU_admit_diff = ifelse(is.na(ICU_admit_diff), 0, ICU_admit_diff))
   # check <- df %>% filter(Pt_Study_no == "LT22") %>% select(`UR number`, "DateTime_ICU_admit", "ICU_ADM_DTM", "ICU_admit_diff")
   # View(df %>% select(`UR number`, "DateTime_ICU_admit", "ICU_ADM_DTM", "ICU_admit_diff", "AP2score", "AP3score"))
   # Filter out incorrect date times
-  outdf <- df %>% 
-    group_by(Pt_Study_no) %>% 
-    top_n(-1, abs(ICU_admit_diff)) %>% 
-    mutate(remove = (abs(ICU_admit_diff) > 24)) %>% 
+  outdf <- df %>%
+    group_by(Pt_Study_no) %>%
+    top_n(-1, abs(ICU_admit_diff)) %>%
+    mutate(remove = (abs(ICU_admit_diff) > 24)) %>%
     mutate(ICU_ADM_DTM = ifelse(remove, NA, ICU_ADM_DTM),
            AP2score    = ifelse(remove, NA, AP2score),
-           AP3score    = ifelse(remove, NA, AP3score)) %>% 
-    select(-`UR number`, -remove) %>% 
+           AP3score    = ifelse(remove, NA, AP3score)) %>%
+    select(-`UR number`, -remove) %>%
     ungroup()
-  # errdf <- df %>% 
-  #   filter(abs(ICU_admit_diff) > 24) %>% 
+  # errdf <- df %>%
+  #   filter(abs(ICU_admit_diff) > 24) %>%
   #   select("Pt_Study_no", `UR number`, "DateTime_ICU_admit", "ICU_ADM_DTM", "ICU_admit_diff", "AP2score", "AP3score")
   # # View(errdf)
   # nrow(outdf)
-  
+
   if(nrow(outdf) != oldnrow) warning("Rows missing or rows added")
   if(sum(oldPt != outdf$Pt_Study_no) != 0) warning("Patients missing or added...")
   return(outdf)
 }
 
 #cr_first
-cr_first <- mergeapscore("cre", cr_first, apdextract, mer$scre) %>% 
+cr_first <- mergeapscore("cre", cr_first, apdextract, mer$scre) %>%
   mutate(APACHE_II  = AP2score,
-         APACHE_III = AP3score) %>% 
+         APACHE_III = AP3score) %>%
   select(-AP2score, -AP3score)
 dim(cr_first)
 sum(is.na(cr_first$APACHE_III))
 
 #scr_out$nocr
-df = scr_out$nocr %>% mutate(unique = row_number()) 
+df = scr_out$nocr %>% mutate(unique = row_number())
 df <- left_join(df, rename(apdextract, UR=`HRN/NIH`), c("UR")) %>% ungroup()
 # Check difference between DateTime_ICU_admit and ICU_ADM_DTM
-df <- df %>% 
-  mutate(ICU_admit_diff = 
-           as.duration(DateTime_ICU_admit %--% force_tz(ICU_ADM_DTM, "Australia/Melbourne")) / dhours(1)) %>% 
+df <- df %>%
+  mutate(ICU_admit_diff =
+           as.duration(DateTime_ICU_admit %--% force_tz(ICU_ADM_DTM, "Australia/Melbourne")) / dhours(1)) %>%
   mutate(ICU_admit_diff = ifelse(is.na(ICU_admit_diff), 0, ICU_admit_diff))
-df <- df %>% 
-  group_by(unique) %>% 
-  top_n(-1, abs(ICU_admit_diff)) %>% 
-  mutate(remove = (abs(ICU_admit_diff) > 24)) %>% 
+df <- df %>%
+  group_by(unique) %>%
+  top_n(-1, abs(ICU_admit_diff)) %>%
+  mutate(remove = (abs(ICU_admit_diff) > 24)) %>%
   mutate(ICU_ADM_DTM = ifelse(remove, NA, ICU_ADM_DTM),
          AP2score    = ifelse(remove, NA, AP2score),
-         AP3score    = ifelse(remove, NA, AP3score)) %>% 
-  ungroup() %>% 
-  select(-unique, -remove) %>% 
+         AP3score    = ifelse(remove, NA, AP3score)) %>%
+  ungroup() %>%
+  select(-unique, -remove) %>%
   mutate(APACHE_II  = AP2score,
-         APACHE_III = AP3score) %>% 
+         APACHE_III = AP3score) %>%
   select(-AP2score, -AP3score)
 
 scr_out$nocr <-  df
@@ -3707,7 +3707,7 @@ round(exp(summary(glm(AKI_ICU~crep, data = crunivar, family = "binomial"))$coeff
 round(exp(confint(glm(AKI_ICU~crep, data = crunivar, family = "binomial")))[-1,],3)
 
 #try to make a loop
-outcomecols <- c("AKI_ICU", "aki2or3", "aki12h", "aki24h", "aki48h", "aki2or3in12h", "aki2or3in24h", 
+outcomecols <- c("AKI_ICU", "aki2or3", "aki12h", "aki24h", "aki48h", "aki2or3in12h", "aki2or3in24h",
                  "aki2or3in48h")
 scr_out$neit$aki2or3 <- 0
 scr_out$neit$aki12h <- 0
@@ -3754,7 +3754,7 @@ table$o <- c("AKI in ICU", "AKI stages 2 & 3 in ICU", "AKI in 12h", "AKI in 24h"
 table
 #plot the output for figure with aki outcomes only
 #my version 1
-fig2plot <- ggplot(table, aes(x = o, y = or)) + 
+fig2plot <- ggplot(table, aes(x = o, y = or)) +
   theme_bw() +
   geom_hline(yintercept=1, linetype=2, color="grey40") +
   geom_errorbar(aes(ymin=ci.low, ymax=ci.up), width=0.2, size=0.6) +
@@ -3766,11 +3766,11 @@ fig2plot <- ggplot(table, aes(x = o, y = or)) +
   scale_y_continuous(breaks = 1:10) +
   theme(panel.grid.major.y = element_blank(),
         panel.grid.minor.x = element_blank()) +
-  geom_text(data = table, 
-            aes(y=11, x=o, label= paste0(round(or,1)," [",round(ci.low,1),"-",round(ci.up,1),"]" )), 
+  geom_text(data = table,
+            aes(y=11, x=o, label= paste0(round(or,1)," [",round(ci.low,1),"-",round(ci.up,1),"]" )),
             size=3.2)
 #alwin's final version - landscape
-fig2plot <- ggplot(table, aes(x = o, y = or)) + 
+fig2plot <- ggplot(table, aes(x = o, y = or)) +
   theme_bw() +
   geom_hline(yintercept=1, linetype=2, color="grey40") +
   geom_errorbar(aes(ymin=ci.low, ymax=ci.up), width=0.2, size=0.6) +
@@ -3785,18 +3785,18 @@ fig2plot <- ggplot(table, aes(x = o, y = or)) +
         text = element_text(size=14),
         axis.title.x = element_text(size=12),
         axis.text = element_text(colour = "black")) +
-  geom_text(data = table, 
+  geom_text(data = table,
             aes(y=10.6, x=o, label= sprintf("%3.1f [%3.1f-%3.1f]", or, ci.low, ci.up)),
             size=3.5)
-# %3.1f means use at least 3 characters and round to 1 decimal places: 
+# %3.1f means use at least 3 characters and round to 1 decimal places:
 #   sprintf("%3.1f", pi) --> "3.1"
-# %8.4f means use at least 8 characters and round to 4 decimal places: 
+# %8.4f means use at least 8 characters and round to 4 decimal places:
 #   sprintf("%8.4f", pi) --> "  3.1416"
 fig2plot
 #alwin's version smaller size + Times New Roman
 windowsFonts(TimesNewRoman = windowsFont("Times New Roman"))
 
-fig2plot <- ggplot(table, aes(x = o, y = or)) + 
+fig2plot <- ggplot(table, aes(x = o, y = or)) +
   theme_bw() +
   geom_hline(yintercept=1, linetype=2, color="grey40") +
   geom_errorbar(aes(ymin=ci.low, ymax=ci.up), width=0.2, size=0.6) +
@@ -3811,13 +3811,13 @@ fig2plot <- ggplot(table, aes(x = o, y = or)) +
         text = element_text(size=14, family = "TimesNewRoman"),
         axis.title.x = element_text(size=12, family = "TimesNewRoman"),
         axis.text = element_text(colour = "black")) +
-  geom_text(data = table, 
+  geom_text(data = table,
             aes(y=11.3, x=o, label= sprintf("%3.1f [%3.1f-%3.1f]", or, ci.low, ci.up)),
             size=3.7,
             family = "TimesNewRoman")
-# %3.1f means use at least 3 characters and round to 1 decimal places: 
+# %3.1f means use at least 3 characters and round to 1 decimal places:
 #   sprintf("%3.1f", pi) --> "3.1"
-# %8.4f means use at least 8 characters and round to 4 decimal places: 
+# %8.4f means use at least 8 characters and round to 4 decimal places:
 #   sprintf("%8.4f", pi) --> "  3.1416"
 fig2plot
 
@@ -3825,7 +3825,7 @@ ggsave("fig2plot.png", plot = fig2plot, width = 15, height = 9, units = "cm",
        scale = 1.2, dpi = 300)
 save(table,file="LisaTohfigure2data.RData") #this makes it flatter looking
 #plot the output for figure with hosp mortality added
-fig2plot <- ggplot(table, aes(x = o, y = or)) + 
+fig2plot <- ggplot(table, aes(x = o, y = or)) +
   theme_bw() +
   geom_hline(yintercept=1, linetype=2, color="grey40") +
   geom_errorbar(aes(ymin=ci.low, ymax=ci.up), width=0.2, size=0.6) +
@@ -3837,8 +3837,8 @@ fig2plot <- ggplot(table, aes(x = o, y = or)) +
   scale_y_continuous(breaks = 1:11) +
   theme(panel.grid.major.y = element_blank(),
         panel.grid.minor.x = element_blank()) +
-  geom_text(data = table, 
-            aes(y=11.5, x=o, label= paste0(round(or,1)," [",round(ci.low,1),"-",round(ci.up,1),"]" )), 
+  geom_text(data = table,
+            aes(y=11.5, x=o, label= paste0(round(or,1)," [",round(ci.low,1),"-",round(ci.up,1),"]" )),
             size=3.2)
 fig2plot
 #GLM Unipredictor cr_first ----
@@ -3846,7 +3846,7 @@ fig2plot
 cr_first <- cr_first %>% mutate(ICU_mortality = ifelse(Dc_ICU_Alive == 1, 0, 1),
                                 Hosp_mortality = ifelse(Dc_Hosp_Alive == 1 , 0, 1))
 temp <- cr_first
-outcomecols <- c("AKI_ICU", "aki2or3", "aki12h", "aki24h", "aki48h", "aki2or3in12h", "aki2or3in24h", 
+outcomecols <- c("AKI_ICU", "aki2or3", "aki12h", "aki24h", "aki48h", "aki2or3in12h", "aki2or3in24h",
                  "aki2or3in48h", "ICU_mortality", "Hosp_mortality")
 predictorcols <- c("crchange", "delta_cr", "percent_delta_cr")
 table <- data.frame()
@@ -3880,8 +3880,8 @@ for (o in c(1:length(outcomecols))) {
 rownames(table) <- NULL
 write.csv(table, "cr_first_univariate.csv")
 # Plot the output
-ggplot(table, aes(x = outcome, y = or)) + 
-  facet_wrap(~predictor, scales = "free_x") + 
+ggplot(table, aes(x = outcome, y = or)) +
+  facet_wrap(~predictor, scales = "free_x") +
   theme_bw() +
   geom_hline(yintercept=1, linetype=2, color="grey40") +
   geom_errorbar(aes(ymin=ci.low, ymax=ci.up), width=0.2, size=0.6) +
@@ -3895,7 +3895,7 @@ ggplot(table, aes(x = outcome, y = or)) +
 # GLM unipredictor Cr more than 2 hrs v1 ----
 cr_first2h <- cr_full %>% filter(Time_betw_ABG>=2) %>% group_by(Pt_Study_no) %>% top_n(-1, Cr_epis_no)
 temp <- cr_first2h
-outcomecols <- c("AKI_ICU", "aki2or3", "aki12h", "aki24h", "aki48h", "aki2or3in12h", "aki2or3in24h", 
+outcomecols <- c("AKI_ICU", "aki2or3", "aki12h", "aki24h", "aki48h", "aki2or3in12h", "aki2or3in24h",
                  "aki2or3in48h")
 predictorcols <- c("crchange", "delta_cr", "percent_delta_cr")
 table <- data.frame()
@@ -3929,8 +3929,8 @@ for (o in c(1:length(outcomecols))) {
 rownames(table) <- NULL
 write.csv(table, "cr_first2h_univariate.csv")
 # Plot the output
-ggplot(table, aes(x = outcome, y = or)) + 
-  facet_wrap(~predictor, scales = "free_x") + 
+ggplot(table, aes(x = outcome, y = or)) +
+  facet_wrap(~predictor, scales = "free_x") +
   theme_bw() +
   geom_hline(yintercept=1, linetype=2, color="grey40") +
   geom_errorbar(aes(ymin=ci.low, ymax=ci.up), width=0.2, size=0.6) +
@@ -3944,7 +3944,7 @@ ggplot(table, aes(x = outcome, y = or)) +
 # GLM unipredictor Cr more than 2 hrs v2 ----
 cr_first2hv2 <- cr_first %>% filter(Time_betw_ABG>=2)
 temp <- cr_first2hv2
-outcomecols <- c("AKI_ICU", "aki2or3", "aki12h", "aki24h", "aki48h", "aki2or3in12h", "aki2or3in24h", 
+outcomecols <- c("AKI_ICU", "aki2or3", "aki12h", "aki24h", "aki48h", "aki2or3in12h", "aki2or3in24h",
                  "aki2or3in48h")
 predictorcols <- c("crchange", "delta_cr", "percent_delta_cr")
 table <- data.frame()
@@ -3978,8 +3978,8 @@ for (o in c(1:length(outcomecols))) {
 rownames(table) <- NULL
 write.csv(table, "cr_first2hv2_univariate.csv")
 # Plot the output
-ggplot(table, aes(x = outcome, y = or)) + 
-  facet_wrap(~predictor, scales = "free_x") + 
+ggplot(table, aes(x = outcome, y = or)) +
+  facet_wrap(~predictor, scales = "free_x") +
   theme_bw() +
   geom_hline(yintercept=1, linetype=2, color="grey40") +
   geom_errorbar(aes(ymin=ci.low, ymax=ci.up), width=0.2, size=0.6) +
@@ -3992,7 +3992,7 @@ ggplot(table, aes(x = outcome, y = or)) +
 #GLM unipredictor Cr more than 4 hrs ----
 cr_first4h <- cr_full %>% filter(Time_betw_ABG>=4) %>% group_by(Pt_Study_no) %>% top_n(-1, Cr_epis_no)
 temp <- cr_first4h
-outcomecols <- c("AKI_ICU", "aki2or3", "aki12h", "aki24h", "aki48h", "aki2or3in12h", "aki2or3in24h", 
+outcomecols <- c("AKI_ICU", "aki2or3", "aki12h", "aki24h", "aki48h", "aki2or3in12h", "aki2or3in24h",
                  "aki2or3in48h")
 predictorcols <- c("crchange", "delta_cr", "percent_delta_cr")
 table <- data.frame()
@@ -4026,8 +4026,8 @@ for (o in c(1:length(outcomecols))) {
 rownames(table) <- NULL
 write.csv(table, "cr_first4h_univariate.csv")
 # Plot the output
-ggplot(table, aes(x = outcome, y = or)) + 
-  facet_wrap(~predictor, scales = "free_x") + 
+ggplot(table, aes(x = outcome, y = or)) +
+  facet_wrap(~predictor, scales = "free_x") +
   theme_bw() +
   geom_hline(yintercept=1, linetype=2, color="grey40") +
   geom_errorbar(aes(ymin=ci.low, ymax=ci.up), width=0.2, size=0.6) +
@@ -4039,7 +4039,7 @@ ggplot(table, aes(x = outcome, y = or)) +
   ggtitle("cr_first4h")
 # Multivariate Analysis cr_first ----
 temp <- cr_first
-outcomecols <- c("AKI_ICU", "aki2or3", "aki12h", "aki24h", "aki48h", "aki2or3in12h", "aki2or3in24h", 
+outcomecols <- c("AKI_ICU", "aki2or3", "aki12h", "aki24h", "aki48h", "aki2or3in12h", "aki2or3in24h",
                  "aki2or3in48h")
 predictorcols <- c("crchange", "delta_cr", "percent_delta_cr")
 variablecols <- c("Age", "APACHE_III", "Baseline_Cr", "PCs_cardio")
@@ -4057,30 +4057,30 @@ for (o in c(1:length(outcomecols))) {
     # Perform glm with and without pred
     mod.null <- glm(outcome~var1+var2+var3+var4,      data = df, family = "binomial")
     mod.full <- glm(outcome~var1+var2+var3+var4+pred, data = df, family = "binomial")
-    
+
     glm.pval=round(anova(mod.null,mod.full,test="LRT")[2,5],3)
-    
+
     # Summarise the output
     coef.null <- round(exp(summary(mod.null)$coefficients[-1,1]),2)
     coef.null.df <- as.data.frame(t(coef.null))
     colnames(coef.null.df) <- paste0("null_", colnames(coef.null.df))
     ci.null   <- round(exp(confint(mod.null))[-1,],3)
-    ci.null.df <- as.data.frame(ci.null) %>% cbind(., var = rownames(ci.null)) %>% gather(key, value, -var) %>% 
-      mutate(var = ifelse(key == "2.5 %", paste0("null_", var,".ci.low"), paste0("null_", var, ".ci.up"))) %>% 
+    ci.null.df <- as.data.frame(ci.null) %>% cbind(., var = rownames(ci.null)) %>% gather(key, value, -var) %>%
+      mutate(var = ifelse(key == "2.5 %", paste0("null_", var,".ci.low"), paste0("null_", var, ".ci.up"))) %>%
       select(-key) %>% arrange(var) %>% t(.)
     colnames(ci.null.df) <- ci.null.df[1,]
     ci.null.df <- as.data.frame(t(as.matrix(ci.null.df[2,])))
-    
+
     coef.full <- round(exp(summary(mod.full)$coefficients[-1,1]),2)
     coef.full.df <- as.data.frame(t(coef.full))
     colnames(coef.full.df) <- paste0("full_", colnames(coef.full.df))
     ci.full   <- round(exp(confint(mod.full))[-1,],3)
-    ci.full.df <- as.data.frame(ci.full) %>% cbind(., var = rownames(ci.full)) %>% gather(key, value, -var) %>% 
-      mutate(var = ifelse(key == "2.5 %", paste0("full_", var,".ci.low"), paste0("full_", var, ".ci.up"))) %>% 
+    ci.full.df <- as.data.frame(ci.full) %>% cbind(., var = rownames(ci.full)) %>% gather(key, value, -var) %>%
+      mutate(var = ifelse(key == "2.5 %", paste0("full_", var,".ci.low"), paste0("full_", var, ".ci.up"))) %>%
       select(-key) %>% arrange(var) %>% t(.)
     colnames(ci.full.df) <- ci.full.df[1,]
     ci.full.df <- as.data.frame(t(as.matrix(ci.full.df[2,])))
-    
+
     # Return the output
     r <-data.frame(
       o = o, p= p,
@@ -4109,19 +4109,19 @@ for(i in c(1:length(test.pred.index))){
   index<-c(variables.index,test.pred.index[i])
   temp<-df[,c(j,index)]
   temp<-temp[complete.cases(temp),]
-  
+
   pred.test.name=colnames(temp)[length(index)+1]
   colnames(temp)[length(index)+1]="pred.test"
-  
+
   mod.null<-glm(aki2or3in24h~.-pred.test,data=temp,family="binomial",x=T)
   mod.1<-glm(aki2or3in24h~.,data=temp,family="binomial",x=T)
   glm.pval=round(anova(mod.null,mod.1,test="LRT")[2,5],2)
-  
+
   auc=round(roc(aki2or3in24h~predict(mod.1),data=temp)$auc,2)
-  
+
   res=nribin(mdl.std=mod.null,mdl.new=mod.1,cut=0.1,niter=0,updown='diff',msg=F)
   nri=round(res$nri[c(1:3),1],2)
-  
+
   r=data.frame(pred=pred.test.name,glm.pval,auc,nri.all=nri[1],nri.pos=nri[2],nri.neg=nri[3])
   table=rbind(table,r)
 }
@@ -4134,7 +4134,7 @@ nribin(mdl.std=mod.null,mdl.new=mod.1,cut=0.1,niter=1000,updown='diff', alpha = 
 #multivariate analysis cr more than 2 hrs v1 ----
 cr_first2h <- cr_full %>% filter(Time_betw_ABG>=2) %>% group_by(Pt_Study_no) %>% top_n(-1, Cr_epis_no)
 temp <- cr_first2h
-outcomecols <- c("AKI_ICU", "aki2or3", "aki12h", "aki24h", "aki48h", "aki2or3in12h", "aki2or3in24h", 
+outcomecols <- c("AKI_ICU", "aki2or3", "aki12h", "aki24h", "aki48h", "aki2or3in12h", "aki2or3in24h",
                  "aki2or3in48h")
 predictorcols <- c("crchange", "delta_cr", "percent_delta_cr")
 variablecols <- c("Age", "APACHE_II", "APACHE_III", "Baseline_Cr", "PCs_cardio")
@@ -4152,30 +4152,30 @@ for (o in c(1:length(outcomecols))) {
     # Perform glm with and without pred
     mod.null <- glm(outcome~var1+var2+var3+var4+var5,      data = df, family = "binomial")
     mod.full <- glm(outcome~var1+var2+var3+var4+var5+pred, data = df, family = "binomial")
-    
+
     glm.pval=round(anova(mod.null,mod.full,test="LRT")[2,5],2)
-    
+
     # Summarise the output
     coef.null <- round(exp(summary(mod.null)$coefficients[-1,1]),2)
     coef.null.df <- as.data.frame(t(coef.null))
     colnames(coef.null.df) <- paste0("null_", colnames(coef.null.df))
     ci.null   <- round(exp(confint(mod.null))[-1,],3)
-    ci.null.df <- as.data.frame(ci.null) %>% cbind(., var = rownames(ci.null)) %>% gather(key, value, -var) %>% 
-      mutate(var = ifelse(key == "2.5 %", paste0("null_", var,".ci.low"), paste0("null_", var, ".ci.up"))) %>% 
+    ci.null.df <- as.data.frame(ci.null) %>% cbind(., var = rownames(ci.null)) %>% gather(key, value, -var) %>%
+      mutate(var = ifelse(key == "2.5 %", paste0("null_", var,".ci.low"), paste0("null_", var, ".ci.up"))) %>%
       select(-key) %>% arrange(var) %>% t(.)
     colnames(ci.null.df) <- ci.null.df[1,]
     ci.null.df <- as.data.frame(t(as.matrix(ci.null.df[2,])))
-    
+
     coef.full <- round(exp(summary(mod.full)$coefficients[-1,1]),2)
     coef.full.df <- as.data.frame(t(coef.full))
     colnames(coef.full.df) <- paste0("full_", colnames(coef.full.df))
     ci.full   <- round(exp(confint(mod.full))[-1,],3)
-    ci.full.df <- as.data.frame(ci.full) %>% cbind(., var = rownames(ci.full)) %>% gather(key, value, -var) %>% 
-      mutate(var = ifelse(key == "2.5 %", paste0("full_", var,".ci.low"), paste0("full_", var, ".ci.up"))) %>% 
+    ci.full.df <- as.data.frame(ci.full) %>% cbind(., var = rownames(ci.full)) %>% gather(key, value, -var) %>%
+      mutate(var = ifelse(key == "2.5 %", paste0("full_", var,".ci.low"), paste0("full_", var, ".ci.up"))) %>%
       select(-key) %>% arrange(var) %>% t(.)
     colnames(ci.full.df) <- ci.full.df[1,]
     ci.full.df <- as.data.frame(t(as.matrix(ci.full.df[2,])))
-    
+
     # Return the output
     r <-data.frame(
       o = o, p= p,
@@ -4280,32 +4280,32 @@ summary(qwer$ICUadmtoAKIDx)
 icutoaki <- rbind(asdf[, c("Age", "ICUadmtoAKIDx")], qwer[,c("Age", "ICUadmtoAKIDx")])
 summary(icutoaki$ICUadmtoAKIDx)
 wilcox.test(asdf$ICUadmtoAKIDx, qwer$ICUadmtoAKIDx)
-AKItable <- as.table(rbind(c(sum(cr_first$Cr_defined_AKI), 
-                             sum(olionly_first$Cr_defined_AKI)), 
-                           c(nrow(cr_first) - sum(cr_first$Cr_defined_AKI), 
+AKItable <- as.table(rbind(c(sum(cr_first$Cr_defined_AKI),
+                             sum(olionly_first$Cr_defined_AKI)),
+                           c(nrow(cr_first) - sum(cr_first$Cr_defined_AKI),
                              108 - sum(olionly_first$Cr_defined_AKI))))
-dimnames(AKItable) <- list(c("AKI", "no AKI"), c("cr", "no cr"))      
+dimnames(AKItable) <- list(c("AKI", "no AKI"), c("cr", "no cr"))
 AKItable
 chisq.test(AKItable, correct = FALSE)
-AKIs1table <- as.table(rbind(c(sum(na.omit(cr_first$Cr_defined_AKI_stage == "1")), 
-                               sum(na.omit(olionly_first$Cr_defined_AKI_stage == "1"))), 
-                             c(sum(cr_first$Cr_defined_AKI) - sum(na.omit(cr_first$Cr_defined_AKI_stage == "1")), 
+AKIs1table <- as.table(rbind(c(sum(na.omit(cr_first$Cr_defined_AKI_stage == "1")),
+                               sum(na.omit(olionly_first$Cr_defined_AKI_stage == "1"))),
+                             c(sum(cr_first$Cr_defined_AKI) - sum(na.omit(cr_first$Cr_defined_AKI_stage == "1")),
                                sum(olionly_first$Cr_defined_AKI) - sum(na.omit(olionly_first$Cr_defined_AKI_stage == "1")))))
-dimnames(AKIs1table) <- list(c("AKIs1", "not AKIs1"), c("cr", "no cr"))      
+dimnames(AKIs1table) <- list(c("AKIs1", "not AKIs1"), c("cr", "no cr"))
 AKIs1table
 fisher.test(AKIs1table)
-AKIs2table <- as.table(rbind(c(sum(na.omit(cr_first$Cr_defined_AKI_stage == "2")), 
-                               sum(na.omit(olionly_first$Cr_defined_AKI_stage == "2"))), 
-                             c(sum(cr_first$Cr_defined_AKI) - sum(na.omit(cr_first$Cr_defined_AKI_stage == "2")), 
+AKIs2table <- as.table(rbind(c(sum(na.omit(cr_first$Cr_defined_AKI_stage == "2")),
+                               sum(na.omit(olionly_first$Cr_defined_AKI_stage == "2"))),
+                             c(sum(cr_first$Cr_defined_AKI) - sum(na.omit(cr_first$Cr_defined_AKI_stage == "2")),
                                sum(olionly_first$Cr_defined_AKI) - sum(na.omit(olionly_first$Cr_defined_AKI_stage == "2")))))
-dimnames(AKIs2table) <- list(c("AKIs2", "not AKIs2"), c("cr", "no cr"))      
+dimnames(AKIs2table) <- list(c("AKIs2", "not AKIs2"), c("cr", "no cr"))
 AKIs2table
 fisher.test(AKIs2table)
-AKIs3table <- as.table(rbind(c(sum(na.omit(cr_first$Cr_defined_AKI_stage == "3")), 
-                               sum(na.omit(olionly_first$Cr_defined_AKI_stage == "3"))), 
-                             c(sum(cr_first$Cr_defined_AKI) - sum(na.omit(cr_first$Cr_defined_AKI_stage == "3")), 
+AKIs3table <- as.table(rbind(c(sum(na.omit(cr_first$Cr_defined_AKI_stage == "3")),
+                               sum(na.omit(olionly_first$Cr_defined_AKI_stage == "3"))),
+                             c(sum(cr_first$Cr_defined_AKI) - sum(na.omit(cr_first$Cr_defined_AKI_stage == "3")),
                                sum(olionly_first$Cr_defined_AKI) - sum(na.omit(olionly_first$Cr_defined_AKI_stage == "3")))))
-dimnames(AKIs3table) <- list(c("AKIs3", "not AKIs3"), c("cr", "no cr"))      
+dimnames(AKIs3table) <- list(c("AKIs3", "not AKIs3"), c("cr", "no cr"))
 AKIs3table
 fisher.test(AKIs3table)
 #GLM cr episode for cr defined AKI ----
@@ -4315,7 +4315,7 @@ scr_out$neit$crep <- 0
 cr_first$crep <- 1
 olionly_first$crep <- 0
 nrow(cr_first) + nrow(olionly_first) + nrow(scr_out$neit)
-outcomecols <- c("Cr_defined_AKI", "craki2or3", "craki12h", "craki24h", "craki48h", "craki2or3in12h", 
+outcomecols <- c("Cr_defined_AKI", "craki2or3", "craki12h", "craki24h", "craki48h", "craki2or3in12h",
                  "craki2or3in24h", "craki2or3in48h")
 scr_out$neit$craki2or3 <- 0
 scr_out$neit$craki12h <- 0
@@ -4354,7 +4354,7 @@ summary(epi.tests(crtable, conf.level=0.95))
 sum(cr_first$craki2or3in48h)
 #glm cr change for cr defined AKI ----
 temp <- cr_first
-outcomecols <- c("Cr_defined_AKI", "craki2or3", "craki12h", "craki24h", "craki48h", "craki2or3in12h", 
+outcomecols <- c("Cr_defined_AKI", "craki2or3", "craki12h", "craki24h", "craki48h", "craki2or3in12h",
                  "craki2or3in24h", "craki2or3in48h")
 predictorcols <- c("crchange", "delta_cr", "percent_delta_cr")
 table <- data.frame()
@@ -4391,7 +4391,7 @@ write.csv(table, "crdefinedaki_first_univariate.csv")
 
 #AUROC cr change for cr defined AKI
 #delta cr
-roc(cr_first$Cr_defined_AKI, cr_first$delta_cr) 
+roc(cr_first$Cr_defined_AKI, cr_first$delta_cr)
 wilcox.test(delta_cr~Cr_defined_AKI, cr_first)
 roc(cr_first$craki2or3, cr_first$delta_cr)
 wilcox.test(delta_cr~craki2or3, cr_first)
@@ -4408,7 +4408,7 @@ wilcox.test(delta_cr~craki2or3in24h, cr_first)
 roc(cr_first$craki2or3in48h, cr_first$delta_cr)
 wilcox.test(delta_cr~craki2or3in48h, cr_first)
 #percent delta cr
-roc(cr_first$Cr_defined_AKI, cr_first$percent_delta_cr) 
+roc(cr_first$Cr_defined_AKI, cr_first$percent_delta_cr)
 wilcox.test(percent_delta_cr~Cr_defined_AKI, cr_first)
 roc(cr_first$craki2or3, cr_first$percent_delta_cr)
 wilcox.test(percent_delta_cr~craki2or3, cr_first)
@@ -4427,7 +4427,7 @@ wilcox.test(percent_delta_cr~craki2or3in48h, cr_first)
 #optimal cutpoint
 roc(cr_first$craki2or3in24h, cr_first$delta_cr)
 cr_first <- as.data.frame(cr_first)
-optimal.cutpoint.Youden <- optimal.cutpoints(X = "delta_cr", status = "craki2or3in24h", tag.healthy = 0, 
+optimal.cutpoint.Youden <- optimal.cutpoints(X = "delta_cr", status = "craki2or3in24h", tag.healthy = 0,
                                              methods = "Youden", data = cr_first, conf.level = 0.95,
                                              ci.fit=TRUE)
 summary(optimal.cutpoint.Youden)
@@ -4444,19 +4444,19 @@ for(i in c(1:length(test.pred.index))){
   index<-c(variables.index,test.pred.index[i])
   temp<-df[,c(j,index)]
   temp<-temp[complete.cases(temp),]
-  
+
   pred.test.name=colnames(temp)[length(index)+1]
   colnames(temp)[length(index)+1]="pred.test"
-  
+
   mod.null<-glm(craki2or3in24h~.-pred.test,data=temp,family="binomial",x=T)
   mod.1<-glm(craki2or3in24h~.,data=temp,family="binomial",x=T)
   glm.pval=round(anova(mod.null,mod.1,test="LRT")[2,5],2)
-  
+
   auc=round(roc(craki2or3in24h~predict(mod.1),data=temp)$auc,2)
-  
+
   res=nribin(mdl.std=mod.null,mdl.new=mod.1,cut=0.1,niter=0,updown='diff',msg=F)
   nri=round(res$nri[c(1:3),1],2)
-  
+
   r=data.frame(pred=pred.test.name,glm.pval,auc,nri.all=nri[1],nri.pos=nri[2],nri.neg=nri[3])
   table=rbind(table,r)
 }
