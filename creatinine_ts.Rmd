@@ -5,7 +5,7 @@ date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 output: bookdown::gitbook
 documentclass: book
-bibliography: [references.bib, R-references.bib]
+bibliography: ["resources/references.bib", "resources/R-references.bib"]
 biblio-style: apalike
 link-citations: yes
 github-repo: AlwinW/Creatinine-Time-Series
