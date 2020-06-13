@@ -1,8 +1,4 @@
-# Obs Data Set
-
-## Merge Data Set
-
-```{r findColsFun}
+# ---- find_cols_function ----
 find_cols <- function(text, replace, colnames) {
   cols <- data.frame(
     i = grep(paste0("^", text, "|", text, "$"), colnames, ignore.case = TRUE),
@@ -14,9 +10,9 @@ find_cols <- function(text, replace, colnames) {
 
   return(cols)
 }
-```
 
-```{r merge_data_sets_outcomes}
+
+# ---- merge_data_sets_outcomes ----
 creatinine_data <- xlsx_data$creatinine$data_set %>%
   rename(
     Epis_no = Cr_epis_no,
@@ -65,9 +61,8 @@ data_set_joint <- rbind(creatinine_joint,  oliguria_joint)
 
 rm(creatinine_data, creatinine_outcomes, creatinine_joint,
    oliguria_data, oliguria_outcomes, oliguria_joint)
-```
 
-```{r merge_data_sets}
+# ---- merge_data_sets ----
 dttm_col = inner_join(
   find_cols("date", "DateTime", colnames(data_set_joint)),
   find_cols("time", "DateTime", colnames(data_set_joint)),
@@ -126,11 +121,8 @@ data_set <- raw_data_set[, raw_data_set_cols] %>%
   filter(!(Pt_Study_no %in% xlsx_data$excluded_Pt_Study_no))
 
 rm(dttm_col, data_set_joint, raw_data_set, raw_data_set_cols, find_cols)
-```
 
-## Episode Overview
-
-```{r epis_overview}
+# ---- epis_overview ----
 data_set %>%
   group_by(Epis_cr_change, Epis_olig) %>%
   summarise(Episodes = n()) %>%
@@ -158,4 +150,3 @@ data_set %>%
   kable(., caption = "Number of Episodes", booktabs = TRUE)
 
 # Should match the screening log!!
-```

@@ -2,87 +2,19 @@
 
 ## Excel Data
 
+```{r 01_load_data, include=FALSE, cache=FALSE}
+knitr::read_chunk("R/01_load_data.R")
+```
+
 Here we load the data from the previous study [toh2019]
 
-```{r excelDate2ChrFun}
-excel_date_to_character <- function(vector) {
-  suppressWarnings(ifelse(grepl("/", vector), vector,
-    as.character(as.Date(as.numeric(vector), origin = "1899-12-30"), format = "%d/%m/%y")
-  ))
-}
+```{r, excel_date_to_character_function, echo=FALSE}
 ```
 
-```{r lastColCommentFun}
-last_column_name_comment <- function(data) {
-  names(data)[ncol(data)] <- "Comment"
-  return(data)
-}
+```{r, last_column_as_comment_function, echo=FALSE}
 ```
 
-```{r load_excel, message=FALSE}
-xlsx_paths = list(
-  oliguria     = file.path("data", "Creatinine change in oliguria 4.1.20.xlsx"),
-  creatinine   = file.path("data", "Small changes in creatinine 5.6.20.xlsx"),
-  demographics = file.path("data", "Demographics pts screened out.xlsx"),
-  apd_extract  = file.path("data", "COMET-Extract-APD 23 Oct 2018.xlsx"),
-  creat_furo   = file.path("data", "ED_ICU_Creatinine_Furosemide.xlsx")
-)
-
-xlsx_data <- list()
-
-xlsx_data$oliguria <- list(
-  demographic = read_excel(xlsx_paths$oliguria, "Patient Demographics"),
-  data_set    = read_excel(xlsx_paths$oliguria, "Data set"),
-  outcomes    = read_excel(xlsx_paths$oliguria, "AKI & outcomes"),
-  screen_log  = read_excel(xlsx_paths$oliguria, "Screening log")
-)
-xlsx_data$creatinine <- list(
-  demographic = read_excel(xlsx_paths$creatinine, "Patient Demographics"),
-  data_set    = read_excel(xlsx_paths$creatinine, "Data set"),
-  outcomes    = read_excel(xlsx_paths$creatinine, "AKI & outcomes"),
-  screen_log  = read_excel(xlsx_paths$creatinine, "Screening log")
-)
-xlsx_data$screen_out <- list(
-  no_creatinine = read_excel(xlsx_paths$demographics, "no cr change"),
-  no_oliguria   = read_excel(xlsx_paths$demographics, "no oliguria"),
-  neither_cr_ol  = read_excel(xlsx_paths$demographics, "neither cr nor olig")
-)
-xlsx_data$apd_extract <- list(
-  apd_extract = read_excel(xlsx_paths$apd_extract, "Admissions")
-)
-xlsx_data$creat_furo <- list(
-  blood_gas    = read_excel(xlsx_paths$creat_furo, "Blood Gas"),
-  bio_chem     = read_excel(xlsx_paths$creat_furo, "BioChem"),
-  lowest_creat = read_excel(xlsx_paths$creat_furo, "Lowest Creatinine Level"),
-  furosemide   = read_excel(xlsx_paths$creat_furo, "Medication")
-)
-
-xlsx_data$creatinine$screen_log    <- last_column_name_comment(xlsx_data$creatinine$screen_log   )
-xlsx_data$oliguria  $screen_log    <- last_column_name_comment(xlsx_data$oliguria  $screen_log   )
-xlsx_data$creatinine$outcomes      <- last_column_name_comment(xlsx_data$creatinine$outcomes     )
-xlsx_data$oliguria  $outcomes      <- last_column_name_comment(xlsx_data$oliguria  $outcomes     )
-xlsx_data$screen_out$no_creatinine <- last_column_name_comment(xlsx_data$screen_out$no_creatinine)
-xlsx_data$screen_out$no_oliguria   <- last_column_name_comment(xlsx_data$screen_out$no_oliguria  )
-xlsx_data$screen_out$neither_cr_ol <- last_column_name_comment(xlsx_data$screen_out$neither_cr_ol)
-
-xlsx_data$oliguria$screen_log <- xlsx_data$oliguria$screen_log %>%
-  mutate(Dates_screened = excel_date_to_character(Dates_screened)) %>%
-  group_by(`UR number`) %>%
-  mutate(
-    Admission = row_number(),
-    Total_admissions = n()) %>%
-  ungroup() %>%
-  arrange(`UR number`, Dates_screened)
-xlsx_data$creatinine$screen_log <- xlsx_data$creatinine$screen_log %>%
-  mutate(Dates_screened = excel_date_to_character(Dates_screened)) %>%
-  group_by(`UR number`) %>%
-  mutate(
-    Admission = row_number(),
-    Total_admissions = n()) %>%
-  ungroup() %>%
-  arrange(`UR number`, Dates_screened)
-
-rm(xlsx_paths, excel_date_to_character, last_column_name_comment)
+```{r, load_excel}
 ```
 
 ## Anonymise Data
@@ -91,57 +23,61 @@ Save old `UR number` here. Replace `UR number` with hash.
 
 ## Identify Potential Data Collection Errors
 
-```{r data_collection_errors}
-errors_logi =
-  (xlsx_data$creatinine$screen_log$`UR number` !=
-     xlsx_data$oliguria$screen_log$`UR number`) |
-  (xlsx_data$creatinine$screen_log$Dates_screened !=
-     xlsx_data$oliguria$screen_log$Dates_screened)  |
-  (xlsx_data$creatinine$screen_log$Excl_criteria_ok !=
-     xlsx_data$oliguria$screen_log$Excl_criteria_ok)
-
-creatinine_errors = xlsx_data$creatinine$screen_log[errors_logi, ]
-oliguria_errors = xlsx_data$oliguria$screen_log[errors_logi, ]
-
-xlsx_data$excluded_UR_numbers = creatinine_errors$`UR number`
-xlsx_data$excluded_Pt_Study_no = discard(
-  c(oliguria_errors$Pt_Study_no, creatinine_errors$Pt_Study_no),
-  is.na)
-
-cat(paste(
-  # "Discarded UR Numbers:       ", paste(xlsx_data$excluded_UR_numbers , collapse = ", "), "\n",
-  "Discarded Pt Study Numbers: ",
-  paste(xlsx_data$excluded_Pt_Study_no, collapse = ", "), "\n"
-))
-
-knitr::kable(
-  creatinine_errors[, c(13, 2:4)], caption = 'Creatinine Potential Errors',
-  booktabs = TRUE
-)
-knitr::kable(
-  oliguria_errors[, c(13, 2:4)], caption = 'Oliguria Potential Errors',
-  booktabs = TRUE
-)
-
-# Correct data
-xlsx_data$creatinine$screen_log[errors_logi, "Dates_screened"] =
-  xlsx_data$oliguria$screen_log[errors_logi, "Dates_screened"]
-
-
-xlsx_data$creatinine$screen_log[errors_logi, "Excl_criteria_ok"] = "N"
-xlsx_data$creatinine$screen_log[errors_logi, "Incl_criteria_ok"] = NA
-xlsx_data$creatinine$screen_log[errors_logi, "Already_AKI"] = "Y"
-xlsx_data$creatinine$screen_log[errors_logi, "Epis_cr_change"] = NA
-xlsx_data$creatinine$screen_log[errors_logi, "Total_no_cr_epis"] = NA
-
-xlsx_data$oliguria$screen_log[errors_logi, "Excl_criteria_ok"] = "N"
-xlsx_data$oliguria$screen_log[errors_logi, "Incl_criteria_ok"] = NA
-xlsx_data$oliguria$screen_log[errors_logi, "Already_AKI"] = "Y"
-xlsx_data$oliguria$screen_log[errors_logi, "Epis_olig"] = NA
-xlsx_data$oliguria$screen_log[errors_logi, "Total_no_olig_epis"] = NA
-
-# TODO: Also set Pt_Study_no to be NA and adjust the Total_no_XXX_epis
-# TODO: Remove from the data set as well
-
-rm(errors_logi, creatinine_errors, oliguria_errors)
+```{r, data_collection_errors}
 ```
+
+
+# Screening Log
+
+```{r 02_screening_log, include=FALSE, cache=FALSE}
+knitr::read_chunk("R/02_screening_log.R")
+```
+
+## Merge Screening Log
+
+```{r, join_demo_screen_log_sheets_function, echo=FALSE}
+```
+
+```{r, screen_log_all}
+```
+
+## APACHE Database
+
+Merge in the APACHE database to replace missing values (`NA`) and empty values (`-Inf`).
+
+```{r, screen_log_apache}
+```
+
+## Admission Overview
+
+```{r, screen_log_overview}
+```
+
+
+# Obs Data Set
+```{r 03_data_set, include=FALSE, cache=FALSE}
+knitr::read_chunk("R/03_data_set.R")
+```
+
+## Merge Data Set
+
+```{r, find_cols_function, echo=FALSE}
+```
+
+```{r, merge_data_sets_outcomes}
+```
+
+```{r, merge_data_sets}
+```
+
+## Episode Overview
+
+```{r, epis_overview}
+```
+
+
+# Time Series Data
+
+## Creatinine
+
+## Frusemide

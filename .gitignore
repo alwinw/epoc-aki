@@ -2,10 +2,12 @@
 _book_output/
 _book/
 creatinine-time-series.Rmd
+_main.Rmd
 data/
 libs/
 resources/*
 *.tex
+
 !resources/*.bib
 !resources/*.R
 !*.md
