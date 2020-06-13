@@ -20,6 +20,10 @@ knitr::opts_chunk$set(echo=TRUE, message=FALSE, cache=TRUE)
 
 ## Environment set-up {-}
 
+```{r 01_config, include=FALSE, cache=FALSE}
+knitr::read_chunk("R/01_config.R")
+```
+
 1. `R` and `RStudio`
 
     - This analysis is carried out using `R version 4.0.0 (2020-04-24)`
@@ -31,28 +35,10 @@ knitr::opts_chunk$set(echo=TRUE, message=FALSE, cache=TRUE)
     - The list of `R` packages used is in `R-requirements.txt`
     - These are loaded using
 
-    ```{r loadLibraryFunction}
-    load_library <- function(req_file = "R-requirements.txt", bib_file = NULL) {
-      # Load and install necessary packages from text file
-      packages <- readLines(req_file)
-      new.packages <-
-        packages[!(packages %in% installed.packages()[, "Package"])]
-
-      if (length(new.packages))
-        install.packages(new.packages)
-
-      lapply(packages, library, character.only = TRUE)
-
-      if (!is.null(bib_file))
-        knitr::write_bib(packages, file = bib_file)
-
-      return(NULL)
-    }
+    ```{r, load_library_function, echo=FALSE}
     ```
 
-    ```{r load_library, warnings = FALSE}
-    load_library("R-requirements.txt", "resources/R-references.bib")
-    theme_set(theme_bw())
+    ```{r, environment_setup, warnings = FALSE}
     ```
 
 3. The full session information is presented below

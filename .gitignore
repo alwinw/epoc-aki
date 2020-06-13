@@ -1,5 +1,6 @@
 # Custom
 _book_output/
+_bookdown_files/
 _book/
 creatinine-time-series.Rmd
 _main.Rmd
