@@ -1,25 +1,20 @@
-# Load Data
+# ---- excel_date_to_character_function ----
 
-## Excel Data
-
-Here we load the data from the previous study [toh2019]
-
-```{r excelDate2ChrFun}
 excel_date_to_character <- function(vector) {
   suppressWarnings(ifelse(grepl("/", vector), vector,
     as.character(as.Date(as.numeric(vector), origin = "1899-12-30"), format = "%d/%m/%y")
   ))
 }
-```
 
-```{r lastColCommentFun}
-last_column_name_comment <- function(data) {
+
+# ---- last_column_as_comment_function ----
+last_column_as_comment <- function(data) {
   names(data)[ncol(data)] <- "Comment"
   return(data)
 }
-```
 
-```{r load_excel, message=FALSE}
+
+# ---- load_excel ----
 xlsx_paths = list(
   oliguria     = file.path("data", "Creatinine change in oliguria 4.1.20.xlsx"),
   creatinine   = file.path("data", "Small changes in creatinine 5.6.20.xlsx"),
@@ -57,13 +52,13 @@ xlsx_data$creat_furo <- list(
   furosemide   = read_excel(xlsx_paths$creat_furo, "Medication")
 )
 
-xlsx_data$creatinine$screen_log    <- last_column_name_comment(xlsx_data$creatinine$screen_log   )
-xlsx_data$oliguria  $screen_log    <- last_column_name_comment(xlsx_data$oliguria  $screen_log   )
-xlsx_data$creatinine$outcomes      <- last_column_name_comment(xlsx_data$creatinine$outcomes     )
-xlsx_data$oliguria  $outcomes      <- last_column_name_comment(xlsx_data$oliguria  $outcomes     )
-xlsx_data$screen_out$no_creatinine <- last_column_name_comment(xlsx_data$screen_out$no_creatinine)
-xlsx_data$screen_out$no_oliguria   <- last_column_name_comment(xlsx_data$screen_out$no_oliguria  )
-xlsx_data$screen_out$neither_cr_ol <- last_column_name_comment(xlsx_data$screen_out$neither_cr_ol)
+xlsx_data$creatinine$screen_log    <- last_column_as_comment(xlsx_data$creatinine$screen_log   )
+xlsx_data$oliguria  $screen_log    <- last_column_as_comment(xlsx_data$oliguria  $screen_log   )
+xlsx_data$creatinine$outcomes      <- last_column_as_comment(xlsx_data$creatinine$outcomes     )
+xlsx_data$oliguria  $outcomes      <- last_column_as_comment(xlsx_data$oliguria  $outcomes     )
+xlsx_data$screen_out$no_creatinine <- last_column_as_comment(xlsx_data$screen_out$no_creatinine)
+xlsx_data$screen_out$no_oliguria   <- last_column_as_comment(xlsx_data$screen_out$no_oliguria  )
+xlsx_data$screen_out$neither_cr_ol <- last_column_as_comment(xlsx_data$screen_out$neither_cr_ol)
 
 xlsx_data$oliguria$screen_log <- xlsx_data$oliguria$screen_log %>%
   mutate(Dates_screened = excel_date_to_character(Dates_screened)) %>%
@@ -82,16 +77,10 @@ xlsx_data$creatinine$screen_log <- xlsx_data$creatinine$screen_log %>%
   ungroup() %>%
   arrange(`UR number`, Dates_screened)
 
-rm(xlsx_paths, excel_date_to_character, last_column_name_comment)
-```
+rm(xlsx_paths, excel_date_to_character, last_column_as_comment)
 
-## Anonymise Data
 
-Save old `UR number` here. Replace `UR number` with hash.
-
-## Identify Potential Data Collection Errors
-
-```{r data_collection_errors}
+# ---- data_collection_errors ----
 errors_logi =
   (xlsx_data$creatinine$screen_log$`UR number` !=
      xlsx_data$oliguria$screen_log$`UR number`) |
@@ -144,4 +133,3 @@ xlsx_data$oliguria$screen_log[errors_logi, "Total_no_olig_epis"] = NA
 # TODO: Remove from the data set as well
 
 rm(errors_logi, creatinine_errors, oliguria_errors)
-```

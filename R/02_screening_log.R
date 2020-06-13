@@ -1,8 +1,4 @@
-# Screening Log
-
-## Merge Screening Log
-
-```{r joinDemoScreenFun}
+# ----join_demo_screen_log_sheets_function ----
 join_demo_screen_log_sheets <- function(demographic, screen_log){
   joint <- full_join(demographic, screen_log, by = "Pt_Study_no")
 
@@ -20,9 +16,9 @@ join_demo_screen_log_sheets <- function(demographic, screen_log){
 
   return(joint)
 }
-```
 
-```{r screen_log_all}
+
+# ---- screen_log_all ----
 screen_logs <- list()
 
 screen_logs$creatinine <- join_demo_screen_log_sheets(
@@ -165,7 +161,25 @@ if (sum(!is.na(screen_logs$full$Pt_Study_no_olig)) !=
   stop("Number of L patients has changed")
 }
 
-screening_log <- screen_logs$full
+screening_log <- screen_logs$full %>%
+  mutate(
+    Date_hosp_admit = paste(
+      format(Date_hosp_admit, format = "%Y-%m-%d"),
+      format(Time_hosp_admit, format = "%H:%M:%S")),
+    Date_ICU_admit = paste(
+      format(Date_ICU_admit, format = "%Y-%m-%d"),
+      format(Time_ICU_admit, format = "%H:%M:%S"))
+    ) %>%
+  select(-starts_with("Time_")) %>%
+  rename(
+    DateTime_hosp_admit = Date_hosp_admit,
+    DateTime_ICU_admit  = Date_ICU_admit
+    ) %>%
+  mutate_at(
+    vars(DateTime_hosp_admit, DateTime_ICU_admit),
+    as_datetime,
+    tz = "Australia/Melbourne"
+  )
 
 kable(
   t(head(screening_log)),
@@ -173,17 +187,61 @@ kable(
   booktabs = TRUE)
 
 rm(join_demo_screen_log_sheets, screen_logs)
-```
 
-## APACHE Database
 
-```{r apache}
-# TODO
-```
+# ---- screen_log_apache ----
+screening_log_thin <- screening_log %>%
+  select(`UR number`, Admission, Event, DateTime_ICU_admit, starts_with("APACHE")) %>%
+  filter(!is.na(DateTime_ICU_admit)) %>%
+  mutate(
+    DT_start = DateTime_ICU_admit - hours(26),
+    DT_end   = DateTime_ICU_admit + hours(26)
+  )
 
-## Admission Overview
+apd_extract <- xlsx_data$apd_extract$apd_extract %>%
+  select(
+    `HRN/NIH`, # DOB, Sex,
+    HOSP_ADM_DTM, ICU_ADM_DTM,
+    AP2score, AP3score) %>%
+  mutate(
+    AP2score = as.numeric(AP2score),
+    AP3score = as.numeric(AP3score)
+  )
 
-```{r data_overview}
+apache_replace <- fuzzy_left_join(
+  screening_log_thin, apd_extract,
+  by = c(
+    "UR number" = "HRN/NIH",
+    "DT_start"  = "ICU_ADM_DTM",
+    "DT_end"    = "ICU_ADM_DTM"
+  ),
+  match_fun = list(`==`, `<=`, `>=`)
+) %>%
+  mutate(
+    AP_error   = abs(AP2score - APACHE_II) + abs(AP3score - APACHE_III),
+    AP_replace = AP_error > 100 | is.na(AP_error)  # Values arbitrarily chosen
+  ) %>%
+  arrange(-AP_replace, -AP_error) %>%
+  filter(AP_replace) %>%  # Only keep rows of interest
+  select(`UR number`:`DateTime_ICU_admit`, AP2score:AP3score, AP_replace)
+
+screening_log <- left_join(
+  screening_log, apache_replace,
+  by = c("UR number", "DateTime_ICU_admit", "Admission", "Event")
+) %>%
+  arrange(-AP_replace) %>%
+  mutate(
+    APACHE_II  = if_else(AP_replace, AP2score, APACHE_II ),
+    APACHE_III = if_else(AP_replace, AP3score, APACHE_III)
+  ) %>%
+  select(-AP2score:-AP_replace)
+
+# TODO Add some checks here
+
+rm(screening_log_thin, apd_extract, apache_replace)
+
+
+# ---- screen_log_overview ----
 # Using n_distinct() does not seem to be working as expected with grouping?
 screening_log %>%
   summarise(
@@ -243,4 +301,3 @@ screening_log %>%
     `Unique Patients` = n_distinct((`UR number`[Excluded == "Y"]))) %>%
   arrange(-Admissions) %>%
   kable(., caption = "Excluded Admissions", booktabs = TRUE)
-```
