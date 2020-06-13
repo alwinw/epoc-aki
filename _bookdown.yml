@@ -2,5 +2,6 @@ book_filename: "creatinine-time-series"
 language:
   ui:
     chapter_name: "Section "
+rmd_files: ["index.Rmd", "R/00_merge.Rmd"]
 output_dir: "_book_output"
 delete_merged_file: true

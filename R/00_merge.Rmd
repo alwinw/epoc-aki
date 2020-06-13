@@ -1,0 +1,83 @@
+# Load Data
+
+## Excel Data
+
+```{r 01_load_data, include=FALSE, cache=FALSE}
+knitr::read_chunk("R/01_load_data.R")
+```
+
+Here we load the data from the previous study [toh2019]
+
+```{r, excel_date_to_character_function, echo=FALSE}
+```
+
+```{r, last_column_as_comment_function, echo=FALSE}
+```
+
+```{r, load_excel}
+```
+
+## Anonymise Data
+
+Save old `UR number` here. Replace `UR number` with hash.
+
+## Identify Potential Data Collection Errors
+
+```{r, data_collection_errors}
+```
+
+
+# Screening Log
+
+```{r 02_screening_log, include=FALSE, cache=FALSE}
+knitr::read_chunk("R/02_screening_log.R")
+```
+
+## Merge Screening Log
+
+```{r, join_demo_screen_log_sheets_function, echo=FALSE}
+```
+
+```{r, screen_log_all}
+```
+
+## APACHE Database
+
+Merge in the APACHE database to replace missing values (`NA`) and empty values (`-Inf`).
+
+```{r, screen_log_apache}
+```
+
+## Admission Overview
+
+```{r, screen_log_overview}
+```
+
+
+# Obs Data Set
+```{r 03_data_set, include=FALSE, cache=FALSE}
+knitr::read_chunk("R/03_data_set.R")
+```
+
+## Merge Data Set
+
+```{r, find_cols_function, echo=FALSE}
+```
+
+```{r, merge_data_sets_outcomes}
+```
+
+```{r, merge_data_sets}
+```
+
+## Episode Overview
+
+```{r, epis_overview}
+```
+
+
+# Time Series Data
+
+## Creatinine
+
+## Frusemide

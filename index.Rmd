@@ -5,7 +5,7 @@ date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 output: bookdown::gitbook
 documentclass: book
-bibliography: [references.bib, R-references.bib]
+bibliography: ["resources/references.bib", "resources/R-references.bib"]
 biblio-style: apalike
 link-citations: yes
 github-repo: AlwinW/Creatinine-Time-Series
@@ -18,7 +18,7 @@ knitr::opts_chunk$set(echo=TRUE, message=FALSE, cache=TRUE)
 
 # Preface {-}
 
-Environment set-up
+## Environment set-up {-}
 
 1. `R` and `RStudio`
 
@@ -33,26 +33,25 @@ Environment set-up
 
     ```{r loadLibraryFunction}
     load_library <- function(req_file = "R-requirements.txt", bib_file = NULL) {
+      # Load and install necessary packages from text file
       packages <- readLines(req_file)
       new.packages <-
         packages[!(packages %in% installed.packages()[, "Package"])]
 
       if (length(new.packages))
         install.packages(new.packages)
-      invisible(suppressMessages(suppressWarnings(
-        lapply(packages, library, character.only = TRUE)
-      )))
-
+      
+      lapply(packages, library, character.only = TRUE)
+      
       if (!is.null(bib_file))
         knitr::write_bib(packages, file = bib_file)
+      
       return(NULL)
     }
     ```
 
-    ```{r load_library}
-    invisible(suppressMessages(
-      load_library("R-requirements.txt", "R-references.bib")
-    ))
+    ```{r load_library, warnings = FALSE}
+    load_library("R-requirements.txt", "resources/R-references.bib")
     ```
 
 3. The full session information is presented below

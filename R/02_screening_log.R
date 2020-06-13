@@ -1,8 +1,4 @@
-# Screening Log
-
-## Merge Screening Log
-
-```{r joinDemoScreenFun}
+# ----join_demo_screen_log_sheets_function ----
 join_demo_screen_log_sheets <- function(demographic, screen_log){
   joint <- full_join(demographic, screen_log, by = "Pt_Study_no")
 
@@ -20,9 +16,9 @@ join_demo_screen_log_sheets <- function(demographic, screen_log){
 
   return(joint)
 }
-```
 
-```{r screen_log_all}
+
+# ---- screen_log_all ----
 screen_logs <- list()
 
 screen_logs$creatinine <- join_demo_screen_log_sheets(
@@ -191,13 +187,9 @@ kable(
   booktabs = TRUE)
 
 rm(join_demo_screen_log_sheets, screen_logs)
-```
 
-## APACHE Database
 
-Merge in the APACHE database to replace missing values (`NA`) and empty values (`-Inf`).
-
-```{r apache}
+# ---- screen_log_apache ----
 screening_log_thin <- screening_log %>%
   select(`UR number`, Admission, Event, DateTime_ICU_admit, starts_with("APACHE")) %>%
   filter(!is.na(DateTime_ICU_admit)) %>%
@@ -247,11 +239,9 @@ screening_log <- left_join(
 # TODO Add some checks here
 
 rm(screening_log_thin, apd_extract, apache_replace)
-```
 
-## Admission Overview
 
-```{r data_overview}
+# ---- screen_log_overview ----
 # Using n_distinct() does not seem to be working as expected with grouping?
 screening_log %>%
   summarise(
@@ -311,4 +301,3 @@ screening_log %>%
     `Unique Patients` = n_distinct((`UR number`[Excluded == "Y"]))) %>%
   arrange(-Admissions) %>%
   kable(., caption = "Excluded Admissions", booktabs = TRUE)
-```
