@@ -1,6 +1,6 @@
 # Load Data
 
-```{r 01_load_data, include=FALSE, cache=FALSE}
+```{r 02_load_data, include=FALSE, cache=FALSE}
 knitr::read_chunk("../../R/02_load_data.R")
 ```
 
@@ -29,7 +29,7 @@ Save old `UR number` here. Replace `UR number` with hash.
 
 # Screening Log
 
-```{r 02_screening_log, include=FALSE, cache=FALSE}
+```{r 03_screening_log, include=FALSE, cache=FALSE}
 knitr::read_chunk("../../R/03_screening_log.R")
 ```
 
@@ -56,7 +56,7 @@ Merge in the APACHE database to replace missing values (`NA`) and empty values (
 
 # Obs Data Set
 
-```{r 03_data_set, include=FALSE, cache=FALSE}
+```{r 04_data_set, include=FALSE, cache=FALSE}
 knitr::read_chunk("../../R/04_data_set.R")
 ```
 
@@ -77,8 +77,18 @@ knitr::read_chunk("../../R/04_data_set.R")
 ```
 
 
-# Time Series Data
+# Creatinine Time Series
 
-## Creatinine
+```{r 05_creatinine_ts, include=FALSE, cache=FALSE}
+knitr::read_chunk("../../R/05_creatinine_ts.R")
+```
 
-## Frusemide
+## Join Blood Gas and Bio Chem Results
+
+```{r, combine-blood-gas-bio-chem}
+```
+
+## Example Creatinine Plot
+
+```{r,  example-creatinine-plot}
+```
