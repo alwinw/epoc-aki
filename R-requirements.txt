@@ -10,3 +10,4 @@ citr
 tinytex
 servr
 fuzzyjoin
+forecast
