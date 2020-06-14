@@ -1,3 +1,5 @@
+rel_path = "."
+
 # ---- load_library_function ----
 load_library <- function(req_file = "R-requirements.txt", bib_file = NULL) {
       # Load and install necessary packages from text file
@@ -17,5 +19,8 @@ load_library <- function(req_file = "R-requirements.txt", bib_file = NULL) {
     }
 
 # ---- environment_setup ----
-load_library("R-requirements.txt", "resources/R-references.bib")
+load_library(
+  file.path(rel_path, "R-requirements.txt"),
+  file.path(rel_path, "resources/R-references.bib")
+)
 theme_set(theme_bw())

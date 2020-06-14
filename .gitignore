@@ -2,7 +2,8 @@
 _book_output/
 _bookdown_files/
 _book/
-creatinine-time-series.Rmd
+_bookdown_files/
+epoc-aki.Rmd
 _main.Rmd
 data/
 libs/

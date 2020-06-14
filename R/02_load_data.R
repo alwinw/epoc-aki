@@ -1,3 +1,5 @@
+rel_path = "."
+
 # ---- excel_date_to_character_function ----
 
 excel_date_to_character <- function(vector) {
@@ -16,11 +18,11 @@ last_column_as_comment <- function(data) {
 
 # ---- load_excel ----
 xlsx_paths = list(
-  oliguria     = file.path("data", "Creatinine change in oliguria 4.1.20.xlsx"),
-  creatinine   = file.path("data", "Small changes in creatinine 5.6.20.xlsx"),
-  demographics = file.path("data", "Demographics pts screened out.xlsx"),
-  apd_extract  = file.path("data", "COMET-Extract-APD 23 Oct 2018.xlsx"),
-  creat_furo   = file.path("data", "ED_ICU_Creatinine_Furosemide.xlsx")
+  oliguria     = file.path(rel_path, "data/Creatinine change in oliguria 4.1.20.xlsx"),
+  creatinine   = file.path(rel_path, "data/Small changes in creatinine 5.6.20.xlsx"),
+  demographics = file.path(rel_path, "data/Demographics pts screened out.xlsx"),
+  apd_extract  = file.path(rel_path, "data/COMET-Extract-APD 23 Oct 2018.xlsx"),
+  creat_furo   = file.path(rel_path, "data/ED_ICU_Creatinine_Furosemide.xlsx")
 )
 
 xlsx_data <- list()
