@@ -6,23 +6,30 @@ Alwin Wang and Lisa Toh
 
 ## Running
 
-1. Clone the repository
+1. Clone the repository and open the R project file `epoc-aki.Rproj` with RStudio
 
     ```bash
     git clone git@github.com:AlwinW/epoc-api.git
     ```
 
-2. Open the R project file `epoc-aki.Rproj` with RStudio
+2. Preview the relevant `bookdown` file
 
-3. Open the relevant `bookdown` file
+   - Option 1: Open the file directly in RStudio
 
-4. In RStudio run `Addins` > `Preview Book`. Or from the console run
+      1. Open up the bookdown index, e.g. `doc/full/index.Rmd`
+      2. In RStudio run `Addins` > `Preview Book`, or from the console run
 
-    ```R
-    bookdown::serve_book()
-    ```
+        ```R
+        bookdown::serve_book()
+        ```
 
-5. Preview the bookdown at `http://localhost:4321/` or `http://127.0.0.1:4321/`
+   - Option 2: Run `serve_book` from the console
+
+        ```R
+        bookdown::serve_book(dir = "doc/full/")
+        ```
+
+3. Preview the bookdown site at `http://localhost:4321/` or `http://127.0.0.1:4321/`
 
 ## Git Version Control and Development Flow
 
@@ -100,6 +107,6 @@ Alwin Wang and Lisa Toh
 
 8. Merge changes via pull request on GitHub (preferred) or command line (not preferred)
 
-    * Create pull on Github
-    * Merge pull on Github
-    * Delete branch on Github
+    1. Create pull on Github
+    2. Merge pull on Github
+    3. Delete branch on Github

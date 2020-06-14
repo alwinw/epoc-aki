@@ -33,7 +33,7 @@ knitr::read_chunk("../../R/01_config.R")
 
 2. `R` packages
 
-    - The list of `R` packages used is in `R-requirements.txt`
+    - The list of `R` packages used is in `requirements.txt`
     - These are loaded using
 
     ```{r, load_library_function, echo=FALSE}
