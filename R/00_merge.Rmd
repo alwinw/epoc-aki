@@ -1,10 +1,10 @@
 # Load Data
 
-## Excel Data
-
 ```{r 01_load_data, include=FALSE, cache=FALSE}
 knitr::read_chunk("R/02_load_data.R")
 ```
+
+## Excel Data
 
 Here we load the data from the previous study [toh2019]
 
