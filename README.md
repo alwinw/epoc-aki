@@ -1,12 +1,28 @@
-# Creatinine Time Series
+# The EPOC-AKI Study
 
-Creatinine Time Series Analysis
+Evaluation of the Predictive value of short-term Oliguria and minor Creatinine increases for Acute Kidney Injury in ICU
 
-Alwin Wang
+Alwin Wang and Lisa Toh
 
 ## Running
 
-Instructions to come
+1. Clone the repository
+
+    ```bash
+    git clone git@github.com:AlwinW/epoc-api.git
+    ```
+
+2. Open the R project file `epoc-aki.Rproj` with RStudio
+
+3. Open the relevant `bookdown` file
+
+4. In RStudio run `Addins` > `Preview Book`. Or from the console run
+
+    ```R
+    bookdown::serve_book()
+    ```
+
+5. Preview the bookdown at `http://localhost:4321/` or `http://127.0.0.1:4321/`
 
 ## Git Version Control and Development Flow
 
@@ -24,18 +40,22 @@ Instructions to come
 
     ```r
     rm(list = ls(all. names = TRUE))
-    source("index.R")
+    source("main.R")
     ```
 
 3. New script for development work
 
     ```bash
-    R/00X-feature-name
+    R/XX_feature_name.R
     ```
 
 4. Development in new script
 
     ```r
+    # ---- helper_function ----
+    helper <- function(...)
+
+    # ---- sub_calculation ----
     data %>%
         mutate(...)
     ```
@@ -45,57 +65,41 @@ Instructions to come
     ```bash
     git fetch
     git status
-    git add .
+    git add --all
     git commit -m "Summary here
     Additional details here"
     git push
     ```
 
-6. Functionalise code in script
+6. Read new script as chunks in Rmarkdown
 
-    ```r
-    feature <- function(data, args, kwargs) {
-        data %>%
-            mutate(...)
-        return(data)
-    }
+    ````r
+    # New Feature
+
+    ```{r XX_feature_name, include=FALSE, cache=FALSE}
+    knitr::read_chunk("R/XX_feature_name.R")
     ```
 
-7. Call function in main script and Rmarkdown
+    ## Sub feature
 
-    ```r
-    featured_data <- feature(data, args, kwargs)
-    dplyr::glimpse(featured_data, width = 20)
+    ```{r, helper_function, echo=FALSE}
     ```
 
-8. Check output of main script
-
-    ```r
-    rm(list = ls(all. names = TRUE))
-    source("index.R")
+    ```{r, sub_calculation}
     ```
+    ````
 
-9. Check output of bookdown via Addins or
+7. Check output of main script and bookdown
 
-    ```r
+    ```R
+    source("main.R")
     bookdown::serve_book()
+    # Check output
+    servr::daemon_stop()
     ```
 
-10. Pull request on GitHub (preferred)
+8. Merge changes via pull request on GitHub (preferred) or command line (not preferred)
 
-    * Create pull
-    * Merge pull
-    * Delete branch
-
-    or merge via command line (not preferred)
-
-    ```bash
-    git checkout master
-    git merge dev/feature
-    git push
-    ```
-
-## Outstanding Items
-
-* Pretty print for structure of `xlsx_data`
-* Flowchart of screening log as per previous paper
+    * Create pull on Github
+    * Merge pull on Github
+    * Delete branch on Github

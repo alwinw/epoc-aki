@@ -1,5 +1,5 @@
 ---
-title: "Creatinine Time Series Analysis"
+title: "The EPOC-AKI Study"
 author: "Alwin Wang, Lisa Toh"
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
@@ -8,8 +8,8 @@ documentclass: book
 bibliography: ["resources/references.bib", "resources/R-references.bib"]
 biblio-style: apalike
 link-citations: yes
-github-repo: AlwinW/Creatinine-Time-Series
-description: "Creatinine time series analysis"
+github-repo: AlwinW/epoc-aki
+description: "Evaluation of the Predictive value of short-term Oliguria and minor Creatinine increases for Acute Kidney Injury in ICU"
 ---
 
 ```{r setup}
