@@ -79,6 +79,8 @@ xlsx_data$creatinine$screen_log <- xlsx_data$creatinine$screen_log %>%
   ungroup() %>%
   arrange(`UR number`, Dates_screened)
 
+# as_date(., "%d/%b/%y")
+
 rm(xlsx_paths, excel_date_to_character, last_column_as_comment)
 
 
@@ -106,11 +108,11 @@ cat(paste(
 ))
 
 knitr::kable(
-  creatinine_errors[, c(13, 2:4)], caption = 'Creatinine Potential Errors',
+  creatinine_errors[, c(13, 2:4, 12, 14)], caption = 'Creatinine Potential Errors',
   booktabs = TRUE
 )
 knitr::kable(
-  oliguria_errors[, c(13, 2:4)], caption = 'Oliguria Potential Errors',
+  oliguria_errors[, c(13, 2:4, 12, 14)], caption = 'Oliguria Potential Errors',
   booktabs = TRUE
 )
 
@@ -119,19 +121,53 @@ xlsx_data$creatinine$screen_log[errors_logi, "Dates_screened"] =
   xlsx_data$oliguria$screen_log[errors_logi, "Dates_screened"]
 
 
-xlsx_data$creatinine$screen_log[errors_logi, "Excl_criteria_ok"] = "N"
-xlsx_data$creatinine$screen_log[errors_logi, "Incl_criteria_ok"] = NA
-xlsx_data$creatinine$screen_log[errors_logi, "Already_AKI"] = "Y"
-xlsx_data$creatinine$screen_log[errors_logi, "Epis_cr_change"] = NA
-xlsx_data$creatinine$screen_log[errors_logi, "Total_no_cr_epis"] = NA
+xlsx_data$creatinine$screen_log$errors_logi = errors_logi
+xlsx_data$creatinine$screen_log <- xlsx_data$creatinine$screen_log %>% 
+  mutate(
+    Excl_criteria_ok = ifelse(errors_logi, "N", Excl_criteria_ok),
+    Already_AKI      = ifelse(errors_logi, "Y", Already_AKI),
+    Incl_criteria_ok = ifelse(errors_logi, NA, Incl_criteria_ok),
+    Epis_cr_change   = ifelse(errors_logi, NA, Epis_cr_change),
+    Pt_Study_no      = ifelse(errors_logi, NA, Pt_Study_no),
+    Total_no_cr_epis = ifelse(errors_logi, ifelse(Total_no_cr_epis == 1, NA, Total_no_cr_epis - 1), Total_no_cr_epis)
+  ) %>% 
+  select(-errors_logi)
 
-xlsx_data$oliguria$screen_log[errors_logi, "Excl_criteria_ok"] = "N"
-xlsx_data$oliguria$screen_log[errors_logi, "Incl_criteria_ok"] = NA
-xlsx_data$oliguria$screen_log[errors_logi, "Already_AKI"] = "Y"
-xlsx_data$oliguria$screen_log[errors_logi, "Epis_olig"] = NA
-xlsx_data$oliguria$screen_log[errors_logi, "Total_no_olig_epis"] = NA
+xlsx_data$oliguria$screen_log$errors_logi = errors_logi
+xlsx_data$oliguria$screen_log <- xlsx_data$oliguria$screen_log %>% 
+  mutate(
+    Excl_criteria_ok = ifelse(errors_logi, "N", Excl_criteria_ok),
+    Already_AKI      = ifelse(errors_logi, "Y", Already_AKI),
+    Incl_criteria_ok = ifelse(errors_logi, NA, Incl_criteria_ok),
+    Epis_olig        = ifelse(errors_logi, NA, Epis_olig),
+    Pt_Study_no      = ifelse(errors_logi, NA, Pt_Study_no),
+    Total_no_olig_epis = ifelse(errors_logi, ifelse(Total_no_olig_epis == 1, NA, Total_no_olig_epis - 1), Total_no_olig_epis)
+  ) %>% 
+  select(-errors_logi)
 
-# TODO: Also set Pt_Study_no to be NA and adjust the Total_no_XXX_epis
-# TODO: Remove from the data set as well
+knitr::kable(
+  xlsx_data$creatinine$screen_log[errors_logi, c(13, 2:4, 12, 14)], caption = 'Creatinine Fixed Rows',
+  booktabs = TRUE
+)
+knitr::kable(
+  xlsx_data$oliguria$screen_log[errors_logi, c(13, 2:4, 12, 14)], caption = 'Oliguria Fixed Rows',
+  booktabs = TRUE
+)
+
+remove_pt_study_no <- function(dataframe) return(filter(dataframe, !(Pt_Study_no %in% xlsx_data$excluded_Pt_Study_no)))
+
+xlsx_data$creatinine$demographic <- remove_pt_study_no(xlsx_data$creatinine$demographic)
+xlsx_data$oliguria$demographic   <- remove_pt_study_no(xlsx_data$oliguria$demographic)
+
+xlsx_data$creatinine$data_set <- remove_pt_study_no(xlsx_data$creatinine$data_set)
+xlsx_data$oliguria$data_set   <- remove_pt_study_no(xlsx_data$oliguria$data_set)
+
+xlsx_data$creatinine$outcomes <- remove_pt_study_no(xlsx_data$creatinine$outcomes)
+xlsx_data$oliguria$outcomes   <- remove_pt_study_no(xlsx_data$oliguria$outcomes)
+
+# These don't need correction
+# any(xlsx_data$screen_out$no_creatinine$UR %in% xlsx_data$excluded_UR_numbers)
+# any(xlsx_data$screen_out$no_oliguria$UR   %in% xlsx_data$excluded_UR_numbers)
+# any(xlsx_data$screen_out$neither_cr_ol$UR %in% xlsx_data$excluded_UR_numbers)
 
 rm(errors_logi, creatinine_errors, oliguria_errors)
