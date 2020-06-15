@@ -35,7 +35,7 @@ rm(blood_gas_ts, bio_chem_ts, blood_gas_adjust)
 UR_number = UR_number_list[2]
 
 ggplot(
-  filter(creatinine_ts, `UR number` == UR),
+  filter(creatinine_ts, `UR number` == UR_number),
   aes(x = Pathology_Result_DTTM,
       y = Creatinine_level,
       group = ICU_Admission,
