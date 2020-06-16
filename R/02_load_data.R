@@ -159,8 +159,9 @@ remove_pt_study_no <- function(dataframe) return(filter(dataframe, !(Pt_Study_no
 xlsx_data$creatinine$demographic <- remove_pt_study_no(xlsx_data$creatinine$demographic)
 xlsx_data$oliguria$demographic   <- remove_pt_study_no(xlsx_data$oliguria$demographic)
 
-xlsx_data$creatinine$data_set <- remove_pt_study_no(xlsx_data$creatinine$data_set)
-xlsx_data$oliguria$data_set   <- remove_pt_study_no(xlsx_data$oliguria$data_set)
+# Data set needs to be corrected after 'fill'
+# xlsx_data$creatinine$data_set <- remove_pt_study_no(xlsx_data$creatinine$data_set)
+# xlsx_data$oliguria$data_set   <- remove_pt_study_no(xlsx_data$oliguria$data_set)
 
 xlsx_data$creatinine$outcomes <- remove_pt_study_no(xlsx_data$creatinine$outcomes)
 xlsx_data$oliguria$outcomes   <- remove_pt_study_no(xlsx_data$oliguria$outcomes)

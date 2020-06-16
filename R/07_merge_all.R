@@ -20,20 +20,20 @@ screening_data <- screening_log %>%
   ) %>% 
   select(`UR number`:Pt_Study_no, Dates_screened, Event, starts_with("Epis_"))
 
-nrow(filter(screening_data, grepl("L[0-9]",  Pt_Study_no)))
-nrow(filter(screening_data, grepl("LT[0-9]", Pt_Study_no)))
-nrow(filter(screening_data, is.na(Pt_Study_no)))
+nrow(filter(screening_data, grepl("L[0-9]",  Pt_Study_no))) == length(Ls)
+nrow(filter(screening_data, grepl("LT[0-9]", Pt_Study_no))) == length(LTs)
+nrow(filter(screening_data, is.na(Pt_Study_no))) == nrow(filter(screening_log, Event == 0))
 
 
-nrow(filter(screening_log, Event != 3)) +
-nrow(filter(screening_log, Event == 3)) * 2
+(nrow(filter(screening_log, Event != 3)) + nrow(filter(screening_log, Event == 3)) * 2) == nrow(screening_data)
 
 setdiff(data_set$Pt_Study_no, c(Ls, LTs))
 
 obs_data <- full_join(
   screening_data, 
   data_set %>% select(Pt_Study_no, Epis_no, starts_with("Epis_")),
-  by = c("Pt_Study_no", "Epis_cr_change", "Epis_olig")
+  # by = c("Pt_Study_no", "Epis_cr_change", "Epis_olig")
+  by = c("Pt_Study_no")
 )
 
 nrow(obs_data)
@@ -45,5 +45,6 @@ nrow(filter(obs_data, grepl("L[0-9]",  Pt_Study_no)))
 nrow(filter(data_set, grepl("L[0-9]",  Pt_Study_no)))
 
 nrow(filter(obs_data, grepl("LT[0-9]", Pt_Study_no)))
+nrow(filter(data_set, grepl("LT[0-9]", Pt_Study_no)))
 
 # Issue with excluded UR numbers...
