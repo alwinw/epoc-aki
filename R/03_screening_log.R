@@ -88,9 +88,9 @@ screen_logs$errors_logi = screen_logs$screen_out$`UR number` %in%
   xlsx_data$excluded_UR_numbers
 
 screen_logs$screen_out[screen_logs$errors_logi, "Excl_criteria_ok"] = "N"
-screen_logs$screen_out[screen_logs$errors_logi, "Incl_criteria_ok"] = NA
 screen_logs$screen_out[screen_logs$errors_logi, "Already_AKI"] = "Y"
 
+# All the URs in screen_out should be in screen_in. Remove any errors
 screen_logs$neither_UR <-
   setdiff(unique(screen_logs$screen_out$`UR number`),
           unique(screen_logs$screen_in$`UR number`))
