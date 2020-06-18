@@ -281,13 +281,8 @@ screening_log %>%
     Admissions = n(),
   ) %>%
   ungroup() %>%
-  bind_rows(group_by(.,Total_no_cr_epis) %>%
-              summarise(Admissions=sum(Admissions)) %>%
-              mutate(Total_no_olig_epis='Total')) %>%
-  bind_rows(group_by(.,Total_no_olig_epis) %>%
-              summarise(Admissions=sum(Admissions)) %>%
-              mutate(Total_no_cr_epis='Total')) %>%
   pivot_wider(names_from = Total_no_olig_epis, values_from = Admissions) %>%
+  adorn_totals(c("row", "col")) %>% 
   rename(Epis = Total_no_cr_epis) %>%
   kable(., caption = "Creatinine change and Oliguria Episodes per Admission", booktabs = TRUE)
 
