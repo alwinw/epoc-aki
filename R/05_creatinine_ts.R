@@ -1,6 +1,6 @@
 # ---- combine-blood-gas-bio-chem ----
 UR_number_list <- unique(filter(screening_log, Event !=0)$`UR number`)
-blood_gas_adjust = 2  # Estimated!!
+blood_gas_adjust = 2  # Estimated!! Would need something that matches the mean AND the variance
 
 blood_gas_ts <- xlsx_data$creat_furo$blood_gas %>%
   select(`UR number`, TC_ICU_ADMISSION_DTTM, TC_ICU_DISCHARGE_DTTM, Pathology_Result_DTTM,
