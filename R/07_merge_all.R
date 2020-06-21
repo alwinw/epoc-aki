@@ -87,8 +87,6 @@ if (nrow(obs_data) != nrow(data_set) + nrow(filter(screening_log, Event == 0))){
 # Check individual columns next...
 # Sort columns by UR, PTSn, Admission, Event Type, etc
 
-colnames(obs_data)
-
 epoc_aki <- obs_data %>% 
   mutate(AdmissionID = paste(`UR number`, Admission, sep = ".")) %>% 
   group_by(`UR number`) %>% 
@@ -101,11 +99,25 @@ epoc_aki <- obs_data %>%
   rowwise() %>% 
   mutate(Comment = paste(unique(na.omit(c(Comment_crch, Comment_olig, Comment_out, Comment))), collapse = ", ")) %>% 
   ungroup() %>% 
+  mutate_at(
+    vars(
+      contains("criteria"), 
+      "Epis_cr_change", "Epis_olig", "Already_AKI", "EOLC",
+      "ESKD", "No_IDC", "Kidney_transplant", "Admit_weekend", "Child",
+      "Rx_limited", "Rx_withdrawn"
+    ),
+    function(x) case_when(
+      x == "Y" | x == "y" | x == "1" ~ 1,
+      x == "N" | x == "n" | x == "0" ~ 0,
+      is.na(x) ~ NA_real_,
+      TRUE     ~ NaN
+    )
+  ) %>% 
   select(
     # PT INFO
     `UR number`, 
     Admission, Total_admissions, AdmissionID,
-    DateTime_hosp_admit:Dc_destination,
+    DateTime_hosp_admit:DateTime_ICU_admit, Date_ICU_dc:Dc_destination,
     # EPIS
     Pt_Study_no, Event,
     Incl_criteria_ok_crch, Incl_criteria_ok_olig, Excl_criteria_ok,
@@ -124,6 +136,15 @@ epoc_aki <- obs_data %>%
   arrange(AdmissionID)
 
 glimpse(epoc_aki)
-View(epoc_aki)
+# setdiff(colnames(obs_data), colnames(epoc_aki))
 
-setdiff(colnames(obs_data), colnames(epoc_aki))
+epoc_aki_check <- epoc_aki %>% 
+  select(`UR number`:AdmissionID, Pt_Study_no:Total_no_olig_epis) %>% 
+  # Check incl / excl criteria
+  group_by(AdmissionID)
+
+any(is.nan(epoc_aki$Epis_cr_change))
+unique(obs_data$Rx_limited)  # TODO NEED TO FIX ONE "Y incl. not for RRT"
+
+epoc_aki_check
+any(is.na(epoc_aki_check$`UR number`))
