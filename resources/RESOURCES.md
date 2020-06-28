@@ -45,3 +45,7 @@ https://stackoverflow.com/questions/13672720/r-command-for-setting-working-direc
 
     sys.frame(1)$ofile
     parent.frame(2)$ofile
+
+http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/81-ggplot2-easy-way-to-mix-multiple-graphs-on-the-same-page/
+
+http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html

@@ -88,9 +88,9 @@ screen_logs$errors_logi = screen_logs$screen_out$`UR number` %in%
   xlsx_data$excluded_UR_numbers
 
 screen_logs$screen_out[screen_logs$errors_logi, "Excl_criteria_ok"] = "N"
-screen_logs$screen_out[screen_logs$errors_logi, "Incl_criteria_ok"] = NA
 screen_logs$screen_out[screen_logs$errors_logi, "Already_AKI"] = "Y"
 
+# All the URs in screen_out should be in screen_in. Remove any errors
 screen_logs$neither_UR <-
   setdiff(unique(screen_logs$screen_out$`UR number`),
           unique(screen_logs$screen_in$`UR number`))
@@ -281,13 +281,8 @@ screening_log %>%
     Admissions = n(),
   ) %>%
   ungroup() %>%
-  bind_rows(group_by(.,Total_no_cr_epis) %>%
-              summarise(Admissions=sum(Admissions)) %>%
-              mutate(Total_no_olig_epis='Total')) %>%
-  bind_rows(group_by(.,Total_no_olig_epis) %>%
-              summarise(Admissions=sum(Admissions)) %>%
-              mutate(Total_no_cr_epis='Total')) %>%
   pivot_wider(names_from = Total_no_olig_epis, values_from = Admissions) %>%
+  adorn_totals(c("row", "col")) %>% 
   rename(Epis = Total_no_cr_epis) %>%
   kable(., caption = "Creatinine change and Oliguria Episodes per Admission", booktabs = TRUE)
 

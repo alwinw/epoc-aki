@@ -166,7 +166,7 @@ xlsx_data$oliguria$demographic   <- remove_pt_study_no(xlsx_data$oliguria$demogr
 xlsx_data$creatinine$outcomes <- remove_pt_study_no(xlsx_data$creatinine$outcomes)
 xlsx_data$oliguria$outcomes   <- remove_pt_study_no(xlsx_data$oliguria$outcomes)
 
-# These don't need correction
+# These don't need correction, applied in screening_log
 # any(xlsx_data$screen_out$no_creatinine$UR %in% xlsx_data$excluded_UR_numbers)
 # any(xlsx_data$screen_out$no_oliguria$UR   %in% xlsx_data$excluded_UR_numbers)
 # any(xlsx_data$screen_out$neither_cr_ol$UR %in% xlsx_data$excluded_UR_numbers)
