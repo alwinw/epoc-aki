@@ -15,9 +15,13 @@ epoc_aki %>%
   ) %>% 
   adorn_totals("row")
 
+# Included vs excluded
+
+
 # Admissions vs Cr
 # Admissions vs olig
 
+# Should have just used the screening log here
 # Cr vs olig
 epoc_aki_admissions %>% 
   filter(Excl_criteria_ok == 1) %>%  # TODO If no filter, there is an 'extra' one
@@ -36,7 +40,7 @@ epoc_aki_admissions %>%
   pivot_wider(names_from = Total_no_olig_epis, values_from = Admissions) %>%
   adorn_totals(c("row", "col")) %>% 
   rename(Epis = Total_no_cr_epis)
-
+# Turn this into a heat map with marginal distribution plot on the side
 
 
 # Pyramid plot for male/female
