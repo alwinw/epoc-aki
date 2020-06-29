@@ -4,6 +4,10 @@ Evaluation of the Predictive value of short-term Oliguria and minor Creatinine i
 
 Alwin Wang and Lisa Toh
 
+## Data Overview
+
+![Data Overview](/doc/images/overview.png)
+
 ## Running
 
 1. Clone the repository and open the R project file `epoc-aki.Rproj` with RStudio
