@@ -5,15 +5,13 @@ _book/
 _bookdown_files/
 epoc-aki.Rmd
 _main.Rmd
-data/
+data/*
 libs/
-resources/*
+resources/
 *.tex
 
-!resources/*.bib
-!resources/*.R
-!*.md
-!*.yml
+!data/*.R
+!data/*.md
 
 # History files
 .Rhistory

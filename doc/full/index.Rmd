@@ -5,7 +5,7 @@ date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 output: bookdown::gitbook
 documentclass: book
-bibliography: ["../../resources/references.bib", "../../resources/R-references.bib"]
+bibliography: ["../bib/references.bib", "../bib/R-references.bib"]
 biblio-style: apalike
 link-citations: yes
 github-repo: AlwinW/epoc-aki
@@ -22,7 +22,7 @@ rel_path = "../.."
 ## Environment set-up {-}
 
 ```{r 01_config, include=FALSE, cache=FALSE}
-knitr::read_chunk(file.path(rel_path, "R/01_config.R"))
+knitr::read_chunk(file.path(rel_path, "R/00_config.R"))
 ```
 
 1. `R` and `RStudio`
