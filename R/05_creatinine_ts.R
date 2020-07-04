@@ -90,6 +90,28 @@ screening_ts <- screening_log %>%
     Admission_ID = paste0(`UR number`, ".", Admission),
     DateTime_ICU_dc = Date_ICU_dc + hours(23) + minutes(59) + seconds(59)
   ) %>% 
-  select(-Date_ICU_dc)
+  select(Admission_ID, `UR number`, DateTime_ICU_admit, DateTime_ICU_dc)
 
 screening_ts_list <- split(screening_ts, screening_ts$Admission_ID)
+
+
+screening_ts_list = screening_ts_list[1:3]
+
+lapply(screening_ts_list, function(event) {
+  cr_ts = creatinine_ts %>% 
+    filter(
+      `UR number` == screening_event$`UR number`,
+      Pathology_Result_DTTM > screening_event$DateTime_ICU_admit,
+      Pathology_Result_DTTM < screening_event$DateTime_ICU_dc
+    )
+  return(list(event = event, cr_ts = cr_ts))
+})
+
+screening_event = screening_ts_list[[1]]
+
+creatinine_ts %>% 
+  filter(
+    `UR number` == screening_event$`UR number`,
+    Pathology_Result_DTTM > screening_event$DateTime_ICU_admit,
+    Pathology_Result_DTTM < screening_event$DateTime_ICU_dc
+  )
