@@ -7,12 +7,9 @@ epoc-aki.Rmd
 _main.Rmd
 data/
 libs/
-resources/*
+resources/
 *.tex
 
-!resources/*.bib
-!resources/*.R
-!*.md
 !*.yml
 
 # History files
