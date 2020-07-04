@@ -79,8 +79,6 @@ xlsx_data$creatinine$screen_log <- xlsx_data$creatinine$screen_log %>%
   ungroup() %>%
   arrange(`UR number`, Dates_screened)
 
-# as_date(., "%d/%b/%y")
-
 rm(xlsx_paths, excel_date_to_character, last_column_as_comment)
 
 
@@ -154,7 +152,9 @@ knitr::kable(
   booktabs = TRUE
 )
 
-remove_pt_study_no <- function(dataframe) return(filter(dataframe, !(Pt_Study_no %in% xlsx_data$excluded_Pt_Study_no)))
+remove_pt_study_no <- function(dataframe) {
+  return(filter(dataframe, !(Pt_Study_no %in% xlsx_data$excluded_Pt_Study_no)))
+}
 
 xlsx_data$creatinine$demographic <- remove_pt_study_no(xlsx_data$creatinine$demographic)
 xlsx_data$oliguria$demographic   <- remove_pt_study_no(xlsx_data$oliguria$demographic)

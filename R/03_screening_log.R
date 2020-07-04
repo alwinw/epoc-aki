@@ -257,7 +257,7 @@ screening_log %>%
   kable(., caption = "Patients included and excluded", booktabs = TRUE)
 
 screening_log %>%
-  filter(Excl_criteria_ok == "Y") %>%
+  filter(Excl_criteria_ok == "Y") %>%  # FIXME Check values if this is removed
   select(`UR number`, starts_with("Epis")) %>%
   replace_na(list(
     Epis_cr_change = "N",
@@ -268,7 +268,7 @@ screening_log %>%
   kable(., caption = "Creatinine change and Oliguria Epis Total Admissions")
 
 screening_log %>%
-  filter(Excl_criteria_ok == "Y") %>%
+  filter(Excl_criteria_ok == "Y") %>%  # FIXME Check values if this is removed
   select(`UR number`, starts_with("Total_no_")) %>%
   mutate(
     Total_no_cr_epis = if_else(
@@ -276,13 +276,13 @@ screening_log %>%
     Total_no_olig_epis = if_else(
       is.na(Total_no_olig_epis), " 0 olig epis", sprintf("%2d olig epis", Total_no_olig_epis)),
   ) %>%
-  group_by(Total_no_cr_epis, Total_no_olig_epis) %>%
+  group_by(Total_no_cr_epis, Total_no_olig_epis) %>%  # FIXME Check values if this is removed
   summarise(
     Admissions = n(),
   ) %>%
   ungroup() %>%
   pivot_wider(names_from = Total_no_olig_epis, values_from = Admissions) %>%
-  adorn_totals(c("row", "col")) %>% 
+  adorn_totals(c("row", "col")) %>%
   rename(Epis = Total_no_cr_epis) %>%
   kable(., caption = "Creatinine change and Oliguria Episodes per Admission", booktabs = TRUE)
 
