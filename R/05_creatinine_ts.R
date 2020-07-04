@@ -33,7 +33,7 @@ rm(blood_gas_ts, bio_chem_ts, blood_gas_adjust, UR_number_list)
 
 # ---- example-creatinine-plot ----
 UR_number_list = creatinine_ts %>% arrange(-ICU_Admission) %>% select(`UR number`) %>% unique(.)
-UR_number = UR_number_list[12,]
+UR_number = UR_number_list[3,]
 
 ggplot(
   filter(creatinine_ts, `UR number` == UR_number),
@@ -46,7 +46,7 @@ ggplot(
   geom_point(aes(colour = Pathology)) +
   facet_wrap(vars(ICU_Admission), nrow = 1, scales = "free_x")
 
-rm(UR_number, )
+rm(UR_number, UR_number_list)
 
 # ---- plot-blood-gas-vs-bio-chem ----
 bio_chem_blood_gas <- creatinine_ts %>%

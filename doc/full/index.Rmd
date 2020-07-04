@@ -22,7 +22,7 @@ rel_path = "../.."
 ## Environment set-up {-}
 
 ```{r 01_config, include=FALSE, cache=FALSE}
-knitr::read_chunk(file.path(rel_path, "R/01_config.R"))
+knitr::read_chunk(file.path(rel_path, "R/00_config.R"))
 ```
 
 1. `R` and `RStudio`
