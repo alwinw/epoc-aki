@@ -127,7 +127,7 @@ xlsx_data$creatinine$screen_log <- xlsx_data$creatinine$screen_log %>%
     Incl_criteria_ok = if_else(errors_logi, NA_character_, Incl_criteria_ok),
     Epis_cr_change   = if_else(errors_logi, NA_character_, Epis_cr_change),
     Pt_Study_no      = if_else(errors_logi, NA_character_, Pt_Study_no),
-    Total_no_cr_epis = if_else(errors_logi, if_else(Total_no_cr_epis == 1, NA_real_, Total_no_cr_epis - 1), Total_no_cr_epis)
+    Total_no_cr_epis = if_else(errors_logi, NA_real_, Total_no_cr_epis)
   ) %>% 
   select(-errors_logi)
 
@@ -139,7 +139,7 @@ xlsx_data$oliguria$screen_log <- xlsx_data$oliguria$screen_log %>%
     Incl_criteria_ok = if_else(errors_logi, NA_character_, Incl_criteria_ok),
     Epis_olig        = if_else(errors_logi, NA_character_, Epis_olig),
     Pt_Study_no      = if_else(errors_logi, NA_character_, Pt_Study_no),
-    Total_no_olig_epis = if_else(errors_logi, if_else(Total_no_olig_epis == 1, NA_real_, Total_no_olig_epis - 1), Total_no_olig_epis)
+    Total_no_olig_epis = if_else(errors_logi, NA_real_, Total_no_olig_epis)
   ) %>% 
   select(-errors_logi)
 
