@@ -1,7 +1,7 @@
 # Load Data
 
 ```{r 02_load_data, include=FALSE, cache=FALSE}
-knitr::read_chunk("../../R/02_load_data.R")
+knitr::read_chunk("../../R/01_load_data.R")
 ```
 
 ## Excel Data
@@ -30,7 +30,7 @@ Save old `UR number` here. Replace `UR number` with hash.
 # Screening Log
 
 ```{r 03_screening_log, include=FALSE, cache=FALSE}
-knitr::read_chunk("../../R/03_screening_log.R")
+knitr::read_chunk("../../R/02_screening_log.R")
 ```
 
 ## Merge Screening Log
@@ -57,7 +57,7 @@ Merge in the APACHE database to replace missing values (`NA`) and empty values (
 # Obs Data Set
 
 ```{r 04_data_set, include=FALSE, cache=FALSE}
-knitr::read_chunk("../../R/04_data_set.R")
+knitr::read_chunk("../../R/03_data_set.R")
 ```
 
 ## Merge Data Set
