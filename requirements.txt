@@ -11,3 +11,6 @@ tinytex
 servr
 fuzzyjoin
 janitor
+epiR
+pROC
+OptimalCutpoints
