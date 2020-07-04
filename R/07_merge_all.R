@@ -24,8 +24,8 @@ screening_data <- screening_log %>%
   ) %>% 
   filter(!duplicate) %>% 
   mutate(
-    Epis_cr_change = ifelse(grepl("LT[0-9]", Pt_Study_no), "Y", NA),
-    Epis_olig      = ifelse(grepl("L[0-9]",  Pt_Study_no), "Y", NA)
+    Epis_cr_change = if_else(grepl("LT[0-9]", Pt_Study_no), "Y", NA_character_),
+    Epis_olig      = if_else(grepl("L[0-9]",  Pt_Study_no), "Y", NA_character_)
   ) %>% 
   select(`UR number`:Pt_Study_no, Dates_screened, Event, starts_with("Epis_"))
 
@@ -144,7 +144,7 @@ epoc_aki_check <- epoc_aki %>%
   group_by(AdmissionID)
 
 any(is.nan(epoc_aki$Epis_cr_change))
-unique(obs_data$Rx_limited)  # TODO NEED TO FIX ONE "Y incl. not for RRT"
+unique(obs_data$Rx_limited)  # FIXME NEED TO FIX ONE "Y incl. not for RRT"
 
 epoc_aki_check
 any(is.na(epoc_aki_check$`UR number`))

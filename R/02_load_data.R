@@ -122,24 +122,24 @@ xlsx_data$creatinine$screen_log[errors_logi, "Dates_screened"] =
 xlsx_data$creatinine$screen_log$errors_logi = errors_logi
 xlsx_data$creatinine$screen_log <- xlsx_data$creatinine$screen_log %>% 
   mutate(
-    Excl_criteria_ok = ifelse(errors_logi, "N", Excl_criteria_ok),
-    Already_AKI      = ifelse(errors_logi, "Y", Already_AKI),
-    Incl_criteria_ok = ifelse(errors_logi, NA, Incl_criteria_ok),
-    Epis_cr_change   = ifelse(errors_logi, NA, Epis_cr_change),
-    Pt_Study_no      = ifelse(errors_logi, NA, Pt_Study_no),
-    Total_no_cr_epis = ifelse(errors_logi, ifelse(Total_no_cr_epis == 1, NA, Total_no_cr_epis - 1), Total_no_cr_epis)
+    Excl_criteria_ok = if_else(errors_logi, "N", Excl_criteria_ok),
+    Already_AKI      = if_else(errors_logi, "Y", Already_AKI),
+    Incl_criteria_ok = if_else(errors_logi, NA_character_, Incl_criteria_ok),
+    Epis_cr_change   = if_else(errors_logi, NA_character_, Epis_cr_change),
+    Pt_Study_no      = if_else(errors_logi, NA_character_, Pt_Study_no),
+    Total_no_cr_epis = if_else(errors_logi, if_else(Total_no_cr_epis == 1, NA_real_, Total_no_cr_epis - 1), Total_no_cr_epis)
   ) %>% 
   select(-errors_logi)
 
 xlsx_data$oliguria$screen_log$errors_logi = errors_logi
 xlsx_data$oliguria$screen_log <- xlsx_data$oliguria$screen_log %>% 
   mutate(
-    Excl_criteria_ok = ifelse(errors_logi, "N", Excl_criteria_ok),
-    Already_AKI      = ifelse(errors_logi, "Y", Already_AKI),
-    Incl_criteria_ok = ifelse(errors_logi, NA, Incl_criteria_ok),
-    Epis_olig        = ifelse(errors_logi, NA, Epis_olig),
-    Pt_Study_no      = ifelse(errors_logi, NA, Pt_Study_no),
-    Total_no_olig_epis = ifelse(errors_logi, ifelse(Total_no_olig_epis == 1, NA, Total_no_olig_epis - 1), Total_no_olig_epis)
+    Excl_criteria_ok = if_else(errors_logi, "N", Excl_criteria_ok),
+    Already_AKI      = if_else(errors_logi, "Y", Already_AKI),
+    Incl_criteria_ok = if_else(errors_logi, NA_character_, Incl_criteria_ok),
+    Epis_olig        = if_else(errors_logi, NA_character_, Epis_olig),
+    Pt_Study_no      = if_else(errors_logi, NA_character_, Pt_Study_no),
+    Total_no_olig_epis = if_else(errors_logi, if_else(Total_no_olig_epis == 1, NA_real_, Total_no_olig_epis - 1), Total_no_olig_epis)
   ) %>% 
   select(-errors_logi)
 
