@@ -29,26 +29,24 @@ creatinine_ts <- rbind(blood_gas_ts, bio_chem_ts) %>%
   mutate(ICU_Admission = cumsum(TC_ICU_ADMISSION_DTTM != lag(TC_ICU_ADMISSION_DTTM, default = 0))) %>%
   arrange(-ICU_Admission, `UR number`, ICU_Admission, Pathology_Result_DTTM)
 
-rm(blood_gas_ts, bio_chem_ts, blood_gas_adjust)
+rm(blood_gas_ts, bio_chem_ts, blood_gas_adjust, UR_number_list)
 
 # ---- example-creatinine-plot ----
-UR_number = UR_number_list[2]
+UR_number_list = creatinine_ts %>% arrange(-ICU_Admission) %>% select(`UR number`) %>% unique(.)
+UR_number = UR_number_list[12,]
 
 ggplot(
   filter(creatinine_ts, `UR number` == UR_number),
   aes(x = Pathology_Result_DTTM,
       y = Creatinine_level,
       group = ICU_Admission,
-      colour = Pathology,
-      fill = Pathology
   )
 ) +
-  geom_line() +
-  geom_point() +
-  geom_smooth(method='loess', formula = 'y ~x', span = 0.3, se = FALSE, colour = "grey", linetype = "dashed") +
+  geom_line(linetype = "dashed", colour = "grey") +
+  geom_point(aes(colour = Pathology)) +
   facet_wrap(vars(ICU_Admission), nrow = 1, scales = "free_x")
 
-rm(UR_number, UR_number_list)
+rm(UR_number, )
 
 # ---- plot-blood-gas-vs-bio-chem ----
 bio_chem_blood_gas <- creatinine_ts %>%
@@ -82,3 +80,16 @@ ggplot(bio_chem_blood_gas, aes(x = Delta_t, y = Delta_cr, colour = Pathology_typ
   geom_point(alpha = 0.3) +
   geom_smooth(se = FALSE) +
   facet_wrap(vars(Pathology_type), ncol = 1)
+
+# ---- creatinine_ts_screening_log ----
+
+screening_ts <- screening_log %>% 
+  filter(Excl_criteria_ok == "Y") %>% 
+  select(`UR number`, Admission, DateTime_ICU_admit, Date_ICU_dc) %>% 
+  mutate(
+    Admission_ID = paste0(`UR number`, ".", Admission),
+    DateTime_ICU_dc = Date_ICU_dc + hours(23) + minutes(59) + seconds(59)
+  ) %>% 
+  select(-Date_ICU_dc)
+
+screening_ts_list <- split(screening_ts, screening_ts$Admission_ID)

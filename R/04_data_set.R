@@ -152,5 +152,3 @@ data_set %>%
   filter(!is.na(EpisValue)) %>%
   select(Epis, Epis_no, Episodes) %>%
   kable(., caption = "Number of Episodes", booktabs = TRUE)
-
-# Should match the screening log!!
