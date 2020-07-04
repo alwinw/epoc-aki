@@ -79,8 +79,6 @@ xlsx_data$creatinine$screen_log <- xlsx_data$creatinine$screen_log %>%
   ungroup() %>%
   arrange(`UR number`, Dates_screened)
 
-# as_date(., "%d/%b/%y")
-
 rm(xlsx_paths, excel_date_to_character, last_column_as_comment)
 
 
@@ -124,24 +122,24 @@ xlsx_data$creatinine$screen_log[errors_logi, "Dates_screened"] =
 xlsx_data$creatinine$screen_log$errors_logi = errors_logi
 xlsx_data$creatinine$screen_log <- xlsx_data$creatinine$screen_log %>% 
   mutate(
-    Excl_criteria_ok = ifelse(errors_logi, "N", Excl_criteria_ok),
-    Already_AKI      = ifelse(errors_logi, "Y", Already_AKI),
-    Incl_criteria_ok = ifelse(errors_logi, NA, Incl_criteria_ok),
-    Epis_cr_change   = ifelse(errors_logi, NA, Epis_cr_change),
-    Pt_Study_no      = ifelse(errors_logi, NA, Pt_Study_no),
-    Total_no_cr_epis = ifelse(errors_logi, ifelse(Total_no_cr_epis == 1, NA, Total_no_cr_epis - 1), Total_no_cr_epis)
+    Excl_criteria_ok = if_else(errors_logi, "N", Excl_criteria_ok),
+    Already_AKI      = if_else(errors_logi, "Y", Already_AKI),
+    Incl_criteria_ok = if_else(errors_logi, NA_character_, Incl_criteria_ok),
+    Epis_cr_change   = if_else(errors_logi, NA_character_, Epis_cr_change),
+    Pt_Study_no      = if_else(errors_logi, NA_character_, Pt_Study_no),
+    Total_no_cr_epis = if_else(errors_logi, NA_real_, Total_no_cr_epis)
   ) %>% 
   select(-errors_logi)
 
 xlsx_data$oliguria$screen_log$errors_logi = errors_logi
 xlsx_data$oliguria$screen_log <- xlsx_data$oliguria$screen_log %>% 
   mutate(
-    Excl_criteria_ok = ifelse(errors_logi, "N", Excl_criteria_ok),
-    Already_AKI      = ifelse(errors_logi, "Y", Already_AKI),
-    Incl_criteria_ok = ifelse(errors_logi, NA, Incl_criteria_ok),
-    Epis_olig        = ifelse(errors_logi, NA, Epis_olig),
-    Pt_Study_no      = ifelse(errors_logi, NA, Pt_Study_no),
-    Total_no_olig_epis = ifelse(errors_logi, ifelse(Total_no_olig_epis == 1, NA, Total_no_olig_epis - 1), Total_no_olig_epis)
+    Excl_criteria_ok = if_else(errors_logi, "N", Excl_criteria_ok),
+    Already_AKI      = if_else(errors_logi, "Y", Already_AKI),
+    Incl_criteria_ok = if_else(errors_logi, NA_character_, Incl_criteria_ok),
+    Epis_olig        = if_else(errors_logi, NA_character_, Epis_olig),
+    Pt_Study_no      = if_else(errors_logi, NA_character_, Pt_Study_no),
+    Total_no_olig_epis = if_else(errors_logi, NA_real_, Total_no_olig_epis)
   ) %>% 
   select(-errors_logi)
 
@@ -154,7 +152,9 @@ knitr::kable(
   booktabs = TRUE
 )
 
-remove_pt_study_no <- function(dataframe) return(filter(dataframe, !(Pt_Study_no %in% xlsx_data$excluded_Pt_Study_no)))
+remove_pt_study_no <- function(dataframe) {
+  return(filter(dataframe, !(Pt_Study_no %in% xlsx_data$excluded_Pt_Study_no)))
+}
 
 xlsx_data$creatinine$demographic <- remove_pt_study_no(xlsx_data$creatinine$demographic)
 xlsx_data$oliguria$demographic   <- remove_pt_study_no(xlsx_data$oliguria$demographic)

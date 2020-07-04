@@ -89,9 +89,9 @@ raw_data_set <- data_set_joint %>%
     values_from = "DateTime"
   ) %>%
   mutate(
-    datetime = ifelse(
+    datetime = if_else(
       (is.na(Date) | is.na(Time)),
-      NA,
+      NA_character_,
       paste(format(Date, format = "%Y-%m-%d"), format(Time, format = "%H:%M:%S"))),
     Date = NULL,
     Time = NULL

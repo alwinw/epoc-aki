@@ -261,14 +261,20 @@ screening_log %>%
   select(`UR number`, starts_with("Epis")) %>%
   replace_na(list(
     Epis_cr_change = "N",
-    Epis_olig = "N")) %>%
+    Epis_olig = "N")
+  ) %>%
   group_by(Epis_cr_change, Epis_olig) %>%
-  summarise(Admissions = n()) %>%
-  arrange(desc(Epis_cr_change), desc(Epis_olig)) %>%
+  summarise(Admissions = n()) %>% 
+  ungroup() %>% 
+  pivot_wider(names_from = Epis_olig, values_from = Admissions) %>% 
+  adorn_totals(c("row", "col")) %>%
+  adorn_percentages("all") %>% 
+  adorn_pct_formatting() %>% 
+  adorn_ns(position = "front") %>% 
+  adorn_title("top", row_name = "Epis_Cr", col_name = "Epis_Olig") %>%
   kable(., caption = "Creatinine change and Oliguria Epis Total Admissions")
 
 screening_log %>%
-  filter(Excl_criteria_ok == "Y") %>%
   select(`UR number`, starts_with("Total_no_")) %>%
   mutate(
     Total_no_cr_epis = if_else(
@@ -282,9 +288,28 @@ screening_log %>%
   ) %>%
   ungroup() %>%
   pivot_wider(names_from = Total_no_olig_epis, values_from = Admissions) %>%
-  adorn_totals(c("row", "col")) %>% 
+  adorn_totals(c("row", "col")) %>%
   rename(Epis = Total_no_cr_epis) %>%
-  kable(., caption = "Creatinine change and Oliguria Episodes per Admission", booktabs = TRUE)
+  kable(., caption = "Creatinine change and Oliguria Episodes per Admission (all)", booktabs = TRUE)
+
+screening_log %>%
+  filter(Excl_criteria_ok == "Y") %>%  # FIXME Check values if this is removed
+  select(`UR number`, starts_with("Total_no_")) %>%
+  mutate(
+    Total_no_cr_epis = if_else(
+      is.na(Total_no_cr_epis), " 0 cr epis", sprintf("%2d cr epis", Total_no_cr_epis)),
+    Total_no_olig_epis = if_else(
+      is.na(Total_no_olig_epis), " 0 olig epis", sprintf("%2d olig epis", Total_no_olig_epis)),
+  ) %>%
+  group_by(Total_no_cr_epis, Total_no_olig_epis) %>%
+  summarise(
+    Admissions = n(),
+  ) %>%
+  ungroup() %>%
+  pivot_wider(names_from = Total_no_olig_epis, values_from = Admissions) %>%
+  adorn_totals(c("row", "col")) %>%
+  rename(Epis = Total_no_cr_epis) %>%
+  kable(., caption = "Creatinine change and Oliguria Episodes per Admission (Incl. criteria ok only)", booktabs = TRUE)
 
 screening_log %>%
   filter(Excl_criteria_ok == "N") %>%
