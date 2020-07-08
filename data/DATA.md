@@ -28,6 +28,8 @@ Creatinine change in oliguria 4.1.20
 - 04-Jan-20
   - `'Data set'!D1` renamed from `Time_olig_episode` to `Time_olig_epis`
   - `'AKI & Outcomes'!D120` changed from `4/18` to blank
+- 08-Jul-20
+  - `'AKI & Outcomes'!AI51` changed from `Y incl. not for RRT` to `Y`
 
 Small changes in creatinine 5.6.20.xlsx
 
@@ -52,6 +54,8 @@ Small changes in creatinine 5.6.20.xlsx
   - `'Data set'!E347` changed from `10:00` to `12:00`
   - `'Data set'!Q347` changed from `14:00` to `16:00`
   - `'Data set'!D569` changed from `09:10` to `19:10`
+- 08-Jul-20
+  - `'AKI & Outcomes'!AI70` changed from `Y incl. not for RRT` to `Y`
 
 Demographics pts screened out.xlsx
 
@@ -62,7 +66,7 @@ COMET-Extract-APD 23 Oct 2018.xlsx
 
 - Database from which the Apache scores were extracted from
 - Admissions sheet
-  - Personably identifiable information 
+  - Personably identifiable information
   - Identification variables (`HRN/NIH` = `UR Number`, `ICU_ADM_DTM`)
   - Apache scores 1 per admission assessment (`AP2score`, `AP3score`)
 - Other sheets are empty

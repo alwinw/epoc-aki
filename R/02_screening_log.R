@@ -299,7 +299,7 @@ screening_log %>%
 #   kable(., caption = "Creatinine change and Oliguria Episodes per Admission (all)", booktabs = TRUE)
 
 screening_log %>%
-  filter(Excl_criteria_ok == "Y") %>%  # FIXME Check values if this is removed
+  filter(Excl_criteria_ok == "Y") %>%  # Fine with and without
   select(`UR number`, starts_with("Total_no_")) %>%
   mutate(
     Total_no_cr_epis = if_else(

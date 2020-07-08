@@ -79,8 +79,6 @@ if (nrow(obs_data) != nrow(data_set) + nrow(filter(screening_log, Event == "Neit
   stop("Number of total events has changed!")
 }
 
-# ---- add-time-series ----
-
 # ---- add-outcomes ----
 
 # Various outcomes here
@@ -143,8 +141,7 @@ epoc_aki_check <- epoc_aki %>%
   # Check incl / excl criteria
   group_by(AdmissionID)
 
-any(is.nan(epoc_aki$Epis_cr_change))
-unique(obs_data$Rx_limited)  # FIXME NEED TO FIX ONE "Y incl. not for RRT"
+any(is.nan(epoc_aki$Rx_withdrawn))
 
 epoc_aki_check
 any(is.na(epoc_aki_check$`UR number`))
