@@ -120,7 +120,7 @@ xlsx_data$creatinine$screen_log[errors_logi, "Dates_screened"] =
 
 
 xlsx_data$creatinine$screen_log$errors_logi = errors_logi
-xlsx_data$creatinine$screen_log <- xlsx_data$creatinine$screen_log %>% 
+xlsx_data$creatinine$screen_log <- xlsx_data$creatinine$screen_log %>%
   mutate(
     Excl_criteria_ok = if_else(errors_logi, "N", Excl_criteria_ok),
     Already_AKI      = if_else(errors_logi, "Y", Already_AKI),
@@ -128,11 +128,11 @@ xlsx_data$creatinine$screen_log <- xlsx_data$creatinine$screen_log %>%
     Epis_cr_change   = if_else(errors_logi, NA_character_, Epis_cr_change),
     Pt_Study_no      = if_else(errors_logi, NA_character_, Pt_Study_no),
     Total_no_cr_epis = if_else(errors_logi, NA_real_, Total_no_cr_epis)
-  ) %>% 
+  ) %>%
   select(-errors_logi)
 
 xlsx_data$oliguria$screen_log$errors_logi = errors_logi
-xlsx_data$oliguria$screen_log <- xlsx_data$oliguria$screen_log %>% 
+xlsx_data$oliguria$screen_log <- xlsx_data$oliguria$screen_log %>%
   mutate(
     Excl_criteria_ok = if_else(errors_logi, "N", Excl_criteria_ok),
     Already_AKI      = if_else(errors_logi, "Y", Already_AKI),
@@ -140,7 +140,7 @@ xlsx_data$oliguria$screen_log <- xlsx_data$oliguria$screen_log %>%
     Epis_olig        = if_else(errors_logi, NA_character_, Epis_olig),
     Pt_Study_no      = if_else(errors_logi, NA_character_, Pt_Study_no),
     Total_no_olig_epis = if_else(errors_logi, NA_real_, Total_no_olig_epis)
-  ) %>% 
+  ) %>%
   select(-errors_logi)
 
 knitr::kable(
@@ -159,16 +159,7 @@ remove_pt_study_no <- function(dataframe) {
 xlsx_data$creatinine$demographic <- remove_pt_study_no(xlsx_data$creatinine$demographic)
 xlsx_data$oliguria$demographic   <- remove_pt_study_no(xlsx_data$oliguria$demographic)
 
-# Data set needs to be corrected after 'fill'
-# xlsx_data$creatinine$data_set <- remove_pt_study_no(xlsx_data$creatinine$data_set)
-# xlsx_data$oliguria$data_set   <- remove_pt_study_no(xlsx_data$oliguria$data_set)
-
 xlsx_data$creatinine$outcomes <- remove_pt_study_no(xlsx_data$creatinine$outcomes)
 xlsx_data$oliguria$outcomes   <- remove_pt_study_no(xlsx_data$oliguria$outcomes)
-
-# These don't need correction, applied in screening_log
-# any(xlsx_data$screen_out$no_creatinine$UR %in% xlsx_data$excluded_UR_numbers)
-# any(xlsx_data$screen_out$no_oliguria$UR   %in% xlsx_data$excluded_UR_numbers)
-# any(xlsx_data$screen_out$neither_cr_ol$UR %in% xlsx_data$excluded_UR_numbers)
 
 rm(errors_logi, creatinine_errors, oliguria_errors)

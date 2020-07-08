@@ -242,18 +242,21 @@ rm(screening_log_thin, apd_extract, apache_replace)
 
 
 # ---- screen_log_overview ----
-# Using n_distinct() does not seem to be working as expected with grouping?
 screening_log %>%
   summarise(
     Admissions = n(),
-    `Unique Patients` = n_distinct(`UR number`)
+    `Unique Patients` = n_distinct(`UR number`, na.rm = TRUE)
   ) %>%
   kable(., caption = "Total Admissions", booktabs = TRUE)
 
 screening_log %>%
   group_by(Excl_criteria_ok) %>%
+  # Due to multiple admissions, 1 UR could have ok on one admission and not on another
   summarise(Admissions = n()) %>%
   arrange(desc(Excl_criteria_ok)) %>%
+  adorn_percentages("all") %>%
+  adorn_pct_formatting() %>%
+  adorn_ns(position = "front") %>%
   kable(., caption = "Patients included and excluded", booktabs = TRUE)
 
 screening_log %>%
@@ -264,33 +267,33 @@ screening_log %>%
     Epis_olig = "N")
   ) %>%
   group_by(Epis_cr_change, Epis_olig) %>%
-  summarise(Admissions = n()) %>% 
-  ungroup() %>% 
-  pivot_wider(names_from = Epis_olig, values_from = Admissions) %>% 
+  summarise(Admissions = n()) %>%
+  ungroup() %>%
+  pivot_wider(names_from = Epis_olig, values_from = Admissions) %>%
   adorn_totals(c("row", "col")) %>%
-  adorn_percentages("all") %>% 
-  adorn_pct_formatting() %>% 
-  adorn_ns(position = "front") %>% 
+  adorn_percentages("all") %>%
+  adorn_pct_formatting() %>%
+  adorn_ns(position = "front") %>%
   adorn_title("top", row_name = "Epis_Cr", col_name = "Epis_Olig") %>%
   kable(., caption = "Creatinine change and Oliguria Epis Total Admissions")
 
-screening_log %>%
-  select(`UR number`, starts_with("Total_no_")) %>%
-  mutate(
-    Total_no_cr_epis = if_else(
-      is.na(Total_no_cr_epis), " 0 cr epis", sprintf("%2d cr epis", Total_no_cr_epis)),
-    Total_no_olig_epis = if_else(
-      is.na(Total_no_olig_epis), " 0 olig epis", sprintf("%2d olig epis", Total_no_olig_epis)),
-  ) %>%
-  group_by(Total_no_cr_epis, Total_no_olig_epis) %>%
-  summarise(
-    Admissions = n(),
-  ) %>%
-  ungroup() %>%
-  pivot_wider(names_from = Total_no_olig_epis, values_from = Admissions) %>%
-  adorn_totals(c("row", "col")) %>%
-  rename(Epis = Total_no_cr_epis) %>%
-  kable(., caption = "Creatinine change and Oliguria Episodes per Admission (all)", booktabs = TRUE)
+# screening_log %>%
+#   select(`UR number`, starts_with("Total_no_")) %>%
+#   mutate(
+#     Total_no_cr_epis = if_else(
+#       is.na(Total_no_cr_epis), " 0 cr epis", sprintf("%2d cr epis", Total_no_cr_epis)),
+#     Total_no_olig_epis = if_else(
+#       is.na(Total_no_olig_epis), " 0 olig epis", sprintf("%2d olig epis", Total_no_olig_epis)),
+#   ) %>%
+#   group_by(Total_no_cr_epis, Total_no_olig_epis) %>%
+#   summarise(
+#     Admissions = n(),
+#   ) %>%
+#   ungroup() %>%
+#   pivot_wider(names_from = Total_no_olig_epis, values_from = Admissions) %>%
+#   adorn_totals(c("row", "col")) %>%
+#   rename(Epis = Total_no_cr_epis) %>%
+#   kable(., caption = "Creatinine change and Oliguria Episodes per Admission (all)", booktabs = TRUE)
 
 screening_log %>%
   filter(Excl_criteria_ok == "Y") %>%  # FIXME Check values if this is removed
@@ -315,9 +318,11 @@ screening_log %>%
   filter(Excl_criteria_ok == "N") %>%
   select(`UR number`, Already_AKI:Child) %>%
   pivot_longer(-`UR number`, names_to = "Excl_reason", values_to = "Excluded") %>%
+  # Single UR can have multiple exclusion reasons
   group_by(Excl_reason) %>%
   summarise(
     Admissions = sum(Excluded == "Y", na.rm = TRUE),
-    `Unique Patients` = n_distinct((`UR number`[Excluded == "Y"]))) %>%
+    `Unique Patients` = n_distinct((`UR number`[Excluded == "Y"]), na.rm = TRUE)) %>%
   arrange(-Admissions) %>%
+  adorn_totals("row") %>%
   kable(., caption = "Excluded Admissions", booktabs = TRUE)
