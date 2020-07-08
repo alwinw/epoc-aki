@@ -122,8 +122,11 @@ screen_logs$full <- screen_logs$full %>%
   mutate(
     Total_rows = n(),
     duplicates = Total_admissions != Total_rows,
-    Event      = if_else(is.na(Pt_Study_no_olig), 0, 1),  # TODO replace with Epis_cr_change and rerun
-    Event      = if_else(is.na(Pt_Study_no_crch), 0, 2) + Event
+    Event      = if_else(Epis_olig == "Y",      1, 0, 0),
+    Event      = if_else(Epis_cr_change == "Y", 2, 0, 0) + Event,
+    Event      = factor(
+      Event, levels = c(0, 1, 2, 3),
+      labels = c("Neither", "Olig only", "Cr change only", "Both"))
     ) %>%
   group_by(`UR number`, Event) %>%
   arrange(-Total_rows, `UR number`, Event, Admission) %>%
