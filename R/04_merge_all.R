@@ -106,10 +106,11 @@ epoc_aki <- obs_data %>%
       `T-4_Metaraminol` > 0 ~ 1,
       T0_Norad > 0          ~ 1,
       T0_Metaraminol > 0    ~ 1,
-      # MX vasopressor?
-      TRUE                  ~ NA_real_
+      grepl("Vasopressors", Mx_other) ~ 1,
+      TRUE ~ NA_real_
     ),
-    Vasopressor = max(Vasopressor, 0, na.rm =  TRUE)
+    Vasopressor = max(Vasopressor, 0, na.rm =  TRUE),
+    Pt_Study_nos = paste(unique(na.omit(Pt_Study_no)), collapse = ", ")
   ) %>%
   ungroup() %>%
   mutate_at(
@@ -132,7 +133,7 @@ epoc_aki <- obs_data %>%
     AdmissionID, Admission, Total_admissions,
     DateTime_hosp_admit:DateTime_ICU_admit, Date_ICU_dc:Dc_destination,
     # EPIS
-    Pt_Study_no, Event,
+    Pt_Study_nos, Pt_Study_no, Event,
     Incl_criteria_ok_crch, Incl_criteria_ok_olig, Excl_criteria_ok,
     Epis_cr_change, Epis_olig,
     Epis_cr_change_no, Epis_olig_no, Epis_no,
@@ -152,6 +153,8 @@ epoc_aki <- obs_data %>%
 glimpse(epoc_aki)
 # setdiff(colnames(obs_data), colnames(epoc_aki))
 
+
+# ---- admission-data-errors ----
 # TODO Add additional checks
 epoc_aki_check <- epoc_aki %>%
   select(`UR number`:AdmissionID, Pt_Study_no:Total_no_olig_epis) %>%
@@ -165,27 +168,41 @@ epoc_aki_check
 any(is.na(epoc_aki_check$`UR number`))
 
 
-# ---- admission-data ----
-
-admission_data <- epoc_aki %>%
+epoc_aki %>%
   select(
-    -Pt_Study_no:-Total_no_olig_epis,
-    -DateTime_epis:-T0_Metaraminol,
-    # FIXME DATA COLLECTION ERRORS
-    -Max_Cr_ICU, -`Highest Cr UEC`, -Max_Cr_DateTime
+    `UR number`, AdmissionID, Pt_Study_nos,
+    Max_Cr_ICU, `Highest Cr UEC`, Max_Cr_DateTime, Baseline_Cr,
+    Mx_diuretics, Mx_IVF
   ) %>%
   distinct() %>%
   group_by(AdmissionID) %>%
   mutate(duplicates = n()) %>%
   filter(duplicates > 1) %>%
-  arrange(desc(duplicates))
+  arrange(desc(duplicates)) %>%
+  ungroup() %>%
+  select(-`UR number`, -AdmissionID) %>%
+  kable(., caption = "Errors between L and LT obs data", booktabs = TRUE)
+# Reason: Cr and Olig epis happen at different times
+# If there is a large enough difference, then the obs data will be different
 
-length(unique(admission_data$AdmissionID))
+# ---- admission-data ----
+admission_data <- epoc_aki %>%
+  select(
+    -Pt_Study_no:-Total_no_olig_epis,
+    -DateTime_epis:-T0_Metaraminol,
+  ) %>%
+  group_by(AdmissionID) %>%
+  # TODO think of a more generic way to solve the duplicates problem
+  mutate(
+    Mx_diuretics = max(Mx_diuretics),  # No rm.na
+    Mx_IVF = max(Mx_IVF),
+    Baseline_Cr = min(Baseline_Cr)
+  ) %>%
+  distinct() %>%
+  top_n(1, if_else(is.na(Max_Cr_ICU), 0, Max_Cr_ICU))  # replace with slice_max() in the future
 
-t(admission_data[1,] == admission_data[2,])
-t(admission_data[3,] == admission_data[4,])
-t(admission_data[5,] == admission_data[6,])
-
-# Mx_diuretics Mx_IVF
-# Max_Cr_ICU Highest Cr UEC Max_Cr_DateTime
-# Max_Cr_ICU Highest Cr UEC
+check_merge_data(
+  filter(admission_data)$`UR number`,
+  filter(screening_log )$`UR number`,
+  "Number of admissions is different!"
+)
