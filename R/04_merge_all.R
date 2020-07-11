@@ -85,6 +85,8 @@ if (nrow(obs_data) != nrow(data_set) + nrow(filter(screening_log, Event == "Neit
 # Check individual columns next...
 # Sort columns by UR, PTSn, Admission, Event Type, etc
 
+
+# ---- clean-binary-columns ----
 epoc_aki <- obs_data %>%
   mutate(AdmissionID = paste(`UR number`, Admission, sep = ".")) %>%
   group_by(`UR number`) %>%
@@ -96,6 +98,19 @@ epoc_aki <- obs_data %>%
   ungroup() %>%
   rowwise() %>%
   mutate(Comment = paste(unique(na.omit(c(Comment_crch, Comment_olig, Comment_out, Comment))), collapse = ", ")) %>%
+  ungroup() %>%
+  group_by(AdmissionID) %>%
+  mutate(
+    Vasopressor = case_when(
+      `T-4_Norad` > 0       ~ 1,
+      `T-4_Metaraminol` > 0 ~ 1,
+      T0_Norad > 0          ~ 1,
+      T0_Metaraminol > 0    ~ 1,
+      # MX vasopressor?
+      TRUE                  ~ NA_real_
+    ),
+    Vasopressor = max(Vasopressor, 0, na.rm =  TRUE)
+  ) %>%
   ungroup() %>%
   mutate_at(
     vars(
@@ -114,7 +129,7 @@ epoc_aki <- obs_data %>%
   select(
     # PT INFO
     `UR number`,
-    Admission, Total_admissions, AdmissionID,
+    AdmissionID, Admission, Total_admissions,
     DateTime_hosp_admit:DateTime_ICU_admit, Date_ICU_dc:Dc_destination,
     # EPIS
     Pt_Study_no, Event,
@@ -125,6 +140,7 @@ epoc_aki <- obs_data %>%
     # SCREENING LOG
     APACHE_II:APACHE_III,
     Already_AKI:Mecvenadm,
+    Vasopressor,
     # DATA SET
     DateTime_epis:Cause_death,
     # COMMENTS
@@ -136,12 +152,40 @@ epoc_aki <- obs_data %>%
 glimpse(epoc_aki)
 # setdiff(colnames(obs_data), colnames(epoc_aki))
 
+# TODO Add additional checks
 epoc_aki_check <- epoc_aki %>%
   select(`UR number`:AdmissionID, Pt_Study_no:Total_no_olig_epis) %>%
   # Check incl / excl criteria
   group_by(AdmissionID)
 
 any(is.nan(epoc_aki$Rx_withdrawn))
+any(is.nan(epoc_aki$`Criteria for stage of AKI`))  # FIXME check original data
 
 epoc_aki_check
 any(is.na(epoc_aki_check$`UR number`))
+
+
+# ---- admission-data ----
+
+admission_data <- epoc_aki %>%
+  select(
+    -Pt_Study_no:-Total_no_olig_epis,
+    -DateTime_epis:-T0_Metaraminol,
+    # FIXME DATA COLLECTION ERRORS
+    -Max_Cr_ICU, -`Highest Cr UEC`, -Max_Cr_DateTime
+  ) %>%
+  distinct() %>%
+  group_by(AdmissionID) %>%
+  mutate(duplicates = n()) %>%
+  filter(duplicates > 1) %>%
+  arrange(desc(duplicates))
+
+length(unique(admission_data$AdmissionID))
+
+t(admission_data[1,] == admission_data[2,])
+t(admission_data[3,] == admission_data[4,])
+t(admission_data[5,] == admission_data[6,])
+
+# Mx_diuretics Mx_IVF
+# Max_Cr_ICU Highest Cr UEC Max_Cr_DateTime
+# Max_Cr_ICU Highest Cr UEC

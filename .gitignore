@@ -9,6 +9,7 @@ data/*
 libs/
 resources/
 *.tex
+*.csv
 
 !data/*.R
 !data/*.md
