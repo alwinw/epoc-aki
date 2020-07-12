@@ -23,7 +23,7 @@ creatinine_data <- xlsx_data$creatinine$data_set %>%
     Epis_cr_change = "Y",
     Epis_olig = NA
   ) %>%
-  fill(Pt_Study_no, .direction = "down") %>% 
+  fill(Pt_Study_no, .direction = "down") %>%
   filter(!(Pt_Study_no %in% xlsx_data$excluded_Pt_Study_no))
 
 oliguria_data <- xlsx_data$oliguria$data_set %>%
@@ -36,7 +36,7 @@ oliguria_data <- xlsx_data$oliguria$data_set %>%
     Epis_cr_change = NA,
     Epis_olig = "Y"
   ) %>%
-  fill(Pt_Study_no, .direction = "down") %>% 
+  fill(Pt_Study_no, .direction = "down") %>%
   filter(!(Pt_Study_no %in% xlsx_data$excluded_Pt_Study_no))
 
 
