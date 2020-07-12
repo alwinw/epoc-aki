@@ -121,7 +121,7 @@ epoc_aki <- obs_data %>%
       "Rx_limited", "Rx_withdrawn"
     ),
     function(x) case_when(
-      x == "Y" | x == "y" | x == "1" ~ 1,
+      x == "Y" | x == "y" | x == "1" ~ 1,  # Should really change to a factor of the column name
       x == "N" | x == "n" | x == "0" ~ 0,
       is.na(x) ~ NA_real_,
       TRUE     ~ NaN

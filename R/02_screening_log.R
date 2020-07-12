@@ -334,3 +334,5 @@ screening_log %>%
   arrange(-Admissions) %>%
   adorn_totals("row") %>%
   kable(., caption = "Excluded Admissions", booktabs = TRUE)
+
+# unique(gsub(",", "", unlist(strsplit(paste0(admission_data$Comorbidities, collapse = ", "), ", "))))

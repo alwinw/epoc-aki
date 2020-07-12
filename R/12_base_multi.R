@@ -7,7 +7,48 @@ baseline_df <- admission_data %>%
     Age, APACHE_II, APACHE_III, Baseline_Cr, PCs_cardio, Vasopressor,
     AKI_ICU, AKI_stage
   ) %>%
-  arrange(APACHE_II)
+  mutate(
+    APACHE_II  = if_else(APACHE_II  == 0, NA_real_, APACHE_II),
+    APACHE_III = if_else(APACHE_III == 0, NA_real_, APACHE_III)
+  ) %>%
+  group_by(AKI_ICU) %>%
+  mutate(
+    APACHE_II  = if_else(is.na(APACHE_II),  median(APACHE_II,  na.rm = TRUE),  APACHE_II),
+    APACHE_III = if_else(is.na(APACHE_III), median(APACHE_III,na.rm = TRUE), APACHE_III)
+  ) %>%   # FIXME Replace with REAL data
+  ungroup()
+
+
+baseline_model <- glm(
+  AKI_ICU ~ Age + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio + Vasopressor,
+  family = "binomial", data = baseline_df)
+
+print(summary(baseline_model))
+publish(baseline_model)
+
+baseline_prediction <- predict(baseline_model, type = "response")
+baseline_roc <- roc(baseline_df$AKI_ICU ~ baseline_prediction)
+plot(baseline_roc)
+
+baseline_interaction_model <- glm(
+  AKI_ICU ~ Age + APACHE_II*APACHE_III + Baseline_Cr + PCs_cardio + Vasopressor,
+  family = "binomial", data = baseline_df)
+
+print(summary(baseline_interaction_model))
+publish(baseline_interaction_model)
+
+ggplot(baseline_df, aes(x = PCs_cardio, y = AKI_ICU)) +
+  geom_point(shape=1, position=position_jitter(width=.05,height=.05)) +
+  stat_smooth(method="glm", method.args=list(family="binomial"), se=FALSE)
+
+ggplot(baseline_df, aes(x = Age, y = AKI_ICU)) +
+  geom_point() +
+  stat_smooth(method="glm", method.args=list(family="binomial"), se=FALSE)
+
+ggplot(mtcars, aes(x = wt, y = vs)) +
+  geom_point() +
+  stat_smooth(method="glm", method.args=list(family="binomial"), se=FALSE)
+
 
 ggplot(baseline_df, aes(
   x = APACHE_II,
@@ -45,10 +86,5 @@ ggplot(baseline_df, aes(x = APACHE_III, y = as.factor(AKI_ICU))) +
   )
 
 ggplot(baseline_df, aes(x = APACHE_II, y = APACHE_III)) +
-  geom_point()
-
-
-## THERE IS STILL ONE WITH 0 APACHE from APD extract
-
-median(baseline_df$APACHE_II, na.rm = TRUE)
-median(baseline_df$APACHE_III, na.rm = TRUE)
+  geom_point() +
+  geom_smooth(method = lm)
