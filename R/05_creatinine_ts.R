@@ -1,6 +1,6 @@
 # ---- combine-blood-gas-bio-chem ----
 UR_number_list <- unique(filter(screening_log, Event !=0)$`UR number`)
-blood_gas_adjust = 2  # Estimated!! Would need something that matches the mean AND the variance
+blood_gas_adjust = 2  # FIXME Estimated!! Would need something that matches the mean AND the variance
 
 blood_gas_ts <- xlsx_data$creat_furo$blood_gas %>%
   select(`UR number`, TC_ICU_ADMISSION_DTTM, TC_ICU_DISCHARGE_DTTM, Pathology_Result_DTTM,
@@ -24,7 +24,7 @@ creatinine_ts <- rbind(blood_gas_ts, bio_chem_ts) %>%
     vars(ends_with("DTTM")),
     force_tz,
     tzone = "Australia/Melbourne"
-  ) %>% 
+  ) %>%
   group_by(`UR number`) %>%
   mutate(ICU_Admission = cumsum(TC_ICU_ADMISSION_DTTM != lag(TC_ICU_ADMISSION_DTTM, default = 0))) %>%
   arrange(-ICU_Admission, `UR number`, ICU_Admission, Pathology_Result_DTTM)
@@ -83,13 +83,13 @@ ggplot(bio_chem_blood_gas, aes(x = Delta_t, y = Delta_cr, colour = Pathology_typ
 
 # ---- creatinine_ts_screening_log ----
 
-screening_ts <- screening_log %>% 
-  filter(Excl_criteria_ok == "Y") %>% 
-  select(`UR number`, Admission, DateTime_ICU_admit, Date_ICU_dc) %>% 
+screening_ts <- screening_log %>%
+  filter(Excl_criteria_ok == "Y") %>%
+  select(`UR number`, Admission, DateTime_ICU_admit, Date_ICU_dc) %>%
   mutate(
     Admission_ID = paste0(`UR number`, ".", Admission),
     DateTime_ICU_dc = Date_ICU_dc + hours(23) + minutes(59) + seconds(59)
-  ) %>% 
+  ) %>%
   select(Admission_ID, `UR number`, DateTime_ICU_admit, DateTime_ICU_dc)
 
 screening_ts_list <- split(screening_ts, screening_ts$Admission_ID)
@@ -98,7 +98,7 @@ screening_ts_list <- split(screening_ts, screening_ts$Admission_ID)
 screening_ts_list = screening_ts_list[1:3]
 
 lapply(screening_ts_list, function(event) {
-  cr_ts = creatinine_ts %>% 
+  cr_ts = creatinine_ts %>%
     filter(
       `UR number` == screening_event$`UR number`,
       Pathology_Result_DTTM > screening_event$DateTime_ICU_admit,
@@ -109,7 +109,7 @@ lapply(screening_ts_list, function(event) {
 
 screening_event = screening_ts_list[[1]]
 
-creatinine_ts %>% 
+creatinine_ts %>%
   filter(
     `UR number` == screening_event$`UR number`,
     Pathology_Result_DTTM > screening_event$DateTime_ICU_admit,

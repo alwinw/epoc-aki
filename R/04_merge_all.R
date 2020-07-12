@@ -202,7 +202,7 @@ admission_data <- epoc_aki %>%
   top_n(1, if_else(is.na(Max_Cr_ICU), 0, Max_Cr_ICU))  # replace with slice_max() in the future
 
 check_merge_data(
-  filter(admission_data)$`UR number`,
-  filter(screening_log )$`UR number`,
+  admission_data$`UR number`,
+  screening_log$`UR number`,
   "Number of admissions is different!"
 )
