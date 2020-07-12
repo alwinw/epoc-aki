@@ -132,9 +132,10 @@ epoc_aki <- obs_data %>%
     `UR number`,
     AdmissionID, Admission, Total_admissions,
     DateTime_hosp_admit:DateTime_ICU_admit, Date_ICU_dc:Dc_destination,
+    Excl_criteria_ok, Event,
     # EPIS
-    Pt_Study_nos, Pt_Study_no, Event,
-    Incl_criteria_ok_crch, Incl_criteria_ok_olig, Excl_criteria_ok,
+    Pt_Study_nos, Pt_Study_no,
+    Incl_criteria_ok_crch, Incl_criteria_ok_olig,
     Epis_cr_change, Epis_olig,
     Epis_cr_change_no, Epis_olig_no, Epis_no,
     Total_no_cr_epis, Total_no_olig_epis,
@@ -199,10 +200,11 @@ admission_data <- epoc_aki %>%
     Baseline_Cr = min(Baseline_Cr)
   ) %>%
   distinct() %>%
-  top_n(1, if_else(is.na(Max_Cr_ICU), 0, Max_Cr_ICU))  # replace with slice_max() in the future
+  top_n(1, if_else(is.na(Max_Cr_ICU), 0, Max_Cr_ICU)) %>%   # TODO replace with slice_max() in the future
+  ungroup()
 
 check_merge_data(
-  filter(admission_data)$`UR number`,
-  filter(screening_log )$`UR number`,
+  admission_data$`UR number`,
+  screening_log$`UR number`,
   "Number of admissions is different!"
 )
