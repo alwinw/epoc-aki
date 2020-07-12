@@ -27,7 +27,7 @@ knitr::read_chunk(file.path(rel_path, "R/00_config.R"))
 
 1. `R` and `RStudio`
 
-    - This analysis is carried out using `R version 4.0.0 (2020-04-24)`
+    - This analysis is carried out using `R version 4.0.2 (2020-06-22)`
     - The package `tidyverse version 1.3.0` was extensively used
     - The IDE `RStudio version 1.3.959` was used to help preview this book
 
