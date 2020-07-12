@@ -81,29 +81,47 @@ ggplot(bio_chem_blood_gas, aes(x = Delta_t, y = Delta_cr, colour = Pathology_typ
   geom_smooth(se = FALSE) +
   facet_wrap(vars(Pathology_type), ncol = 1)
 
+
+# ---- aki-outcome-fun ----
+
+admission = admission_ts_list[[190]]
+t(admission)
+
+aki_outcomes <- function(admission) {
+  cr_ts = creatinine_ts %>%
+    select(-`Blood Gas Creatinine`:-`Bio Chem Creatinine`) %>%
+    filter(
+      `UR number` == admission$`UR number`,
+      Pathology_Result_DTTM > admission$DateTime_ICU_admit,
+      Pathology_Result_DTTM < admission$DateTime_ICU_dc
+    )
+
+}
+
+
 # ---- creatinine_ts_screening_log ----
 
-screening_ts <- admission_data %>%
+admission_ts <- admission_data %>%
   filter(Excl_criteria_ok == 1) %>%
   mutate(
     DateTime_ICU_dc = Date_ICU_dc + hours(23) + minutes(59) + seconds(59)
   ) %>%
   select(
-    AdmissionID, `UR number`, Admission,
+    AdmissionID, `UR number`, Admission, Pt_Study_nos,
     DateTime_ICU_admit, DateTime_ICU_dc,
     Baseline_Cr:Cr_defined_AKI_stage
   )
 
-screening_ts_list <- split(screening_ts, screening_ts$AdmissionID)
+admission_ts_list <- split(admission_ts, admission_ts$AdmissionID)
 
-screening_ts_list = screening_ts_list[1:3]
+# admission_ts_list = admission_ts_list[1:3]
 
-lapply(screening_ts_list, function(screening_event) {
+lapply(admission_ts_list, function(admission) {
   cr_ts = creatinine_ts %>%
     filter(
-      `UR number` == screening_event$`UR number`,
-      Pathology_Result_DTTM > screening_event$DateTime_ICU_admit,
-      Pathology_Result_DTTM < screening_event$DateTime_ICU_dc
+      `UR number` == admission$`UR number`,
+      Pathology_Result_DTTM > admission$DateTime_ICU_admit,
+      Pathology_Result_DTTM < admission$DateTime_ICU_dc
     )
-  return(list(event = screening_event, cr_ts = cr_ts))
+  return(list(event = admission, cr_ts = cr_ts))
 })
