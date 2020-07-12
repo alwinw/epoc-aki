@@ -1,4 +1,4 @@
-# The EPOC-AKI Study
+# The EPOC-AKI Study <img src='doc/images/logo.png' align="right" height="138.5" />
 
 Evaluation of the Predictive value of short-term Oliguria and minor Creatinine increases for Acute Kidney Injury in ICU
 
