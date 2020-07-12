@@ -133,7 +133,7 @@ epoc_aki <- obs_data %>%
     AdmissionID, Admission, Total_admissions,
     DateTime_hosp_admit:DateTime_ICU_admit, Date_ICU_dc:Dc_destination,
     # EPIS
-    Pt_Study_nos, Pt_Study_no, Event,
+    Pt_Study_nos, Event, Pt_Study_no,
     Incl_criteria_ok_crch, Incl_criteria_ok_olig, Excl_criteria_ok,
     Epis_cr_change, Epis_olig,
     Epis_cr_change_no, Epis_olig_no, Epis_no,
@@ -164,7 +164,7 @@ epoc_aki_check <- epoc_aki %>%
 any(is.nan(epoc_aki$Rx_withdrawn))
 any(is.nan(epoc_aki$`Criteria for stage of AKI`))  # FIXME check original data
 
-epoc_aki_check
+# epoc_aki_check
 any(is.na(epoc_aki_check$`UR number`))
 
 
