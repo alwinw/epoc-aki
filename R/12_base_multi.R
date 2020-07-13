@@ -30,12 +30,27 @@ baseline_prediction <- predict(baseline_model, type = "response")
 baseline_roc <- roc(baseline_df$AKI_ICU ~ baseline_prediction)
 plot(baseline_roc)
 
+ggroc(baseline_roc) +
+  geom_segment(aes(x = 1, xend = 0, y = 0, yend = 1), color="grey", linetype="dashed") +
+  coord_fixed()
+
+baseline_roc_list = roc(AKI_ICU ~ Age + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio + Vasopressor, data = baseline_df)
+ggroc(baseline_roc_list) +
+  geom_segment(aes(x = 1, xend = 0, y = 0, yend = 1), color="grey", linetype="dashed") +
+  coord_fixed()
+
 baseline_interaction_model <- glm(
   AKI_ICU ~ Age + APACHE_II*APACHE_III + Baseline_Cr + PCs_cardio + Vasopressor,
   family = "binomial", data = baseline_df)
 
 print(summary(baseline_interaction_model))
 publish(baseline_interaction_model)
+
+baseline_interaction_prediction <- predict(baseline_interaction_model, type = "response")
+baseline_interaction_roc <- roc(baseline_df$AKI_ICU ~ baseline_prediction)
+ggroc(baseline_interaction_roc) +
+  geom_segment(aes(x = 1, xend = 0, y = 0, yend = 1), color="grey", linetype="dashed") +
+  coord_fixed()
 
 ggplot(baseline_df, aes(x = PCs_cardio, y = AKI_ICU)) +
   geom_point(shape=1, position=position_jitter(width=.05,height=.05)) +
