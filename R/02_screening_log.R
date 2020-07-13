@@ -42,17 +42,20 @@ screen_logs$screen_in <- full_join(
 screen_logs$screen_in <- screen_logs$screen_in %>%
   group_by(`UR number`, Admission) %>%
   mutate(duplicates = n()) %>%
-  arrange(-duplicates, `UR number`) %>%
+  arrange(desc(duplicates), `UR number`) %>%
   fill(-`UR number`, -Admission, .direction = "downup") %>%
   mutate(
     Dc_destination = first(Dc_destination),  # Could be bad if first is NA. Change to mutate if duplicates then....
-    APACHE_II   = max(APACHE_II ),
-    APACHE_III  = max(APACHE_III),
-    Time_ICU_dc = max(Time_ICU_dc )) %>%
+    APACHE_II   = max(APACHE_II , 0, na.rm = TRUE),
+    APACHE_III  = max(APACHE_III, 0, na.rm = TRUE),
+    APACHE_II   = if_else(APACHE_II  == 0, NA_real_, APACHE_II),
+    APACHE_III  = if_else(APACHE_III == 0, NA_real_, APACHE_III),
+    Time_ICU_dc = if_else(duplicates > 1, max(Time_ICU_dc), Time_ICU_dc)  # TODO no na.rm on this one
+  ) %>%
   distinct() %>%
   mutate(
     duplicates = n()) %>%
-  arrange(-duplicates, `UR number`) %>%
+  arrange(desc(duplicates), `UR number`) %>%
   ungroup() %>%
   select(-duplicates)
 
@@ -77,8 +80,10 @@ screen_logs$screen_out <- rbind(
     )%>%
   group_by(`UR number`, `Date first screened`) %>%
   mutate(
-    APACHE_II  = max(APACHE_II , na.rm = TRUE),
-    APACHE_III = max(APACHE_III, na.rm = TRUE),
+    APACHE_II  = max(APACHE_II , 0, na.rm = TRUE),
+    APACHE_III = max(APACHE_III, 0, na.rm = TRUE),
+    APACHE_II  = if_else(APACHE_II  == 0, NA_real_, APACHE_II),
+    APACHE_III = if_else(APACHE_III == 0, NA_real_, APACHE_III),
   ) %>%
   distinct() %>%
   group_by(`UR number`) %>%
@@ -182,7 +187,7 @@ screening_log <- screen_logs$full %>%
     vars(DateTime_hosp_admit, DateTime_ICU_admit),
     as_datetime,
     tz = "Australia/Melbourne"
-  )
+  )  # TODO Fix this to remove errors
 
 kable(
   t(head(screening_log)),
@@ -222,9 +227,9 @@ apache_replace <- fuzzy_left_join(
 ) %>%
   mutate(
     AP_error   = abs(AP2score - APACHE_II) + abs(AP3score - APACHE_III),
-    AP_replace = AP_error > 100 | is.na(AP_error)  # Values arbitrarily chosen
+    AP_replace = AP_error > 100 | !is.na(AP2score) & is.na(APACHE_II)  # Values arbitrarily chosen
   ) %>%
-  arrange(-AP_replace, -AP_error) %>%
+  arrange(desc(AP_replace), desc(AP_error)) %>%
   filter(AP_replace) %>%  # Only keep rows of interest
   select(`UR number`:`DateTime_ICU_admit`, AP2score:AP3score, AP_replace)
 
@@ -234,8 +239,8 @@ screening_log <- left_join(
 ) %>%
   arrange(-AP_replace) %>%
   mutate(
-    APACHE_II  = if_else(AP_replace, AP2score, APACHE_II ),
-    APACHE_III = if_else(AP_replace, AP3score, APACHE_III)
+    APACHE_II  = if_else(AP_replace, AP2score, APACHE_II , missing = APACHE_II),
+    APACHE_III = if_else(AP_replace, AP3score, APACHE_III, missing = APACHE_III)
   ) %>%
   select(-AP2score:-AP_replace)
 
@@ -329,3 +334,16 @@ screening_log %>%
   arrange(-Admissions) %>%
   adorn_totals("row") %>%
   kable(., caption = "Excluded Admissions", booktabs = TRUE)
+
+# Consider saving these and referring to them later
+unique_comorbidities = unique(gsub(",", "", unlist(strsplit(paste0(admission_data$Comorbidities, collapse = ", "), ", "))))
+grep("T2DM|T1DM|IDDM|insulin", unique_comorbidities, value = TRUE)
+grep("AF|pAF", unique_comorbidities, value = TRUE)
+grep("IHD|CABG|CAD|CAGS|NSTEMI", unique_comorbidities, value = TRUE)
+grep("\\bHF\\b|hypertrophy|CCF|cardiomyopathy|heart failure|LVH", unique_comorbidities, value = TRUE)
+grep("^(?=.*\\bHT\\b)(?!.*portal)(?!.*pulm)", unique_comorbidities, value = TRUE, perl = TRUE)
+grep("PVD|arteritis|pop bypass|id steno|stents", unique_comorbidities, value = TRUE)
+grep(paste0(
+  "chronic liver disease|portal HT|varice|ETOH|",
+  "HCC|NASH|CLD|ESLD|awaiting OLTx|SMV|ascites|SBP|HCC|cirrho|",
+  "Hepatosplenomegaly|Cirrho|hepatic encephalopathy"), unique_comorbidities, value = TRUE)
