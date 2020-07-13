@@ -4,7 +4,7 @@ baseline_df <- admission_data %>%
   filter(Event != "Neither") %>%   # TODO In the future, this should not be an exclusion
   select(
     `UR number`:Admission, Pt_Study_nos, Event,
-    Age, APACHE_II, APACHE_III, Baseline_Cr, PCs_cardio, Vasopressor,
+    Age, APACHE_II, APACHE_III, Baseline_Cr, PCs_cardio, Vasopressor:Chronic_liver_disease,
     AKI_ICU, AKI_stage
   ) %>%
   mutate(
@@ -20,7 +20,7 @@ baseline_df <- admission_data %>%
 
 
 baseline_model <- glm(
-  AKI_ICU ~ Age + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio + Vasopressor,
+  AKI_ICU ~ Age + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease,
   family = "binomial", data = baseline_df)
 
 print(summary(baseline_model))
@@ -53,6 +53,10 @@ ggroc(baseline_interaction_roc) +
   coord_fixed()
 
 ggplot(baseline_df, aes(x = PCs_cardio, y = AKI_ICU)) +
+  geom_point(shape=1, position=position_jitter(width=.05,height=.05)) +
+  stat_smooth(method="glm", method.args=list(family="binomial"), se=FALSE)
+
+ggplot(baseline_df, aes(x = Chronic_liver_disease, y = AKI_ICU)) +
   geom_point(shape=1, position=position_jitter(width=.05,height=.05)) +
   stat_smooth(method="glm", method.args=list(family="binomial"), se=FALSE)
 

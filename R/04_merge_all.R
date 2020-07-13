@@ -127,6 +127,19 @@ epoc_aki <- obs_data %>%
       TRUE     ~ NaN
     )
   ) %>%
+  mutate(
+    Diabetes = grepl("T2DM|T1DM|IDDM|insulin", Comorbidities),
+    AF       = grepl("AF|pAF", Comorbidities),
+    IHD      = grepl("IHD|CABG|CAD|CAGS|NSTEMI", Comorbidities),
+    HF       = grepl("\\bHF\\b|hypertrophy|CCF|cardiomyopathy|heart failure|LVH", Comorbidities),
+    HT       = grepl("^(?=.*\\bHT\\b)(?!.*portal)(?!.*pulm)", Comorbidities, perl = TRUE),
+    PVD      = grepl("PVD|arteritis|pop bypass|id steno|stents", Comorbidities),
+    Chronic_liver_disease = grepl(paste0(
+      "chronic liver disease|portal HT|varice|ETOH|",
+      "HCC|NASH|CLD|ESLD|awaiting OLTx|SMV|ascites|SBP|HCC|cirrho|",
+      "Hepatosplenomegaly|Cirrho|hepatic encephalopathy"), Comorbidities)
+  ) %>%
+  mutate_at(vars(Diabetes:Chronic_liver_disease), as.double) %>%
   select(
     # PT INFO
     `UR number`,
@@ -142,7 +155,7 @@ epoc_aki <- obs_data %>%
     # SCREENING LOG
     APACHE_II:APACHE_III,
     Already_AKI:Mecvenadm,
-    Vasopressor,
+    Vasopressor, Diabetes:Chronic_liver_disease,
     # DATA SET
     DateTime_epis:Cause_death,
     # COMMENTS
