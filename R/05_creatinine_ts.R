@@ -87,11 +87,12 @@ ggplot(bio_chem_blood_gas, aes(x = Delta_t, y = Delta_cr, colour = Pathology_typ
 # admission = admission_ts_list[[190]]
 # t(admission)
 
-aki_cr_ch <- function(admission) {
+# admission = admission_ts_list[[2]]
+
+aki_cr_ch0 <- function(admission) {
   cr_ts = creatinine_ts %>%
     ungroup() %>%
-    filter(
-      `UR number` == admission$`UR number`,
+    filter(`UR number` == admission$`UR number`,
       Pathology_Result_DTTM > admission$DateTime_ICU_admit,
       Pathology_Result_DTTM < admission$DateTime_ICU_dc
     ) %>%
@@ -121,11 +122,51 @@ aki_cr_ch <- function(admission) {
   return(cr_ch)
 }
 
+system.time({aki_cr_ch0(admission_ts_list[[1]])})
+
+# Second attempt
+aki_cr_ch <- function(admission) {
+  cr_ts = creatinine_ts %>%
+    ungroup() %>%
+    filter(
+      `UR number` == admission$`UR number`,
+      Pathology_Result_DTTM > admission$DateTime_ICU_admit,
+      Pathology_Result_DTTM < admission$DateTime_ICU_dc
+    ) %>%
+    select(Pathology_Result_DTTM, Creatinine_level)
+
+  if (nrow(cr_ts) < 2) {
+    return(NULL)  # FIXME
+  }
+  # Consider filtering out ones post AKI?
+
+  combns <- combn(nrow(cr_ts), 2)
+  Ti_1 = cr_ts[combns[1,],]
+  Ti   = cr_ts[combns[2,],]
+
+  if(admission$AKI_ICU == 1) {
+    del_t_aki = as.duration(admission$DateTime_AKI_Dx - Ti$Pathology_Result_DTTM)
+  } else {
+    del_t_aki = NA_real_
+  }
+
+  return(data.frame(
+    del_t_ch  = as.duration(Ti$Pathology_Result_DTTM - Ti_1$Pathology_Result_DTTM),
+    del_t_aki = del_t_aki,
+    del_cr    = Ti$Creatinine_level - Ti_1$Creatinine_level,
+    cr_i      = Ti$Creatinine_level
+  ))
+}
+
+system.time({aki_cr_ch(admission_ts_list[[1]])})
 
 # ---- creatinine_ts_screening_log ----
 
 admission_ts <- admission_data %>%
-  filter(Excl_criteria_ok == 1) %>%
+  filter(
+    Excl_criteria_ok == 1,
+    !is.na(AKI_ICU)  # TODO Remove this restriction later as we can calculate AKI from the Cr data!!!
+  ) %>%
   mutate(
     DateTime_ICU_dc = Date_ICU_dc + hours(23) + minutes(59) + seconds(59)
   ) %>%

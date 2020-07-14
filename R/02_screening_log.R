@@ -336,14 +336,14 @@ screening_log %>%
   kable(., caption = "Excluded Admissions", booktabs = TRUE)
 
 # Consider saving these and referring to them later
-# unique_comorbidities = unique(gsub(",", "", unlist(strsplit(paste0(admission_data$Comorbidities, collapse = ", "), ", "))))
-# grep("T2DM|T1DM|IDDM|insulin", unique_comorbidities, value = TRUE)
-# grep("AF|pAF", unique_comorbidities, value = TRUE)
-# grep("IHD|CABG|CAD|CAGS|NSTEMI", unique_comorbidities, value = TRUE)
-# grep("\\bHF\\b|hypertrophy|CCF|cardiomyopathy|heart failure|LVH", unique_comorbidities, value = TRUE)
-# grep("^(?=.*\\bHT\\b)(?!.*portal)(?!.*pulm)", unique_comorbidities, value = TRUE, perl = TRUE)
-# grep("PVD|arteritis|pop bypass|id steno|stents", unique_comorbidities, value = TRUE)
-# grep(paste0(
-#   "chronic liver disease|portal HT|varice|ETOH|",
-#   "HCC|NASH|CLD|ESLD|awaiting OLTx|SMV|ascites|SBP|HCC|cirrho|",
-#   "Hepatosplenomegaly|Cirrho|hepatic encephalopathy"), unique_comorbidities, value = TRUE)
+unique_comorbidities = unique(gsub(",", "", unlist(strsplit(paste0(screening_log$Comorbidities, collapse = ", "), ", "))))
+grep("T2DM|T1DM|IDDM|insulin", unique_comorbidities, value = TRUE)
+grep("AF|pAF", unique_comorbidities, value = TRUE)
+grep("IHD|CABG|CAD|CAGS|NSTEMI", unique_comorbidities, value = TRUE)
+grep("\\bHF\\b|hypertrophy|CCF|cardiomyopathy|heart failure|LVH", unique_comorbidities, value = TRUE)
+grep("^(?=.*\\bHT\\b)(?!.*portal)(?!.*pulm)", unique_comorbidities, value = TRUE, perl = TRUE)
+grep("PVD|arteritis|pop bypass|id steno|stents", unique_comorbidities, value = TRUE)
+grep(paste0(
+  "chronic liver disease|portal HT|varice|ETOH|",
+  "HCC|NASH|CLD|ESLD|awaiting OLTx|SMV|ascites|SBP|HCC|cirrho|",
+  "Hepatosplenomegaly|Cirrho|hepatic encephalopathy"), unique_comorbidities, value = TRUE)
