@@ -85,46 +85,8 @@ ggplot(bio_chem_blood_gas, aes(x = Delta_t, y = Delta_cr, colour = Pathology_typ
 # ---- aki-outcome-fun ----
 
 # admission = admission_ts_list[[190]]
-# t(admission)
-
 # admission = admission_ts_list[[2]]
 
-aki_cr_ch0 <- function(admission) {
-  cr_ts = creatinine_ts %>%
-    ungroup() %>%
-    filter(`UR number` == admission$`UR number`,
-      Pathology_Result_DTTM > admission$DateTime_ICU_admit,
-      Pathology_Result_DTTM < admission$DateTime_ICU_dc
-    ) %>%
-    select(Pathology_Result_DTTM, Creatinine_level)
-
-  if (nrow(cr_ts) < 2) {
-    return(NULL)
-  }
-
-  temp <- combn(  # e.g. combn(3, 2)
-    nrow(cr_ts), 2,
-    function(m) list(
-      m[1], m[2],
-      as.duration(cr_ts$Pathology_Result_DTTM[m[2]] - cr_ts$Pathology_Result_DTTM[m[1]]),  # T_i - (T_i - del_t)
-      if_else(
-        admission$AKI_ICU == 1,
-        as.duration(admission$DateTime_AKI_Dx - cr_ts$Pathology_Result_DTTM[m[2]]),
-        NA_real_),  # T_aki - T_i
-      cr_ts$Creatinine_level[m[2]] - cr_ts$Creatinine_level[m[1]],  # Cr_i - (Cr_(i-del_t))
-      cr_ts$Creatinine_level[m[2]]  # Cr_i
-    ))
-
-  cr_ch = as_tibble(t(temp))
-  cr_ch = unnest(cr_ch, everything())
-  colnames(cr_ch) <- c("i", "j", "del_t_ch", "del_t_aki", "del_cr", "cr_i")
-
-  return(cr_ch)
-}
-
-system.time({aki_cr_ch0(admission_ts_list[[1]])})
-
-# Second attempt
 aki_cr_ch <- function(admission) {
   cr_ts = creatinine_ts %>%
     ungroup() %>%
@@ -158,7 +120,6 @@ aki_cr_ch <- function(admission) {
   ))
 }
 
-system.time({aki_cr_ch(admission_ts_list[[1]])})
 
 # ---- creatinine_ts_screening_log ----
 
