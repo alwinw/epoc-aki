@@ -83,22 +83,26 @@ ggplot(bio_chem_blood_gas, aes(x = Delta_t, y = Delta_cr, colour = Pathology_typ
 
 
 # ---- aki-outcome-fun ----
-
-# admission = admission_ts_list[[190]]
-# admission = admission_ts_list[[2]]
-
-aki_cr_ch <- function(admission) {
+aki_cr_ch <- function(
+  UR_number, DateTime_ICU_admit, DateTime_ICU_dc,
+  AKI_ICU, DateTime_AKI_Dx)
+  {
   cr_ts = creatinine_ts %>%
     ungroup() %>%
     filter(
-      `UR number` == admission$`UR number`,
-      Pathology_Result_DTTM > admission$DateTime_ICU_admit,
-      Pathology_Result_DTTM < admission$DateTime_ICU_dc
+      `UR number` == UR_number,
+      Pathology_Result_DTTM > DateTime_ICU_admit,
+      Pathology_Result_DTTM < DateTime_ICU_dc
     ) %>%
     select(Pathology_Result_DTTM, Creatinine_level)
 
   if (nrow(cr_ts) < 2) {
-    return(NULL)  # FIXME
+    return(data.frame(
+      del_t_ch  = as.duration(NA_real_),
+      del_t_aki = as.duration(NA_real_),
+      del_cr    = NA_real_,
+      cr_i      = NA_real_
+    ))
   }
   # Consider filtering out ones post AKI?
 
@@ -106,10 +110,10 @@ aki_cr_ch <- function(admission) {
   Ti_1 = cr_ts[combns[1,],]
   Ti   = cr_ts[combns[2,],]
 
-  if(admission$AKI_ICU == 1) {
-    del_t_aki = as.duration(admission$DateTime_AKI_Dx - Ti$Pathology_Result_DTTM)
+  if(AKI_ICU == 1) {
+    del_t_aki = as.duration(DateTime_AKI_Dx - Ti$Pathology_Result_DTTM)
   } else {
-    del_t_aki = NA_real_
+    del_t_aki = rep(as.duration(NA_real_), nrow(Ti))
   }
 
   return(data.frame(
@@ -119,7 +123,6 @@ aki_cr_ch <- function(admission) {
     cr_i      = Ti$Creatinine_level
   ))
 }
-
 
 # ---- creatinine_ts_screening_log ----
 
@@ -135,10 +138,9 @@ admission_ts <- admission_data %>%
     AdmissionID, `UR number`, Admission, Pt_Study_nos,
     DateTime_ICU_admit, DateTime_ICU_dc,
     Baseline_Cr:Cr_defined_AKI_stage
-  )
-
-admission_ts_list <- split(admission_ts, admission_ts$AdmissionID)
-
-# admission_ts_list = admission_ts_list[1:3]
-
-test <- pblapply(admission_ts_list, aki_cr_ch)
+  ) %>%
+  rowwise() %>%
+  do(data.frame(., aki_cr_ch(
+    .$`UR number`, .$DateTime_ICU_admit, .$DateTime_ICU_dc, .$AKI_ICU, .$DateTime_AKI_Dx))
+  ) %>%
+  ungroup()
