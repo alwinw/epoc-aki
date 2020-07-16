@@ -20,6 +20,7 @@ creatinine_ts <- rbind(blood_gas_ts, bio_chem_ts) %>%
   mutate(
     Creatinine_level = if_else(Pathology == "Bio Chem", `Bio Chem Creatinine`, `Blood Gas Creatinine` + blood_gas_adjust)
   ) %>%
+  filter(!is.na(Creatinine_level)) %>%
   mutate_at(
     vars(ends_with("DTTM")),
     force_tz,
@@ -150,7 +151,9 @@ admission_ts <- admission_data %>%
     `UR number` = UR.number,
     `Highest Cr UEC` = Highest.Cr.UEC,
     `AKI Dx Cr 26.5` = AKI.Dx.Cr.26.5,
-    `AKI Dx Cr 1.5 times` = AKI.Dx.Cr.1.5.times
+    `AKI Dx Cr 1.5 times` = AKI.Dx.Cr.1.5.times,
+    `AKI Dx oliguria` = AKI.Dx.oliguria,
+    `Criteria for stage of AKI` = Criteria.for.stage.of.AKI
   )
 
 rm(bio_chem_blood_gas, creatinine_ts)
