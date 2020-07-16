@@ -1,4 +1,4 @@
-
+# ---- baseline-model ----
 baseline_df <- admission_data %>%
   filter(Excl_criteria_ok == 1) %>%
   filter(Event != "Neither") %>%   # TODO In the future, this should not be an exclusion
@@ -20,90 +20,80 @@ baseline_df <- admission_data %>%
 
 
 baseline_model <- glm(
-  AKI_ICU ~ Age + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease,
+  AKI_ICU ~ Age + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio +
+    Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease,
   family = "binomial", data = baseline_df)
 
-print(summary(baseline_model))
+summary(baseline_model)
 publish(baseline_model)
 
-baseline_prediction <- predict(baseline_model, type = "response")
-baseline_roc <- roc(baseline_df$AKI_ICU ~ baseline_prediction)
-plot(baseline_roc)
+baseline_df$model <- predict(baseline_model, type = "response")
+baseline_cut <- cutpointr(
+  baseline_df, model, AKI_ICU,
+  use_midpoints = TRUE,
+  direction = ">=", pos_class = 1, neg_class = 0,
+  method = maximize_metric, metric = youden)
 
-ggroc(baseline_roc) +
-  geom_segment(aes(x = 1, xend = 0, y = 0, yend = 1), color="grey", linetype="dashed") +
-  coord_fixed()
-
-baseline_roc_list = roc(AKI_ICU ~ Age + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio + Vasopressor, data = baseline_df)
-ggroc(baseline_roc_list) +
-  geom_segment(aes(x = 1, xend = 0, y = 0, yend = 1), color="grey", linetype="dashed") +
-  coord_fixed()
-
-baseline_interaction_model <- glm(
-  AKI_ICU ~ Age + APACHE_II*APACHE_III + Baseline_Cr + PCs_cardio + Vasopressor,
-  family = "binomial", data = baseline_df)
-
-print(summary(baseline_interaction_model))
-publish(baseline_interaction_model)
-
-baseline_interaction_prediction <- predict(baseline_interaction_model, type = "response")
-baseline_interaction_roc <- roc(baseline_df$AKI_ICU ~ baseline_prediction)
-ggroc(baseline_interaction_roc) +
-  geom_segment(aes(x = 1, xend = 0, y = 0, yend = 1), color="grey", linetype="dashed") +
-  coord_fixed()
-
-ggplot(baseline_df, aes(x = PCs_cardio, y = AKI_ICU)) +
-  geom_point(shape=1, position=position_jitter(width=.05,height=.05)) +
-  stat_smooth(method="glm", method.args=list(family="binomial"), se=FALSE)
-
-ggplot(baseline_df, aes(x = Chronic_liver_disease, y = AKI_ICU)) +
-  geom_point(shape=1, position=position_jitter(width=.05,height=.05)) +
-  stat_smooth(method="glm", method.args=list(family="binomial"), se=FALSE)
-
-ggplot(baseline_df, aes(x = Age, y = AKI_ICU)) +
-  geom_point() +
-  stat_smooth(method="glm", method.args=list(family="binomial"), se=FALSE)
-
-ggplot(mtcars, aes(x = wt, y = vs)) +
-  geom_point() +
-  stat_smooth(method="glm", method.args=list(family="binomial"), se=FALSE)
+summary(baseline_cut)
+plot(baseline_cut)
+# plot_metric(baseline_cut, conf_lvl = 0.9)
+# plot_sensitivity_specificity(baseline_cut)
 
 
-ggplot(baseline_df, aes(
-  x = APACHE_II,
-  y = as.factor(AKI_ICU),
-  fill=factor(stat(quantile)))
-) +
-  stat_density_ridges(
-    geom = "density_ridges_gradient", calc_ecdf = TRUE,
-    quantile_lines = TRUE, quantiles = c(0.025, 0.25, 0.50, 0.75, 0.975),
-    jittered_points = TRUE, scale = 0.7, alpha = 0.2,
-    point_size = 1, point_alpha = 1,
-    position = position_raincloud(adjust_vlines = TRUE)
-  ) +
-  scale_fill_viridis_d(name = "APACHE_II Quartiles")
+# ---- sample-model ----
+sample_model <- function(lower_hr_del_t_ch, upper_hr_del_t_ch, hr_before_aki) {
+  logit_ts <- admission_ts %>%
+    select(
+      `UR number`:Admission, Pt_Study_nos, Event,
+      Age, APACHE_II, APACHE_III, Baseline_Cr, PCs_cardio, Vasopressor:Chronic_liver_disease,
+      AKI_ICU,
+      del_t_ch:cr_i
+    ) %>%
+    mutate(
+      APACHE_II  = if_else(APACHE_II  == 0, NA_real_, APACHE_II),
+      APACHE_III = if_else(APACHE_III == 0, NA_real_, APACHE_III)
+    ) %>%
+    group_by(AKI_ICU) %>%
+    mutate(
+      APACHE_II  = if_else(is.na(APACHE_II),  median(APACHE_II,  na.rm = TRUE),  APACHE_II),
+      APACHE_III = if_else(is.na(APACHE_III), median(APACHE_III,na.rm = TRUE), APACHE_III)
+    ) %>%   # FIXME Replace with REAL data
+    ungroup() %>%
+    filter(
+      duration(hour = lower_hr_del_t_ch) < del_t_ch,
+      del_t_ch < duration(hour = upper_hr_del_t_ch),
+      is.na(del_t_aki) | del_t_aki > duration(minute = hr_before_aki)
+    )
 
-ggplot(baseline_df, aes(
-    x = APACHE_III,
-    y = as.factor(AKI_ICU),
-    fill=factor(stat(quantile)))
-  ) +
-  stat_density_ridges(
-    geom = "density_ridges_gradient", calc_ecdf = TRUE,
-    quantile_lines = TRUE, quantiles = c(0.025, 0.25, 0.50, 0.75, 0.975),
-    jittered_points = TRUE, scale = 0.7, alpha = 0.2,
-    point_size = 1, point_alpha = 1,
-    position = position_raincloud(adjust_vlines = TRUE)
-  ) +
-  scale_fill_viridis_d(name = "APACHE_III Quartiles")
+  logit_model <- glm(
+    AKI_ICU ~ Age + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio +
+      Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease +
+      del_cr + cr_i,
+    family = "binomial",
+    data = logit_ts)
 
-ggplot(baseline_df, aes(x = APACHE_III, y = as.factor(AKI_ICU))) +
-  geom_density_ridges(
-    jittered_points = TRUE,
-    position = position_points_jitter(width = 0.05, height = 0),
-    point_shape = '|', point_size = 3, point_alpha = 1, alpha = 0.7,
-  )
+  print(summary(logit_model))
+  print(publish(logit_model))
 
-ggplot(baseline_df, aes(x = APACHE_II, y = APACHE_III)) +
-  geom_point() +
-  geom_smooth(method = lm)
+  logit_ts$model = predict(logit_model, type = "response")
+  logit_cut <- cutpointr(
+    logit_ts, model, AKI_ICU,
+    use_midpoints = TRUE,
+    direction = ">=", pos_class = 1, neg_class = 0,
+    method = maximize_metric, metric = youden)
+
+  print(summary(logit_cut))
+  print(plot(logit_cut))
+}
+
+sample_model(lower_hr_del_t_ch = 3.5, upper_hr_del_t_ch = 4.5, hr_before_aki = 1/60)
+sample_model(lower_hr_del_t_ch = 4.5, upper_hr_del_t_ch = 5.5, hr_before_aki = 1/60)
+sample_model(lower_hr_del_t_ch = 5.5, upper_hr_del_t_ch = 6.5, hr_before_aki = 1/60)
+sample_model(lower_hr_del_t_ch = 6.5, upper_hr_del_t_ch = 7.5, hr_before_aki = 1/60)
+sample_model(lower_hr_del_t_ch = 7.5, upper_hr_del_t_ch = 8.5, hr_before_aki = 1/60)
+sample_model(lower_hr_del_t_ch = 8.5, upper_hr_del_t_ch = 9.5, hr_before_aki = 1/60)
+
+sample_model(lower_hr_del_t_ch = 5.5, upper_hr_del_t_ch = 8.5, hr_before_aki = 1/60)
+
+
+sample_model(lower_hr_del_t_ch = 6.5, upper_hr_del_t_ch = 12.5, hr_before_aki = 1/60)

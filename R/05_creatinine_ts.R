@@ -20,6 +20,7 @@ creatinine_ts <- rbind(blood_gas_ts, bio_chem_ts) %>%
   mutate(
     Creatinine_level = if_else(Pathology == "Bio Chem", `Bio Chem Creatinine`, `Blood Gas Creatinine` + blood_gas_adjust)
   ) %>%
+  filter(!is.na(Creatinine_level)) %>%
   mutate_at(
     vars(ends_with("DTTM")),
     force_tz,
@@ -83,45 +84,76 @@ ggplot(bio_chem_blood_gas, aes(x = Delta_t, y = Delta_cr, colour = Pathology_typ
 
 
 # ---- aki-outcome-fun ----
-
-admission = admission_ts_list[[190]]
-t(admission)
-
-aki_outcomes <- function(admission) {
+aki_cr_ch <- function(
+  UR_number, DateTime_ICU_admit, DateTime_ICU_dc,
+  AKI_ICU, DateTime_AKI_Dx)
+  {
   cr_ts = creatinine_ts %>%
-    select(-`Blood Gas Creatinine`:-`Bio Chem Creatinine`) %>%
+    ungroup() %>%
     filter(
-      `UR number` == admission$`UR number`,
-      Pathology_Result_DTTM > admission$DateTime_ICU_admit,
-      Pathology_Result_DTTM < admission$DateTime_ICU_dc
-    )
+      `UR number` == UR_number,
+      Pathology_Result_DTTM > DateTime_ICU_admit,
+      Pathology_Result_DTTM < DateTime_ICU_dc
+    ) %>%
+    select(Pathology_Result_DTTM, Creatinine_level)
 
+  if (nrow(cr_ts) < 2) {
+    return(data.frame(
+      del_t_ch  = as.duration(NA_real_),
+      del_t_aki = as.duration(NA_real_),
+      del_cr    = NA_real_,
+      cr_i      = NA_real_
+    ))
+  }
+  # Consider filtering out ones post AKI?
+
+  combns <- combn(nrow(cr_ts), 2)
+  Ti_1 = cr_ts[combns[1,],]
+  Ti   = cr_ts[combns[2,],]
+
+  if(AKI_ICU == 1) {
+    del_t_aki = as.duration(DateTime_AKI_Dx - Ti$Pathology_Result_DTTM)
+  } else {
+    del_t_aki = rep(as.duration(NA_real_), nrow(Ti))
+  }
+
+  return(data.frame(
+    del_t_ch  = as.duration(Ti$Pathology_Result_DTTM - Ti_1$Pathology_Result_DTTM),
+    del_t_aki = del_t_aki,
+    del_cr    = Ti$Creatinine_level - Ti_1$Creatinine_level,
+    cr_i      = Ti$Creatinine_level
+  ))
 }
-
 
 # ---- creatinine_ts_screening_log ----
 
 admission_ts <- admission_data %>%
-  filter(Excl_criteria_ok == 1) %>%
+  filter(
+    Excl_criteria_ok == 1,
+    !is.na(AKI_ICU)  # TODO Remove this restriction later as we can calculate AKI from the Cr data!!!
+  ) %>%
   mutate(
     DateTime_ICU_dc = Date_ICU_dc + hours(23) + minutes(59) + seconds(59)
   ) %>%
   select(
-    AdmissionID, `UR number`, Admission, Pt_Study_nos,
+    `UR number`:Admission, Pt_Study_nos, Event, Excl_criteria_ok,
+    Age, APACHE_II, APACHE_III, Baseline_Cr, PCs_cardio, Vasopressor:Chronic_liver_disease,
+    AKI_ICU, AKI_stage,
     DateTime_ICU_admit, DateTime_ICU_dc,
     Baseline_Cr:Cr_defined_AKI_stage
+  ) %>%
+  rowwise() %>%
+  do(data.frame(., aki_cr_ch(
+    .$`UR number`, .$DateTime_ICU_admit, .$DateTime_ICU_dc, .$AKI_ICU, .$DateTime_AKI_Dx))
+  ) %>%
+  ungroup() %>%
+  rename(
+    `UR number` = UR.number,
+    `Highest Cr UEC` = Highest.Cr.UEC,
+    `AKI Dx Cr 26.5` = AKI.Dx.Cr.26.5,
+    `AKI Dx Cr 1.5 times` = AKI.Dx.Cr.1.5.times,
+    `AKI Dx oliguria` = AKI.Dx.oliguria,
+    `Criteria for stage of AKI` = Criteria.for.stage.of.AKI
   )
 
-admission_ts_list <- split(admission_ts, admission_ts$AdmissionID)
-
-# admission_ts_list = admission_ts_list[1:3]
-
-lapply(admission_ts_list, function(admission) {
-  cr_ts = creatinine_ts %>%
-    filter(
-      `UR number` == admission$`UR number`,
-      Pathology_Result_DTTM > admission$DateTime_ICU_admit,
-      Pathology_Result_DTTM < admission$DateTime_ICU_dc
-    )
-  return(list(event = admission, cr_ts = cr_ts))
-})
+rm(bio_chem_blood_gas, creatinine_ts)

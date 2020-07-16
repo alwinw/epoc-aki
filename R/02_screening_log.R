@@ -336,7 +336,7 @@ screening_log %>%
   kable(., caption = "Excluded Admissions", booktabs = TRUE)
 
 # Consider saving these and referring to them later
-unique_comorbidities = unique(gsub(",", "", unlist(strsplit(paste0(admission_data$Comorbidities, collapse = ", "), ", "))))
+unique_comorbidities = unique(gsub(",", "", unlist(strsplit(paste0(screening_log$Comorbidities, collapse = ", "), ", "))))
 grep("T2DM|T1DM|IDDM|insulin", unique_comorbidities, value = TRUE)
 grep("AF|pAF", unique_comorbidities, value = TRUE)
 grep("IHD|CABG|CAD|CAGS|NSTEMI", unique_comorbidities, value = TRUE)
