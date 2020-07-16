@@ -135,7 +135,9 @@ admission_ts <- admission_data %>%
     DateTime_ICU_dc = Date_ICU_dc + hours(23) + minutes(59) + seconds(59)
   ) %>%
   select(
-    AdmissionID, `UR number`, Admission, Pt_Study_nos,
+    `UR number`:Admission, Pt_Study_nos, Event, Excl_criteria_ok,
+    Age, APACHE_II, APACHE_III, Baseline_Cr, PCs_cardio, Vasopressor:Chronic_liver_disease,
+    AKI_ICU, AKI_stage,
     DateTime_ICU_admit, DateTime_ICU_dc,
     Baseline_Cr:Cr_defined_AKI_stage
   ) %>%
@@ -143,4 +145,12 @@ admission_ts <- admission_data %>%
   do(data.frame(., aki_cr_ch(
     .$`UR number`, .$DateTime_ICU_admit, .$DateTime_ICU_dc, .$AKI_ICU, .$DateTime_AKI_Dx))
   ) %>%
-  ungroup()
+  ungroup() %>%
+  rename(
+    `UR number` = UR.number,
+    `Highest Cr UEC` = Highest.Cr.UEC,
+    `AKI Dx Cr 26.5` = AKI.Dx.Cr.26.5,
+    `AKI Dx Cr 1.5 times` = AKI.Dx.Cr.1.5.times
+  )
+
+rm(bio_chem_blood_gas, creatinine_ts)
