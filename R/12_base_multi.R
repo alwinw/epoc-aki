@@ -41,24 +41,28 @@ plot(baseline_cut)
 
 
 # ---- sample-model ----
+logit_base <- admission_ts %>%
+  select(
+    `UR number`:Admission, Pt_Study_nos, Event,
+    Age, APACHE_II, APACHE_III, Baseline_Cr, PCs_cardio, Vasopressor:Chronic_liver_disease,
+    AKI_ICU,
+    del_t_ch:cr_i
+  ) %>%
+  mutate(
+    APACHE_II  = if_else(APACHE_II  == 0, NA_real_, APACHE_II),
+    APACHE_III = if_else(APACHE_III == 0, NA_real_, APACHE_III)
+  ) %>%
+  group_by(AKI_ICU) %>%
+  mutate(
+    APACHE_II  = if_else(is.na(APACHE_II),  median(APACHE_II,  na.rm = TRUE),  APACHE_II),
+    APACHE_III = if_else(is.na(APACHE_III), median(APACHE_III,na.rm = TRUE), APACHE_III)
+  ) %>%   # FIXME Replace with REAL data
+  ungroup() %>% 
+  filter(abs(del_cr) < 50)
+
+
 sample_model <- function(lower_hr_del_t_ch, upper_hr_del_t_ch, hr_before_aki) {
-  logit_ts <- admission_ts %>%
-    select(
-      `UR number`:Admission, Pt_Study_nos, Event,
-      Age, APACHE_II, APACHE_III, Baseline_Cr, PCs_cardio, Vasopressor:Chronic_liver_disease,
-      AKI_ICU,
-      del_t_ch:cr_i
-    ) %>%
-    mutate(
-      APACHE_II  = if_else(APACHE_II  == 0, NA_real_, APACHE_II),
-      APACHE_III = if_else(APACHE_III == 0, NA_real_, APACHE_III)
-    ) %>%
-    group_by(AKI_ICU) %>%
-    mutate(
-      APACHE_II  = if_else(is.na(APACHE_II),  median(APACHE_II,  na.rm = TRUE),  APACHE_II),
-      APACHE_III = if_else(is.na(APACHE_III), median(APACHE_III,na.rm = TRUE), APACHE_III)
-    ) %>%   # FIXME Replace with REAL data
-    ungroup() %>%
+  logit_ts <- logit_base %>% 
     filter(
       duration(hour = lower_hr_del_t_ch) < del_t_ch,
       del_t_ch < duration(hour = upper_hr_del_t_ch),
