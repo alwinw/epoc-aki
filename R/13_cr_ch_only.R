@@ -26,6 +26,20 @@ cr_ch_model <- function(lower_hr_del_t_ch, upper_hr_del_t_ch, hr_before_aki, plo
       del_t_ch <= duration(hour = upper_hr_del_t_ch),
       is.na(del_t_aki) | del_t_aki >= duration(minute = hr_before_aki)
     )
+  if(nrow(logit_ts) == 0 | lower_hr_del_t_ch < 0){
+    return(data.frame(
+      heuristic        = 0,
+      AUC              = 0,
+      sensitivity      = 0,
+      specificity      = 0,
+      optimal_cutpoint = 0,
+      n_admissions     = 0,
+      n_UR             = 0,
+      n                = 0,
+      n_pos            = 0,
+      n_neg            = 0
+    ))
+  }
 
   logit_model <- glm(
     AKI_ICU ~ Age + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio +
@@ -69,13 +83,34 @@ gen_cr_ch_model <- function(lower, upper, step, hr_before_aki) {
     upper_hr_del_t_ch = tail(cr_ch_steps, -1),
     hr_before_aki     = hr_before_aki
   ) %>%
-    mutate(del_t_ch_range = paste0("[", lower_hr_del_t_ch, ", ", upper_hr_del_t_ch, "]"))
-  
-  cr_ch_steps_df %>%
+    mutate(del_t_ch_range = paste0("[", lower_hr_del_t_ch, ", ", upper_hr_del_t_ch, "]")) %>%
     rowwise() %>%
     do(data.frame(., cr_ch_model(.$lower_hr_del_t_ch, .$upper_hr_del_t_ch, .$hr_before_aki))) %>%
     ungroup() %>%
     arrange(desc(heuristic), desc(AUC))
+
+  return(cr_ch_steps_df)
 }
 
 gen_cr_ch_model(0, 20, 1, 12)
+
+# ---- optim_wrapper_function ----
+optim_wrapper <- function(vec_lower, vec_step) {
+  temp_df = data.frame(
+    lower = vec_lower,
+    upper = vec_lower + vec_step
+  ) %>%
+    rowwise() %>%
+    do(data.frame(., cr_ch_model(.$lower, .$upper, 12)))
+  return(temp_df$heuristic)
+}
+
+optim(c(10, 1), function(x) optim_wrapper(x[1], x[2]))
+
+optim(
+  c(10, 11),
+  function(x) -cr_ch_model(x[1], x[2], 12)$heuristic,
+  lower = c(0, 0),
+  upper = c(200, 200),
+  method = "L-BFGS-B"
+)
