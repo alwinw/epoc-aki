@@ -48,10 +48,13 @@ cr_ch_model <- function(lower_hr_del_t_ch, upper_hr_del_t_ch, hr_before_aki, plo
   }
 
   return(data.frame(
+    heuristic        = logit_cut$AUC * 2 + length(unique(logit_ts$AdmissionID))/length(unique(logit_df$AdmissionID)),
     AUC              = logit_cut$AUC,
     sensitivity      = logit_cut$sensitivity[[1]],
     specificity      = logit_cut$specificity[[1]],
     optimal_cutpoint = logit_cut$optimal_cutpoint,
+    n_admissions     = length(unique(logit_ts$AdmissionID)),
+    n_UR             = length(unique(logit_ts$`UR number`)),
     n                = nrow(logit_ts),
     n_pos            = sum(logit_ts$AKI_ICU == 1),
     n_neg            = sum(logit_ts$AKI_ICU == 0)
@@ -59,62 +62,20 @@ cr_ch_model <- function(lower_hr_del_t_ch, upper_hr_del_t_ch, hr_before_aki, plo
 }
 
 # ---- generator_function ----
-gen_cr_ch_model <- function(lower, step, upper, hr_before_aki) {
-
+gen_cr_ch_model <- function(lower, upper, step, hr_before_aki) {
+  cr_ch_steps = seq(lower, upper, by = step)
+  cr_ch_steps_df = data.frame(
+    lower_hr_del_t_ch = head(cr_ch_steps, -1),
+    upper_hr_del_t_ch = tail(cr_ch_steps, -1),
+    hr_before_aki     = hr_before_aki
+  ) %>%
+    mutate(del_t_ch_range = paste0("[", lower_hr_del_t_ch, ", ", upper_hr_del_t_ch, "]"))
+  
+  cr_ch_steps_df %>%
+    rowwise() %>%
+    do(data.frame(., cr_ch_model(.$lower_hr_del_t_ch, .$upper_hr_del_t_ch, .$hr_before_aki))) %>%
+    ungroup() %>%
+    arrange(desc(heuristic), desc(AUC))
 }
 
-cr_ch_model(lower_hr_del_t_ch = 3.5, upper_hr_del_t_ch = 4.5, hr_before_aki = 1/60)
-cr_ch_model(lower_hr_del_t_ch = 4.5, upper_hr_del_t_ch = 5.5, hr_before_aki = 1/60)
-cr_ch_model(lower_hr_del_t_ch = 5.5, upper_hr_del_t_ch = 6.5, hr_before_aki = 1/60)
-cr_ch_model(lower_hr_del_t_ch = 6.5, upper_hr_del_t_ch = 7.5, hr_before_aki = 1/60)
-cr_ch_model(lower_hr_del_t_ch = 7.5, upper_hr_del_t_ch = 8.5, hr_before_aki = 1/60)
-cr_ch_model(lower_hr_del_t_ch = 8.5, upper_hr_del_t_ch = 9.5, hr_before_aki = 1/60)
-
-cr_ch_model(lower_hr_del_t_ch = 5.5, upper_hr_del_t_ch = 8.5, hr_before_aki = 1/60)
-
-
-cr_ch_model(lower_hr_del_t_ch = 6.5, upper_hr_del_t_ch = 12.5, hr_before_aki = 1/60)
-
-
-cr_ch_steps = seq(0, 20, by = 1)
-cr_ch_steps_df = data.frame(
-  lower_hr_del_t_ch = head(cr_ch_steps, -1),
-  upper_hr_del_t_ch = tail(cr_ch_steps, -1),
-  hr_before_aki     = 12
-) %>%
-  mutate(del_t_ch_range = paste0("[", lower_hr_del_t_ch, ", ", upper_hr_del_t_ch, "]"))
-
-cr_ch_steps_df %>%
-  rowwise() %>%
-  do(data.frame(., cr_ch_model(.$lower_hr_del_t_ch, .$upper_hr_del_t_ch, .$hr_before_aki))) %>%
-  ungroup() %>%
-  arrange(desc(AUC))
-
-cr_ch_steps = seq(0.5, 20, by = 1)
-cr_ch_steps_df = data.frame(
-  lower_hr_del_t_ch = head(cr_ch_steps, -1),
-  upper_hr_del_t_ch = tail(cr_ch_steps, -1),
-  hr_before_aki     = 12
-) %>%
-  mutate(del_t_ch_range = paste0("[", lower_hr_del_t_ch, ", ", upper_hr_del_t_ch, "]"))
-
-cr_ch_steps_df %>%
-  rowwise() %>%
-  do(data.frame(., cr_ch_model(.$lower_hr_del_t_ch, .$upper_hr_del_t_ch, .$hr_before_aki))) %>%
-  ungroup() %>%
-  arrange(desc(AUC))
-
-
-cr_ch_steps = seq(0, 20, by = 0.5)
-cr_ch_steps_df = data.frame(
-  lower_hr_del_t_ch = head(cr_ch_steps, -1),
-  upper_hr_del_t_ch = tail(cr_ch_steps, -1),
-  hr_before_aki     = 12
-) %>%
-  mutate(del_t_ch_range = paste0("[", lower_hr_del_t_ch, ", ", upper_hr_del_t_ch, "]"))
-
-cr_ch_steps_df %>%
-  rowwise() %>%
-  do(data.frame(., cr_ch_model(.$lower_hr_del_t_ch, .$upper_hr_del_t_ch, .$hr_before_aki))) %>%
-  ungroup() %>%
-  arrange(desc(AUC))
+gen_cr_ch_model(0, 20, 1, 12)
