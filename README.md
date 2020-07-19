@@ -38,3 +38,17 @@ Evaluation of the Predictive value of short-term Oliguria and minor Creatinine i
 Alwin Wang and Lisa Toh
 
 ## Acknowledgements
+
+## Activity
+
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/alwinw/epoc-aki?style=flat-square)
+![GitHub last commit](https://img.shields.io/github/last-commit/alwinw/epoc-aki?style=flat-square)
+![jsDelivr hits (GitHub)](https://img.shields.io/jsdelivr/gh/hm/alwinw/epoc-aki?label=hits&style=flat-square)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/alwinw/epoc-aki?style=flat-square)
+
+## License
+
+[![GitHub](https://img.shields.io/github/license/alwinw/epoc-aki?style=flat-square)](LICENSE)
+
+- [GPL-3.0 License](https://opensource.org/licenses/GPL-3.0)
+- Copyright 2020 © [Alwin Wang](https://github.com/alwinw) and [Lisa Toh](https://github.com/lymt)
