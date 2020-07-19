@@ -4,6 +4,7 @@ tidyverse
 lubridate
 readxl
 ggridges
+metR
 fuzzyjoin
 janitor
 Publish

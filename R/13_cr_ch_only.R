@@ -18,6 +18,10 @@ logit_df <- admission_ts %>%
   ungroup() %>%
   filter(abs(del_cr) < 50)
 
+# ---- cr_ch_heatmap ----
+ggplot(logit_df, aes(x = del_t_ch, y = del_cr)) +
+  geom_hex()
+
 # ---- cr_ch_function ----
 cr_ch_model <- function(lower_hr_del_t_ch, upper_hr_del_t_ch, hr_before_aki, plot = FALSE) {
   logit_ts <- logit_df %>%
@@ -62,7 +66,7 @@ cr_ch_model <- function(lower_hr_del_t_ch, upper_hr_del_t_ch, hr_before_aki, plo
   }
 
   per_admin_in = length(unique(logit_ts$AdmissionID))/length(unique(logit_df$AdmissionID))
-  
+
   return(data.frame(
     heuristic        = (logit_cut$AUC * 3 + per_admin_in^0.2)/4,
     AUC              = logit_cut$AUC,
@@ -96,14 +100,14 @@ gen_cr_ch_model <- function(lower, upper, step, hr_before_aki) {
 
 gen_cr_ch_model(0, 20, 1, 12)
 
-plot_cr_ch = expand.grid(seq(0, 30, by = 0.1), seq(0, 3, by = 0.1)) %>% 
-  rename(centre = Var1, tol = Var2) %>% 
+plot_cr_ch = expand.grid(seq(0, 30, by = 0.1), seq(0, 3, by = 0.1)) %>%
+  rename(centre = Var1, tol = Var2) %>%
   mutate(
     lower = centre - tol,
-    upper = centre + tol) %>% 
-  filter(upper > lower, lower > 0) %>% 
-  rowwise() %>% 
-  do(data.frame(., cr_ch_model(.$lower, .$upper, 12))) %>% 
+    upper = centre + tol) %>%
+  filter(upper > lower, lower > 0) %>%
+  rowwise() %>%
+  do(data.frame(., cr_ch_model(.$lower, .$upper, 12))) %>%
   ungroup()
 
 # Consider parallising above^
@@ -116,7 +120,7 @@ head(plot_cr_ch %>% mutate(heuristic = (AUC*3 + (n_admissions/313))) %>% arrange
 
 ggplot(plot_cr_ch %>% filter(AUC > 0), aes(centre, tol, fill = AUC)) +
   geom_tile() +
-  geom_contour(aes(z = AUC, colour = after_stat(level)), 
+  geom_contour(aes(z = AUC, colour = after_stat(level)),
                binwidth = 0.01) + #, colour = after_stat(level))) +
   coord_fixed() +
   scale_fill_viridis_c() +

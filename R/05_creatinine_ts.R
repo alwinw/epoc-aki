@@ -28,7 +28,7 @@ creatinine_ts <- rbind(blood_gas_ts, bio_chem_ts) %>%
   ) %>%
   group_by(`UR number`) %>%
   mutate(ICU_Admission = cumsum(TC_ICU_ADMISSION_DTTM != lag(TC_ICU_ADMISSION_DTTM, default = as.POSIXct("1990-01-01")))) %>%  # Arbitrarily chosen
-  arrange(`UR number`, ICU_Admission, Pathology_Result_DTTM)
+  arrange(`UR number`, Pathology_Result_DTTM)
 
 rm(blood_gas_ts, bio_chem_ts, blood_gas_adjust, UR_number_list)
 
@@ -157,3 +157,34 @@ admission_ts <- admission_data %>%
   )
 
 rm(bio_chem_blood_gas, creatinine_ts)
+
+# ---- del_t_ch_vs_cr_ch ----
+ggplot(admission_ts, aes(x = del_t_ch/3600)) +
+  geom_histogram(bins = 100, fill = "cyan", colour = "blue") +
+  xlim(0, 48)
+# Add another plot based on admissions?
+
+ggplot(admission_ts, aes(x = del_cr)) +
+  geom_histogram(bins = 50, fill = "cyan", colour = "blue") +
+  xlim(0, 100)
+
+# ggplot(admission_ts, aes(x = log(del_t_ch/3600), y = del_cr)) +
+#   geom_hex()
+
+ggplot(admission_ts, aes(x = del_t_ch/3600, y = del_cr)) +
+  geom_hex(bins = 100) +
+  xlim(0, 48) + ylim(-100, 100) +
+  coord_cartesian(expand = FALSE) +
+  scale_fill_viridis_c()
+
+
+ggplot(admission_ts, aes(x = del_t_ch/3600, y = del_cr)) +
+  geom_density_2d_filled(contour_var = "count", bins = 20) +
+  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, by = 4)) +
+  ylim(-30, 30) +
+  coord_cartesian(xlim = c(0, 20), ylim = c(-30, 30), expand = FALSE) +
+  scale_fill_viridis_d("Event Count") +
+  theme(panel.background = element_rect(fill = NA), panel.ontop = TRUE, panel.grid.minor = element_line(colour = NA)) +
+  ggtitle("Creatinine Changes") +
+  xlab(expression(Delta*"t"["cr_ch"]*" (hours)")) +
+  ylab(expression(Delta*"cr"*" ("*mu*"mol/L)"))
