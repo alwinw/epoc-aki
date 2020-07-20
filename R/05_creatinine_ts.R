@@ -178,13 +178,40 @@ ggplot(admission_ts, aes(x = del_t_ch/3600, y = del_cr)) +
   scale_fill_viridis_c()
 
 
-ggplot(admission_ts, aes(x = del_t_ch/3600, y = del_cr)) +
-  geom_density_2d_filled(contour_var = "count", bins = 20) +
-  scale_x_continuous(limits = c(0, 20), breaks = seq(0, 20, by = 4)) +
-  ylim(-30, 30) +
-  coord_cartesian(xlim = c(0, 20), ylim = c(-30, 30), expand = FALSE) +
-  scale_fill_viridis_d("Event Count") +
-  theme(panel.background = element_rect(fill = NA), panel.ontop = TRUE, panel.grid.minor = element_line(colour = NA)) +
+heatmap_ts <- admission_ts %>%
+  filter(del_t_ch/3600 < 13, abs(del_cr) < 30, is.na(del_t_aki) | del_t_aki > 0) %>%
+  mutate(
+    heatmap = case_when(
+      is.na(del_t_aki)    ~ " No AKI",
+      del_t_aki/3600 <  8 ~ "AKI in  0-8hrs",
+      del_t_aki/3600 < 16 ~ "AKI in  8-16hrs",
+      del_t_aki/3600 < 24 ~ "AKI in 16-24hrs",
+      del_t_aki/3600 < 36 ~ "AKI in 24-36hrs",
+      TRUE                ~ "AKI in 36+hrs"
+    ),
+    # heatmap = factor(heatmap, levels = c(
+    #   "No AKI",
+    #   "AKI in 0-12hrs" , "AKI in 12-24hrs", "AKI in 24-36hrs", "AKI in 36-48hrs",
+    #   "AKI in 48-60hrs", "AKI in 60-72hrs", "AKI in >72hrs"
+    # ))
+  )
+
+heatmap_count <- heatmap_ts %>%
+  group_by(heatmap) %>%
+  summarise(n_cr = n(), n_admission = n_distinct(AdmissionID), .groups = "keep")
+
+ggplot(heatmap_ts, aes(x = del_t_ch/3600, y = del_cr)) +
+  geom_density_2d_filled(contour_var = "density") + #, breaks = c(0, round(1.4^seq(1:11),0)/50, 1)) + #= c(seq(0, 10), 20, 30, 40, 50, 60)) + #, bins = 20) +
+  scale_x_continuous(breaks = seq(0, 12, by = 4)) +
+  geom_point(alpha = 0.1, shape = 21, fill = NA, colour = "white", size = 0.9) +
+  # ylim(-30, 30) +
+  coord_cartesian(xlim = c(0, 12), ylim = c(-20, 25), expand = FALSE) +
+  facet_wrap(~heatmap) +
+  scale_fill_viridis_d("Density") +
+  geom_hline(yintercept = 0, colour = "white", linetype = "dashed") +
+  geom_vline(xintercept = seq(4, 16, by = 4), colour = "white", linetype = "dashed") +
+  # theme(panel.background = element_rect(fill = NA), panel.ontop = TRUE, panel.grid.minor = element_line(colour = NA)) +
+  # geom_text(data = heatmap_count, aes()) +
   ggtitle("Creatinine Changes") +
-  xlab(expression(Delta*"t"["cr_ch"]*" (hours)")) +
-  ylab(expression(Delta*"cr"*" ("*mu*"mol/L)"))
+  xlab(expression("Duration of small change in Cr epis: "*Delta*"t"["cr_ch"]*" (hours)")) +
+  ylab(expression("Change in Cr during epis: "*Delta*"cr"*" ("*mu*"mol/L)"))
