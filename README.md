@@ -4,6 +4,8 @@ Evaluation of the Predictive value of short-term Oliguria and minor Creatinine i
 
 ## Data Overview
 
+### Definitions
+
 ![Data Overview](/doc/images/overview.png)
 
 Changes in Creatinine Episodes:
