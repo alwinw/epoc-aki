@@ -106,7 +106,6 @@ knitr::kable(
 xlsx_data$creatinine$screen_log[errors_logi, "Dates_screened"] =
   xlsx_data$oliguria$screen_log[errors_logi, "Dates_screened"]
 
-
 xlsx_data$creatinine$screen_log$errors_logi = errors_logi
 xlsx_data$creatinine$screen_log <- xlsx_data$creatinine$screen_log %>%
   mutate(

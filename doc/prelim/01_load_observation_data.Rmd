@@ -2,6 +2,18 @@
 
 Load the data from the previous study [@toh2019]
 
-```{r 02_load_data, echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE, results='hide'}
-source(file.path(rel_path, "R/01_load_data.R"))
+```{r 01_load_data, code=read_R("01_load_data.R"), echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE, results='hide'}
+```
+
+## Screening Log
+
+```{r 02_screening_log, code=read_R("02_screening_log.R"), echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE}
+```
+
+## Observation Data Set
+
+```{r 03_data_set, code=read_R("03_data_set.R"), echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE}
+```
+
+```{r 04_merge_all, code=read_R("04_merge_all.R"), echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE, results='hide'}
 ```

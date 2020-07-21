@@ -19,6 +19,7 @@ knitr::opts_chunk$set(echo=TRUE, message=FALSE, cache=TRUE)
 knitr::opts_template$set(silent = list(
   echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE, results='hide'))
 rel_path = "../.."
+read_R <- function(file) read_lines(file.path(rel_path, "R", file))
 ```
 
 # Overview{-}
