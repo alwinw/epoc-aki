@@ -102,10 +102,12 @@ screen_logs$neither_UR <-
 screen_logs$screen_neither <- screen_logs$screen_out %>%
   filter(`UR number` %in% screen_logs$neither_UR)
 
-kable(
-  screen_logs$screen_neither, caption = 'Admissions found in screen out',
-  booktabs = TRUE
-)
+if (FALSE) {
+  kable(
+    screen_logs$screen_neither, caption = 'Admissions found in screen out',
+    booktabs = TRUE
+  )
+}
 
 if (nrow(screen_logs$screen_out) != length(unique(screen_logs$screen_out$`UR number`))) {
   stop(paste(
@@ -185,14 +187,20 @@ screening_log <- screen_logs$full %>%
     ) %>%
   mutate_at(
     vars(DateTime_hosp_admit, DateTime_ICU_admit),
+    function(dt) if_else(dt == "NA NA", NA_character_, dt)
+  ) %>%
+  mutate_at(
+    vars(DateTime_hosp_admit, DateTime_ICU_admit),
     as_datetime,
     tz = "Australia/Melbourne"
-  )  # TODO Fix this to remove errors
+  )
 
-kable(
-  t(head(screening_log)),
-  caption = "Screening Log",
-  booktabs = TRUE)
+if (FALSE) {
+  kable(
+    as.data.frame(t(head(screening_log))),
+    caption = "Screening Log",
+    booktabs = TRUE)
+}
 
 rm(join_demo_screen_log_sheets, screen_logs)
 
@@ -285,24 +293,6 @@ screening_log %>%
   adorn_title("top", row_name = "Epis_Cr", col_name = "Epis_Olig") %>%
   kable(., caption = "Creatinine change and Oliguria Epis Total Admissions")
 
-# screening_log %>%
-#   select(`UR number`, starts_with("Total_no_")) %>%
-#   mutate(
-#     Total_no_cr_epis = if_else(
-#       is.na(Total_no_cr_epis), " 0 cr epis", sprintf("%2d cr epis", Total_no_cr_epis)),
-#     Total_no_olig_epis = if_else(
-#       is.na(Total_no_olig_epis), " 0 olig epis", sprintf("%2d olig epis", Total_no_olig_epis)),
-#   ) %>%
-#   group_by(Total_no_cr_epis, Total_no_olig_epis) %>%
-#   summarise(
-#     Admissions = n(),
-#   ) %>%
-#   ungroup() %>%
-#   pivot_wider(names_from = Total_no_olig_epis, values_from = Admissions) %>%
-#   adorn_totals(c("row", "col")) %>%
-#   rename(Epis = Total_no_cr_epis) %>%
-#   kable(., caption = "Creatinine change and Oliguria Episodes per Admission (all)", booktabs = TRUE)
-
 screening_log %>%
   filter(Excl_criteria_ok == "Y") %>%  # Fine with and without
   select(`UR number`, starts_with("Total_no_")) %>%
@@ -337,13 +327,13 @@ screening_log %>%
 
 # Consider saving these and referring to them later
 unique_comorbidities = unique(gsub(",", "", unlist(strsplit(paste0(screening_log$Comorbidities, collapse = ", "), ", "))))
-grep("T2DM|T1DM|IDDM|insulin", unique_comorbidities, value = TRUE)
-grep("AF|pAF", unique_comorbidities, value = TRUE)
-grep("IHD|CABG|CAD|CAGS|NSTEMI", unique_comorbidities, value = TRUE)
-grep("\\bHF\\b|hypertrophy|CCF|cardiomyopathy|heart failure|LVH", unique_comorbidities, value = TRUE)
-grep("^(?=.*\\bHT\\b)(?!.*portal)(?!.*pulm)", unique_comorbidities, value = TRUE, perl = TRUE)
-grep("PVD|arteritis|pop bypass|id steno|stents", unique_comorbidities, value = TRUE)
-grep(paste0(
+temp <- grep("T2DM|T1DM|IDDM|insulin", unique_comorbidities, value = TRUE)
+temp <- grep("AF|pAF", unique_comorbidities, value = TRUE)
+temp <- grep("IHD|CABG|CAD|CAGS|NSTEMI", unique_comorbidities, value = TRUE)
+temp <- grep("\\bHF\\b|hypertrophy|CCF|cardiomyopathy|heart failure|LVH", unique_comorbidities, value = TRUE)
+temp <- grep("^(?=.*\\bHT\\b)(?!.*portal)(?!.*pulm)", unique_comorbidities, value = TRUE, perl = TRUE)
+temp <- grep("PVD|arteritis|pop bypass|id steno|stents", unique_comorbidities, value = TRUE)
+temp <- grep(paste0(
   "chronic liver disease|portal HT|varice|ETOH|",
   "HCC|NASH|CLD|ESLD|awaiting OLTx|SMV|ascites|SBP|HCC|cirrho|",
   "Hepatosplenomegaly|Cirrho|hepatic encephalopathy"), unique_comorbidities, value = TRUE)
