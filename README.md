@@ -4,7 +4,23 @@ Evaluation of the Predictive value of short-term Oliguria and minor Creatinine i
 
 ## Data Overview
 
+### Definitions
+
 ![Data Overview](/doc/images/overview.png)
+
+Changes in Creatinine Episodes:
+
+- Creatinine change during episode (µmol/L): Δcr
+- Duration of creatinine change episode (hrs): Δt<sub>cr_ch</sub> = T<sub>i</sub> - (T<sub>i</sub> - δt)
+- Time between end of cr change epis and AKI (hrs or NA): Δt<sub>aki</sub> = T<sub>AKI</sub> - T<sub>i</sub>
+
+Oliguria Episodes:
+
+- Time Oliguria identified: T<sub>olig</sub> = T<sub>0</sub>
+- Time Oliguria episode started: T<sub>olig_4</sub> = T<sub>0</sub> - 4
+- Time between olig epis and AKI (hrs or NA): Δt<sub>aki</sub> - T<sub>AKI</sub> - T<sub>0</sub>
+
+
 
 ## Running
 
