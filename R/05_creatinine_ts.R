@@ -178,40 +178,45 @@ ggplot(admission_ts, aes(x = del_t_ch/3600, y = del_cr)) +
   scale_fill_viridis_c()
 
 
-heatmap_ts <- admission_ts %>%
-  filter(del_t_ch/3600 < 13, abs(del_cr) < 30, is.na(del_t_aki) | del_t_aki > 0) %>%
+heatmap_all <- admission_ts %>%
+  filter(is.na(del_t_aki) | del_t_aki > 0) %>%
   mutate(
     heatmap = case_when(
       is.na(del_t_aki)    ~ " No AKI",
-      del_t_aki/3600 <  8 ~ "AKI in  0-8hrs",
-      del_t_aki/3600 < 16 ~ "AKI in  8-16hrs",
-      del_t_aki/3600 < 24 ~ "AKI in 16-24hrs",
-      del_t_aki/3600 < 36 ~ "AKI in 24-36hrs",
-      TRUE                ~ "AKI in 36+hrs"
+      del_t_aki/3600 <  4 ~ "t_AKI in  0-4hrs",
+      del_t_aki/3600 <  8 ~ "t_AKI in  4-8hrs",
+      del_t_aki/3600 < 12 ~ "t_AKI in  8-12hrs",
+      del_t_aki/3600 < 16 ~ "t_AKI in 12-16hrs",
+      TRUE                ~ "T_AKI in 16+hrs"
     ),
-    # heatmap = factor(heatmap, levels = c(
-    #   "No AKI",
-    #   "AKI in 0-12hrs" , "AKI in 12-24hrs", "AKI in 24-36hrs", "AKI in 36-48hrs",
-    #   "AKI in 48-60hrs", "AKI in 60-72hrs", "AKI in >72hrs"
-    # ))
   )
 
-heatmap_count <- heatmap_ts %>%
+
+heatmap_count <- heatmap_all %>%
   group_by(heatmap) %>%
   summarise(n_cr = n(), n_admission = n_distinct(AdmissionID), .groups = "keep")
 
-ggplot(heatmap_ts, aes(x = del_t_ch/3600, y = del_cr)) +
+heatmap_ts <- heatmap_all %>%
+  filter(del_t_ch/3600 < 13, abs(del_cr) < 50)
+
+heatmap_plot <- ggplot(heatmap_ts, aes(x = del_t_ch/3600, y = del_cr)) +
   geom_density_2d_filled(contour_var = "density") + #, breaks = c(0, round(1.4^seq(1:11),0)/50, 1)) + #= c(seq(0, 10), 20, 30, 40, 50, 60)) + #, bins = 20) +
-  scale_x_continuous(breaks = seq(0, 12, by = 4)) +
-  geom_point(alpha = 0.1, shape = 21, fill = NA, colour = "white", size = 0.9) +
+  scale_x_continuous(breaks = seq(0, 12, by = 2)) +
+  # geom_point(alpha = 0.1, shape = 21, fill = NA, colour = "white", size = 0.9) +
   # ylim(-30, 30) +
-  coord_cartesian(xlim = c(0, 12), ylim = c(-20, 25), expand = FALSE) +
+  coord_cartesian(xlim = c(0, 12), ylim = c(-20, 30), expand = FALSE) +
   facet_wrap(~heatmap) +
   scale_fill_viridis_d("Density") +
-  geom_hline(yintercept = 0, colour = "white", linetype = "dashed") +
-  geom_vline(xintercept = seq(4, 16, by = 4), colour = "white", linetype = "dashed") +
+  geom_hline(yintercept = 0, colour = "white", linetype = "solid") +
+  geom_vline(xintercept = seq(0, 16, by = 4), colour = "white", linetype = "dotted") +
   # theme(panel.background = element_rect(fill = NA), panel.ontop = TRUE, panel.grid.minor = element_line(colour = NA)) +
   # geom_text(data = heatmap_count, aes()) +
   ggtitle("Creatinine Changes") +
   xlab(expression("Duration of small change in Cr epis: "*Delta*"t"["cr_ch"]*" (hours)")) +
-  ylab(expression("Change in Cr during epis: "*Delta*"cr"*" ("*mu*"mol/L)"))
+  ylab(expression("Change in Cr during epis: "*Delta*"cr"*" ("*mu*"mol/L)")) +
+  theme(panel.spacing = unit(0.8, "lines"))
+
+print(heatmap_plot)
+
+ggsave("cr_ch_heatmap.png", heatmap_plot, path = paste0(rel_path, "/doc/images/"),
+       width = 12, height = 8, scale = 2)
