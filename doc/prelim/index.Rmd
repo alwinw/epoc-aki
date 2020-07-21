@@ -1,0 +1,22 @@
+---
+title: "EPOC-AKI Preliminary Results"
+author: "Lisa Toh, Alwin Wang"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+output: bookdown::gitbook
+documentclass: book
+bibliography: ["../bib/references.bib", "../bib/R-references.bib"]
+biblio-style: apalike
+link-citations: yes
+github-repo: alwinw/epoc-aki
+description: "Evaluation of the Predictive value of short-term Oliguria and minor Creatinine increases for Acute Kidney Injury in ICU"
+---
+
+```{r setup}
+knitr::opts_chunk$set(echo=TRUE, message=FALSE, cache=TRUE)
+rel_path = "../.."
+```
+
+# Overview{-}
+
+Preliminary results from the analysis of creatinine time series data

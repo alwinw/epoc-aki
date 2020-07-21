@@ -1,0 +1,19 @@
+# Load Data
+
+Load the data from the previous study [@toh2019]
+
+```{r 02_load_data, include=FALSE, cache=FALSE}
+knitr::read_chunk("../../R/01_load_data.R")
+```
+
+```{r, excel_date_to_character_function, echo=FALSE}
+```
+
+```{r, last_column_as_comment_function, echo=FALSE}
+```
+
+```{r, load_excel, echo = FALSE}
+```
+
+```{r, data_collection_errors, echo=FALSE, results = "hide"}
+```
