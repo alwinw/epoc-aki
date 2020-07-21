@@ -5,7 +5,9 @@ date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 output: bookdown::gitbook
 documentclass: book
-bibliography: ["../bib/references.bib", "../bib/R-references.bib"]
+bibliography: 
+  - "../bib/references.bib"
+  - "../bib/R-references.bib"
 biblio-style: apalike
 link-citations: yes
 github-repo: alwinw/epoc-aki
@@ -17,6 +19,10 @@ knitr::opts_chunk$set(echo=TRUE, message=FALSE, cache=TRUE)
 rel_path = "../.."
 ```
 
-# Overview{-}
+# Overview
 
-Preliminary results from the analysis of creatinine time series data
+Preliminary results from the analysis of creatinine time series data.
+
+```{r 01_config, echo=FALSE}
+knitr::read_chunk(file.path(rel_path, "R/00_config.R"))
+```
