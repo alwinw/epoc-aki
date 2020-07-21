@@ -204,13 +204,17 @@ heatmap_plot <- ggplot(heatmap_ts, aes(x = del_t_ch/3600, y = del_cr)) +
   scale_x_continuous(breaks = seq(0, 12, by = 2)) +
   # geom_point(alpha = 0.1, shape = 21, fill = NA, colour = "white", size = 0.9) +
   # ylim(-30, 30) +
-  coord_cartesian(xlim = c(0, 12), ylim = c(-20, 30), expand = FALSE) +
+  coord_cartesian(xlim = c(0, 12), ylim = c(-25, 30), expand = FALSE) +
   facet_wrap(~heatmap) +
   scale_fill_viridis_d("Density") +
   geom_hline(yintercept = 0, colour = "white", linetype = "solid") +
   geom_vline(xintercept = seq(0, 16, by = 4), colour = "white", linetype = "dotted") +
   # theme(panel.background = element_rect(fill = NA), panel.ontop = TRUE, panel.grid.minor = element_line(colour = NA)) +
-  # geom_text(data = heatmap_count, aes()) +
+  geom_text(
+    data = heatmap_count,
+    aes(x = 0.2, y = -23, label = paste0("n(Admissions): ", n_admission, "\nn(cr_ch events): ", n_cr)),
+    colour = "white", hjust = 0, vjust = 0
+  ) +
   ggtitle("Creatinine Changes") +
   xlab(expression("Duration of small change in Cr epis: "*Delta*"t"["cr_ch"]*" (hours)")) +
   ylab(expression("Change in Cr during epis: "*Delta*"cr"*" ("*mu*"mol/L)")) +
@@ -219,4 +223,4 @@ heatmap_plot <- ggplot(heatmap_ts, aes(x = del_t_ch/3600, y = del_cr)) +
 print(heatmap_plot)
 
 ggsave("cr_ch_heatmap.png", heatmap_plot, path = paste0(rel_path, "/doc/images/"),
-       width = 12, height = 8, scale = 2)
+       width = 12, height = 8, scale = 0.8)
