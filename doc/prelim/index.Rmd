@@ -5,7 +5,7 @@ date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 output: bookdown::gitbook
 documentclass: book
-bibliography: 
+bibliography:
   - "../bib/references.bib"
   - "../bib/R-references.bib"
 biblio-style: apalike
@@ -16,13 +16,24 @@ description: "Evaluation of the Predictive value of short-term Oliguria and mino
 
 ```{r setup}
 knitr::opts_chunk$set(echo=TRUE, message=FALSE, cache=TRUE)
+knitr::opts_template$set(silent = list(
+  echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE, results='hide'))
 rel_path = "../.."
 ```
 
-# Overview
+# Overview{-}
 
 Preliminary results from the analysis of creatinine time series data.
 
-```{r 01_config, echo=FALSE}
+```{r 01_config, include=FALSE, cache=FALSE}
+# Cannot source this directly or it will override rel_path
 knitr::read_chunk(file.path(rel_path, "R/00_config.R"))
 ```
+
+```{r, load_library_function, opts.label='silent'}
+```
+
+```{r environment_setup, opts.label='silent'}
+```
+
+The list of `R` packages used is in `requirements.txt`.  This analysis is carried out using `R version 4.0.2 (2020-06-22)` [@R-base] and the package `tidyverse version 1.3.0` was extensively used [@tidyverse2019].

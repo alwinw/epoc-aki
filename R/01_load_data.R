@@ -1,5 +1,3 @@
-rel_path = "."
-
 # ---- excel_date_to_character_function ----
 
 excel_date_to_character <- function(vector) {

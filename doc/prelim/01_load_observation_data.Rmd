@@ -1,0 +1,7 @@
+# Load Observation Data
+
+Load the data from the previous study [@toh2019]
+
+```{r 02_load_data, echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE, results='hide'}
+source(file.path(rel_path, "R/01_load_data.R"))
+```
