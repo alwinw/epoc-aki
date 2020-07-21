@@ -6,6 +6,24 @@ Evaluation of the Predictive value of short-term Oliguria and minor Creatinine i
 
 ![Data Overview](/doc/images/overview.png)
 
+Changes in Creatinine Episodes:
+
+- Creatinine change during episode (µmol/L): Δcr
+- Duration of creatinine change episode (hrs): Δt<sub>cr_ch</sub> = T<sub>i</sub> - (T<sub>i</sub> - δt)
+- Time between end of cr change epis and AKI (hrs or NA): Δt<sub>aki</sub> = T<sub>AKI</sub> - T<sub>i</sub>
+
+Oliguria Episodes:
+
+- Time Oliguria identified: T<sub>olig</sub> = T<sub>0</sub>
+- Time Oliguria episode started: T<sub>olig_4</sub> = T<sub>0</sub> - 4
+- Time between olig epis and AKI (hrs or NA): Δt<sub>aki</sub> - T<sub>AKI</sub> - T<sub>0</sub>
+
+### Inspection
+
+![Data Inspection](/doc/images/cr_ch_heatmap.png)
+
+Example: Significant difference in creatinine changes 8 < Δt<sub>cr_ch</sub> < 12 between 'No AKI' and 't<sub>AKI</sub> in 4-8 hrs'
+
 ## Running
 
 1. Clone the repository and open the R project file `epoc-aki.Rproj` with RStudio
