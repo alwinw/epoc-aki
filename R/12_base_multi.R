@@ -1,4 +1,4 @@
-# ---- baseline-model ----
+# ---- baseline_model ----
 baseline_df <- admission_data %>%
   filter(Excl_criteria_ok == 1) %>%
   filter(Event != "Neither") %>%   # TODO In the future, this should not be an exclusion
@@ -25,7 +25,7 @@ baseline_model <- glm(
   family = "binomial", data = baseline_df)
 
 summary(baseline_model)
-publish(baseline_model)
+kable(publish(baseline_model, print=FALSE)$regressionTable)
 
 baseline_df$model <- predict(baseline_model, type = "response")
 baseline_cut <- cutpointr(
@@ -35,7 +35,7 @@ baseline_cut <- cutpointr(
   method = maximize_metric, metric = youden)
 
 
-# ---- auroc ----
+# ---- auroc_plot ----
 summary(baseline_cut)
 plot(baseline_cut)
 # plot_metric(baseline_cut, conf_lvl = 0.9)

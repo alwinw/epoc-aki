@@ -30,5 +30,7 @@ all cases.
 ```{r admission_ts, echo=FALSE}
 ```
 
+## Exploration
+
 ```{r heatmap_plot, echo=FALSE, fig.width=8}
 ```
