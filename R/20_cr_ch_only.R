@@ -19,8 +19,8 @@ logit_df <- admission_ts %>%
   filter(abs(del_cr) < 50)
 
 # ---- cr_ch_heatmap ----
-ggplot(logit_df, aes(x = del_t_ch, y = del_cr)) +
-  geom_hex()
+# ggplot(logit_df, aes(x = del_t_ch, y = del_cr)) +
+#   geom_hex()
 
 # ---- cr_ch_function ----
 cr_ch_model <- function(lower_hr_del_t_ch, upper_hr_del_t_ch, hr_before_aki, plot = FALSE) {
@@ -32,7 +32,7 @@ cr_ch_model <- function(lower_hr_del_t_ch, upper_hr_del_t_ch, hr_before_aki, plo
     )
   if(nrow(logit_ts) == 0 | lower_hr_del_t_ch < 0){
     return(data.frame(
-      heuristic        = 0,
+      # heuristic        = 0,
       AUC              = 0,
       sensitivity      = 0,
       specificity      = 0,
@@ -68,7 +68,7 @@ cr_ch_model <- function(lower_hr_del_t_ch, upper_hr_del_t_ch, hr_before_aki, plo
   per_admin_in = length(unique(logit_ts$AdmissionID))/length(unique(logit_df$AdmissionID))
 
   return(data.frame(
-    heuristic        = (logit_cut$AUC * 3 + per_admin_in^0.2)/4,
+    # heuristic        = (logit_cut$AUC * 3 + per_admin_in^0.2)/4,
     AUC              = logit_cut$AUC,
     sensitivity      = logit_cut$sensitivity[[1]],
     specificity      = logit_cut$specificity[[1]],
@@ -98,7 +98,13 @@ gen_cr_ch_model <- function(lower, upper, step, hr_before_aki) {
   return(cr_ch_steps_df)
 }
 
-gen_cr_ch_model(0, 20, 1, 12)
+# ---- example_models ----
+cr_ch_steps = gen_cr_ch_model(0, 20, 1, 12)
+
+ggplot(cr_ch_steps, aes())
+
+
+
 
 plot_cr_ch = expand.grid(seq(0, 30, by = 0.1), seq(0, 3, by = 0.1)) %>%
   rename(centre = Var1, tol = Var2) %>%
