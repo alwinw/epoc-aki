@@ -1,0 +1,34 @@
+# Creatinine Time Series
+
+```{r 05_creatinine_ts, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "05_creatinine_ts.R"))
+```
+
+```{r combine_blood_gas_bio_chem, echo=FALSE}
+```
+
+## Example Cr Plot
+
+```{r example_creatinine_plot, echo=FALSE, fig.height=4}
+```
+
+## Comparison Between BioChem and ABG
+
+This uses a `[@TBC]` to determine the difference between the two measurements as:
+Cr<sub>ABG</sub> - Cr<sub>BioChem</sub> = `r blood_gas_adjust`.
+Below you can see that this is still not perfect as the centreline is not zero for
+all cases.
+
+```{r plot_blood_gas_vs_bio_chem, echo=FALSE, message=FALSE, warning=FALSE, fig.height=12}
+```
+
+## Compute all Creatinine Changes
+
+```{r aki_cr_ch_fun, echo=FALSE}
+```
+
+```{r admission_ts, echo=FALSE}
+```
+
+```{r heatmap_plot, echo=FALSE, fig.width=8}
+```

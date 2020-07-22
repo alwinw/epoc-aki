@@ -15,16 +15,34 @@ description: "Evaluation of the Predictive value of short-term Oliguria and mino
 ---
 
 ```{r setup}
-knitr::opts_chunk$set(echo=TRUE, message=FALSE, cache=TRUE)
+knitr::opts_chunk$set(
+  echo=TRUE,
+  message=FALSE,
+  cache=TRUE,
+  collapse=TRUE,
+  comment = "#>"
+)
 knitr::opts_template$set(silent = list(
-  echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE, results='hide'))
+  echo=FALSE,
+  message=FALSE,
+  warning=FALSE,
+  cache=TRUE,
+  results='hide')
+)
+
 rel_path = "../.."
 read_R <- function(file) read_lines(file.path(rel_path, "R", file))
 ```
 
+<!-- Consider using CSS to add in epoc-aki logo -->
+
 # Overview{-}
 
 Preliminary results from the analysis of creatinine time series data.
+
+<!-- FIXME this should work fine using a local image!! Maybe html file in sub folder?? -->
+![Overview](https://raw.githubusercontent.com/alwinw/epoc-aki/master/doc/images/overview.png)
+
 
 ```{r 01_config, include=FALSE, cache=FALSE}
 # Cannot source this directly or it will override rel_path

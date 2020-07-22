@@ -1,4 +1,4 @@
-# ---- combine-blood-gas-bio-chem ----
+# ---- combine_blood_gas_bio_chem ----
 UR_number_list <- unique(filter(admission_data, Event != "Neither")$`UR number`)
 blood_gas_adjust = 2  # FIXME Estimated!! Would need something that matches the mean AND the variance
 
@@ -30,14 +30,14 @@ creatinine_ts <- rbind(blood_gas_ts, bio_chem_ts) %>%
   mutate(ICU_Admission = cumsum(TC_ICU_ADMISSION_DTTM != lag(TC_ICU_ADMISSION_DTTM, default = as.POSIXct("1990-01-01")))) %>%  # Arbitrarily chosen
   arrange(`UR number`, Pathology_Result_DTTM)
 
-rm(blood_gas_ts, bio_chem_ts, blood_gas_adjust, UR_number_list)
+rm(blood_gas_ts, bio_chem_ts, UR_number_list)
 
-# ---- example-creatinine-plot ----
+# ---- example_creatinine_plot ----
 UR_number_list = creatinine_ts %>% arrange(-ICU_Admission) %>% select(`UR number`) %>% unique(.)
 UR_number = UR_number_list[3,]
 
 ggplot(
-  filter(creatinine_ts, `UR number` == UR_number),
+  filter(creatinine_ts, `UR number` == UR_number) %>% mutate(ICU_Admission = paste0("ICU Admission ", ICU_Admission)),
   aes(x = Pathology_Result_DTTM,
       y = Creatinine_level,
       group = ICU_Admission,
@@ -45,16 +45,17 @@ ggplot(
 ) +
   geom_line(linetype = "dashed", colour = "grey") +
   geom_point(aes(colour = Pathology)) +
-  facet_wrap(vars(ICU_Admission), nrow = 1, scales = "free_x")
+  facet_wrap(vars(ICU_Admission), nrow = 1, scales = "free_x") +
+  scale_colour_viridis_d()
 
 rm(UR_number, UR_number_list)
 
-# ---- plot-blood-gas-vs-bio-chem ----
+# ---- plot_blood_gas_vs_bio_chem ----
 bio_chem_blood_gas <- creatinine_ts %>%
   select(-TC_ICU_ADMISSION_DTTM, -TC_ICU_DISCHARGE_DTTM, -`Blood Gas Creatinine`, -`Bio Chem Creatinine`) %>%
   group_by(`UR number`, ICU_Admission) %>%
   mutate(
-    Delta_t = as.double(Pathology_Result_DTTM - lag(Pathology_Result_DTTM, default = as.POSIXct("1990-01-01")), units = "mins"),
+    Delta_t = as.double(Pathology_Result_DTTM - lag(Pathology_Result_DTTM, default = as_datetime(0)), units = "mins"),
     Delta_in = Delta_t < 45
   ) %>%
   filter(Delta_in | lead(Delta_in) & !is.na(Delta_in)) %>%
@@ -80,10 +81,13 @@ ggplot(bio_chem_blood_gas, aes(x = Delta_t, y = Delta_cr, colour = Pathology_typ
   geom_hline(yintercept = 0, colour = "darkgrey") +
   geom_point(alpha = 0.3) +
   geom_smooth(se = FALSE) +
-  facet_wrap(vars(Pathology_type), ncol = 1)
+  facet_wrap(vars(Pathology_type), ncol = 1) +
+  theme(legend.position="bottom") +
+  guides(colour = guide_legend(ncol = 1))
 
+rm(blood_gas_adjust)
 
-# ---- aki-outcome-fun ----
+# ---- aki_cr_ch_fun ----
 aki_cr_ch <- function(
   UR_number, DateTime_ICU_admit, DateTime_ICU_dc,
   AKI_ICU, DateTime_AKI_Dx)
@@ -105,7 +109,7 @@ aki_cr_ch <- function(
       cr_i      = NA_real_
     ))
   }
-  # Consider filtering out ones post AKI?
+  # Consider filtering out ones post AKI here?
 
   combns <- combn(nrow(cr_ts), 2)
   Ti_1 = cr_ts[combns[1,],]
@@ -125,7 +129,7 @@ aki_cr_ch <- function(
   ))
 }
 
-# ---- creatinine_ts_screening_log ----
+# ---- admission_ts ----
 
 admission_ts <- admission_data %>%
   filter(
@@ -158,7 +162,7 @@ admission_ts <- admission_data %>%
 
 rm(bio_chem_blood_gas, creatinine_ts)
 
-# ---- del_t_ch_vs_cr_ch ----
+# ---- summary_plots ----
 ggplot(admission_ts, aes(x = del_t_ch/3600)) +
   geom_histogram(bins = 100, fill = "cyan", colour = "blue") +
   xlim(0, 48)
@@ -177,7 +181,7 @@ ggplot(admission_ts, aes(x = del_t_ch/3600, y = del_cr)) +
   coord_cartesian(expand = FALSE) +
   scale_fill_viridis_c()
 
-
+# ---- heatmap_plot ----
 heatmap_all <- admission_ts %>%
   filter(is.na(del_t_aki) | del_t_aki > 0) %>%
   mutate(
