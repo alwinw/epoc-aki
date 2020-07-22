@@ -31,7 +31,7 @@ knitr::opts_template$set(silent = list(
 )
 
 rel_path = "../.."
-read_R <- function(file) read_lines(file.path(rel_path, "R", file))
+read_R <- function(file) readLines(file.path(rel_path, "R", file))
 ```
 
 <!-- Consider using CSS to add in epoc-aki logo -->

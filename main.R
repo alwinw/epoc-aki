@@ -14,11 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-file_sources <- list.files(
-  path = "R/",
-  pattern = "^[0-9][0-9].*.R$",
-  full.names = TRUE
-)
+file_sources <- list.files(path = "R/", pattern = "^[0-9][0-9].*.R$", full.names = TRUE)
+
+max_num = 12
+excl_num = c(7)
+file_nums = as.numeric(gsub(".*R/(.+[0-9])_[A-Za-z].*", "\\1", file_sources))
+file_sources = file_sources[file_nums <= max_num & !(file_nums %in% excl_num)]
+rm(max_num, excl_num, file_nums)
 
 sapply(
   file_sources,

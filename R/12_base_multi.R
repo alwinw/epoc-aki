@@ -40,4 +40,3 @@ summary(baseline_cut)
 plot(baseline_cut)
 # plot_metric(baseline_cut, conf_lvl = 0.9)
 # plot_sensitivity_specificity(baseline_cut)
-
