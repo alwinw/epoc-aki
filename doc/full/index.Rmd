@@ -8,7 +8,7 @@ documentclass: book
 bibliography: ["../bib/references.bib", "../bib/R-references.bib"]
 biblio-style: apalike
 link-citations: yes
-github-repo: AlwinW/epoc-aki
+github-repo: alwinw/epoc-aki
 description: "Evaluation of the Predictive value of short-term Oliguria and minor Creatinine increases for Acute Kidney Injury in ICU"
 ---
 

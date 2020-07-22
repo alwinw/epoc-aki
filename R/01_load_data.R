@@ -1,5 +1,3 @@
-rel_path = "."
-
 # ---- excel_date_to_character_function ----
 
 excel_date_to_character <- function(vector) {
@@ -10,11 +8,9 @@ excel_date_to_character <- function(vector) {
 
 
 # ---- last_column_as_comment_function ----
-last_column_as_comment <- function(data) {
-  names(data)[ncol(data)] <- "Comment"
-  return(data)
+empty_col_as_comment <- function(x) {
+  return(if_else(x == "", "Comment", x,))
 }
-
 
 # ---- load_excel ----
 xlsx_paths = list(
@@ -30,19 +26,19 @@ xlsx_data <- list()
 xlsx_data$oliguria <- list(
   demographic = read_excel(xlsx_paths$oliguria, "Patient Demographics"),
   data_set    = read_excel(xlsx_paths$oliguria, "Data set"),
-  outcomes    = read_excel(xlsx_paths$oliguria, "AKI & outcomes"),
-  screen_log  = read_excel(xlsx_paths$oliguria, "Screening log")
+  outcomes    = read_excel(xlsx_paths$oliguria, "AKI & outcomes", .name_repair = empty_col_as_comment),
+  screen_log  = read_excel(xlsx_paths$oliguria, "Screening log",  .name_repair = empty_col_as_comment)
 )
 xlsx_data$creatinine <- list(
   demographic = read_excel(xlsx_paths$creatinine, "Patient Demographics"),
   data_set    = read_excel(xlsx_paths$creatinine, "Data set"),
-  outcomes    = read_excel(xlsx_paths$creatinine, "AKI & outcomes"),
-  screen_log  = read_excel(xlsx_paths$creatinine, "Screening log")
+  outcomes    = read_excel(xlsx_paths$creatinine, "AKI & outcomes", .name_repair = empty_col_as_comment),
+  screen_log  = read_excel(xlsx_paths$creatinine, "Screening log",  .name_repair = empty_col_as_comment)
 )
 xlsx_data$screen_out <- list(
-  no_creatinine = read_excel(xlsx_paths$demographics, "no cr change"),
-  no_oliguria   = read_excel(xlsx_paths$demographics, "no oliguria"),
-  neither_cr_ol  = read_excel(xlsx_paths$demographics, "neither cr nor olig")
+  no_creatinine = read_excel(xlsx_paths$demographics, "no cr change",         .name_repair = empty_col_as_comment),
+  no_oliguria   = read_excel(xlsx_paths$demographics, "no oliguria",          .name_repair = empty_col_as_comment),
+  neither_cr_ol  = read_excel(xlsx_paths$demographics, "neither cr nor olig", .name_repair = empty_col_as_comment)
 )
 xlsx_data$apd_extract <- list(
   apd_extract = read_excel(xlsx_paths$apd_extract, "Admissions")
@@ -53,14 +49,6 @@ xlsx_data$creat_furo <- list(
   lowest_creat = read_excel(xlsx_paths$creat_furo, "Lowest Creatinine Level"),
   furosemide   = read_excel(xlsx_paths$creat_furo, "Medication")
 )
-
-xlsx_data$creatinine$screen_log    <- last_column_as_comment(xlsx_data$creatinine$screen_log   )
-xlsx_data$oliguria  $screen_log    <- last_column_as_comment(xlsx_data$oliguria  $screen_log   )
-xlsx_data$creatinine$outcomes      <- last_column_as_comment(xlsx_data$creatinine$outcomes     )
-xlsx_data$oliguria  $outcomes      <- last_column_as_comment(xlsx_data$oliguria  $outcomes     )
-xlsx_data$screen_out$no_creatinine <- last_column_as_comment(xlsx_data$screen_out$no_creatinine)
-xlsx_data$screen_out$no_oliguria   <- last_column_as_comment(xlsx_data$screen_out$no_oliguria  )
-xlsx_data$screen_out$neither_cr_ol <- last_column_as_comment(xlsx_data$screen_out$neither_cr_ol)
 
 xlsx_data$oliguria$screen_log <- xlsx_data$oliguria$screen_log %>%
   mutate(Dates_screened = excel_date_to_character(Dates_screened)) %>%
@@ -79,7 +67,7 @@ xlsx_data$creatinine$screen_log <- xlsx_data$creatinine$screen_log %>%
   ungroup() %>%
   arrange(`UR number`, Dates_screened)
 
-rm(xlsx_paths, excel_date_to_character, last_column_as_comment)
+rm(xlsx_paths, excel_date_to_character, empty_col_as_comment)
 
 
 # ---- data_collection_errors ----
@@ -118,7 +106,6 @@ knitr::kable(
 xlsx_data$creatinine$screen_log[errors_logi, "Dates_screened"] =
   xlsx_data$oliguria$screen_log[errors_logi, "Dates_screened"]
 
-
 xlsx_data$creatinine$screen_log$errors_logi = errors_logi
 xlsx_data$creatinine$screen_log <- xlsx_data$creatinine$screen_log %>%
   mutate(
@@ -152,14 +139,14 @@ knitr::kable(
   booktabs = TRUE
 )
 
-remove_pt_study_no <- function(dataframe) {
+remove_excl_pt_study_no <- function(dataframe) {
   return(filter(dataframe, !(Pt_Study_no %in% xlsx_data$excluded_Pt_Study_no)))
 }
 
-xlsx_data$creatinine$demographic <- remove_pt_study_no(xlsx_data$creatinine$demographic)
-xlsx_data$oliguria$demographic   <- remove_pt_study_no(xlsx_data$oliguria$demographic)
+xlsx_data$creatinine$demographic <- remove_excl_pt_study_no(xlsx_data$creatinine$demographic)
+xlsx_data$oliguria$demographic   <- remove_excl_pt_study_no(xlsx_data$oliguria$demographic)
 
-xlsx_data$creatinine$outcomes <- remove_pt_study_no(xlsx_data$creatinine$outcomes)
-xlsx_data$oliguria$outcomes   <- remove_pt_study_no(xlsx_data$oliguria$outcomes)
+xlsx_data$creatinine$outcomes <- remove_excl_pt_study_no(xlsx_data$creatinine$outcomes)
+xlsx_data$oliguria$outcomes   <- remove_excl_pt_study_no(xlsx_data$oliguria$outcomes)
 
-rm(errors_logi, creatinine_errors, oliguria_errors)
+rm(errors_logi, creatinine_errors, oliguria_errors, remove_excl_pt_study_no)

@@ -1,0 +1,6 @@
+book_filename: "epoc-aki-prelim"
+language:
+  ui:
+    chapter_name: "Section "
+output_dir: "_book_output"
+delete_merged_file: true

@@ -1,0 +1,19 @@
+# Baseline Model
+
+```{r 12_base_multi, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "12_base_multi.R"))
+```
+
+## Known Risk Factors
+
+$$\log(\text{Odds}(\text{AKI}=1)) = \beta_0 + \beta_1\text{Age} + \beta_2\text{APACHE}_\text{II} + \beta_3\text{APACHE}_\text{III} + \\
+  \beta_4\text{Cr}_\text{Baseline} + \beta_5\text{PCs_Cardio} + \beta_6\text{Vasopressor} + \beta_7\text{Diabetes} + \\
+  \beta_8\text{AF} + \beta_9\text{IHD} + \beta_10\text{HF} + \beta_11\text{HT} + \beta_12\text{PVD} + \beta_13\text{Chronic_Liver_Disease}$$
+
+```{r baseline_model, echo=FALSE}
+```
+
+## Sensitivity and Specificity
+
+```{r auroc_plot, echo=FALSE, fig.height=4}
+```
