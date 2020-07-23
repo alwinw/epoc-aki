@@ -8,17 +8,34 @@ knitr::read_chunk(file.path(rel_path, "R", "12_base_multi.R"))
 
 $$
 \begin{align}
-\log(\text{Odds}(\text{AKI}=1)) &= \beta_0 + \beta_1\cdot\text{Age} + \beta_2\cdot\text{APACHE}_\text{II} + \beta_3\cdot\text{APACHE}_\text{III} + \\
-  &\qquad \beta_4\cdot\text{Cr}_\text{Baseline} + \beta_5\cdot\text{PCs_Cardio} + \beta_6\cdot\text{Vasopressor} + \\
-  &\qquad \beta_7\cdot\text{Diabetes} + \beta_8\cdot\text{AF} + \beta_9\cdot\text{IHD} + \beta_{10}\cdot\text{HF} + \\
-  &\qquad \beta_{11}\cdot\text{HT} + \beta_{12}\cdot\text{PVD} + \beta_{13}\cdot\text{ChronicLiverDisease}
+\log(\text{Odds}(\text{AKI}=1)) &= \beta_0 + \beta_1\cdot\text{Age} + \beta_2\cdot\text{APACHE}_\text{II} + \beta_3\cdot\text{APACHE}_\text{III} \\
+  &\qquad + \beta_4\cdot\text{Cr}_\text{Baseline} + \beta_5\cdot\text{PCs_Cardio} + \beta_6\cdot\text{Vasopressor} \\
+  &\qquad + \beta_7\cdot\text{Diabetes} + \beta_8\cdot\text{AF} + \beta_9\cdot\text{IHD} + \beta_{10}\cdot\text{HF} \\
+  &\qquad + \beta_{11}\cdot\text{HT} + \beta_{12}\cdot\text{PVD} + \beta_{13}\cdot\text{ChronicLiverDisease}
 \end{align}
 $$
 
 ```{r baseline_model, echo=FALSE}
 ```
 
-## Sensitivity and Specificity
+## Baseline AUROC
 
 ```{r auroc_plot, echo=FALSE, fig.height=4}
 ```
+
+<!-- Seems to make it much worse e.g example 2 goes from 0.85 -> 0.81
+## Reduced Model
+
+Consider only the more relevant variables. Notice that the AUC actually slightly improves.
+
+$$
+\begin{align}
+\log(\text{Odds}(\text{AKI}=1)) &= \beta_0 + \beta_1\cdot\text{Age} + \beta_2\cdot\text{APACHE}_\text{II} + \beta_3\cdot\text{PCs_Cardio}\\
+  &\qquad + \beta_4\cdot\text{Vasopressor} + \beta_5\cdot\text{Diabetes} + \beta_6\cdot\text{AF} + \beta7\cdot\text{IHD} \\
+  &\qquad + \beta_8\cdot\text{HF} + \beta_9\cdot\text{HT} + \beta_{10}\cdot\text{PVD} + \beta_{11}\cdot\text{ChronicLiverDisease}
+\end{align}
+$$
+
+```{r reduced_baseline_model, echo=FALSE, fig.height=4}
+```
+-->

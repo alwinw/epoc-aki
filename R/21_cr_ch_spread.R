@@ -1,26 +1,46 @@
 
 
 # ---- generator_function ----
-gen_cr_ch_model <- function(lower, upper, step, hr_before_aki) {
+gen_cr_ch_model <- function(lower, upper, step, min_hr_until_aki, max_hr_until_aki) {
   cr_ch_steps = seq(lower, upper, by = step)
   cr_ch_steps_df = data.frame(
     lower_hr_del_t_ch = head(cr_ch_steps, -1),
     upper_hr_del_t_ch = tail(cr_ch_steps, -1),
-    hr_before_aki     = hr_before_aki
+    min_hr_until_aki  = min_hr_until_aki,
+    max_hr_until_aki  = max_hr_until_aki
   ) %>%
     mutate(del_t_ch_range = paste0("[", lower_hr_del_t_ch, ", ", upper_hr_del_t_ch, "]")) %>%
     rowwise() %>%
-    do(data.frame(., cr_ch_model(.$lower_hr_del_t_ch, .$upper_hr_del_t_ch, .$hr_before_aki))) %>%
-    ungroup() %>%
-    arrange(desc(heuristic), desc(AUC))
+    do(data.frame(., cr_ch_model(
+      c(.$lower_hr_del_t_ch, .$upper_hr_del_t_ch), c(.$min_hr_until_aki, .$max_hr_until_aki)))
+    ) %>%
+    ungroup()
+  cr_ch_steps_df$del_t_ch_range <- factor(
+    cr_ch_steps_df$del_t_ch_range, levels = cr_ch_steps_df$del_t_ch_range)
 
   return(cr_ch_steps_df)
 }
 
 # ---- example_models ----
-cr_ch_steps = gen_cr_ch_model(0, 20, 1, 12)
+cr_ch_steps = gen_cr_ch_model(
+  lower = 0,
+  upper = 20,
+  step = 1,
+  min_hr_until_aki = 8,
+  max_hr_until_aki = 16
+) %>%
+  select(-sensitivity:-optimal_cutpoint) %>%
+  pivot_longer(cols = c(AUC, per_admin_in), names_to = "names", values_to = "values")
 
-ggplot(cr_ch_steps, aes())
+ggplot(cr_ch_steps, aes(x = del_t_ch_range, y = values, fill = names)) +
+  geom_col(position = "dodge") +
+  scale_y_continuous(
+    sec.axis = sec_axis(
+      trans = ~.*length(unique(logit_df$AdmissionID)),
+      name = "Number of Admissions"))
+
+
+  facet_wrap(~names, scales = "free_y", nrow = 2)
 
 
 

@@ -16,7 +16,7 @@ description: "Evaluation of the Predictive value of short-term Oliguria and mino
 
 ```{r setup}
 knitr::opts_chunk$set(
-  echo=TRUE,
+  echo=FALSE,
   message=FALSE,
   cache=TRUE,
   collapse=TRUE,

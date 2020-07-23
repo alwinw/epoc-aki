@@ -1,7 +1,37 @@
 # Cr Change Model Selection
 
+$$
+\begin{align}
+\log(\text{Odds}(\text{AKI}=1)) &= \beta_0 + \beta_1\cdot\text{Age} + \beta_2\cdot\text{APACHE}_\text{II} + \beta_3\cdot\text{PCs_Cardio} \\
+  &\qquad + \beta_4\cdot\text{Vasopressor} + \beta_5\cdot\text{Diabetes} + \beta_6\cdot\text{AF} + \beta7\cdot\text{IHD} \\
+  &\qquad + \beta_8\cdot\text{HF} + \beta_9\cdot\text{HT} + \beta_{10}\cdot\text{PVD} + \beta_{11}\cdot\text{ChronicLiverDisease} \\
+  &\qquad + \boxed{\beta_{12}\cdot\Delta\text{cr}} + \boxed{\beta_{13}\cdot\text{cr}}
+\end{align}
+$$
+
 ## Example Models
+
+```{r 20_cr_ch_only, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "20_cr_ch_only.R"))
+```
+
+```{r baseline_df, echo=FALSE}
+```
+
+```{r cr_ch_function, echo=FALSE}
+```
+
+```{r generate_example_fun, echo=FALSE}
+```
+
+```{r example_1, echo=TRUE, fig.width=9}
+```
+
+```{r example_2, echo=TRUE, fig.width=9}
+```
 
 ## Model Exploration
 
-## Optimisation
+
+
+## Parameter Optimisation
