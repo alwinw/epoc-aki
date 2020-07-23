@@ -22,7 +22,7 @@ logit_df <- admission_ts %>%
     del_t_aki_hr = as.numeric(del_t_aki, "hours"))
 
 # ---- cr_ch_function ----
-cr_ch_model <- function(vec_del_t_ch_hr, vec_del_t_aki_hr, plot = FALSE) {
+cr_ch_model <- function(vec_del_t_ch_hr, vec_del_t_aki_hr, plot = FALSE, model = FALSE) {
   vec_del_t_ch_hr  = sort(vec_del_t_ch_hr)
   vec_del_t_aki_hr = sort(vec_del_t_aki_hr)
   logit_ts <- logit_df %>%
@@ -74,7 +74,7 @@ cr_ch_model <- function(vec_del_t_ch_hr, vec_del_t_aki_hr, plot = FALSE) {
 
   # TODO consider using summarise to generate pos/neg breakdown
 
-  return(data.frame(
+  output = data.frame(
     AUC              = logit_cut$AUC,
     sensitivity      = logit_cut$sensitivity[[1]],
     specificity      = logit_cut$specificity[[1]],
@@ -87,12 +87,23 @@ cr_ch_model <- function(vec_del_t_ch_hr, vec_del_t_aki_hr, plot = FALSE) {
     n                = nrow(logit_ts),
     n_event_pos      = sum(logit_ts$AKI_ICU == 1),
     n_event_neg      = sum(logit_ts$AKI_ICU == 0)
-  ))
+  )
+  if (model) {
+    return(list(model = logit_model, cutpoint = logit_cut, output = output))
+  } else {
+    return(output)
+  }
 }
 
 # ---- generate_example_fun ----
-generate_example <- function(crch_window, crch_centre, min_hr_until_aki, max_hr_until_aki) {
-  result_df <- cr_ch_model(c(crch_centre - crch_window/2, crch_centre + crch_window/2), c(min_hr_until_aki, max_hr_until_aki)) %>%
+generate_example <- function(crch_centre, t_interval_width, min_hr_until_aki, max_hr_until_aki) {
+  result <- cr_ch_model(
+    c(crch_centre - t_interval_width/2, crch_centre + t_interval_width/2),
+    c(min_hr_until_aki, max_hr_until_aki),
+    model = TRUE
+  )
+
+  result_df <- result$output %>%
     pivot_longer(
       ends_with("pos")|ends_with("neg"),
       names_to = c("admission", "heatmap"), values_to = "count",
@@ -131,23 +142,22 @@ generate_example <- function(crch_window, crch_centre, min_hr_until_aki, max_hr_
   heatmap_plot <- ggplot(heatmap_ts, aes(x = del_t_ch_hr, y = del_cr)) +
     geom_density_2d_filled(contour_var = "density") +
     geom_hline(yintercept = 0, colour = "white", linetype = "dotted") +
-    annotate("tile", x = crch_centre, y = 2.5, width = crch_window, height = 55,
+    annotate("tile", x = crch_centre, y = 2.5, width = t_interval_width, height = 55,
       fill = "white", colour = NA, alpha = 0.1, size = 0.2
     ) +
     annotate(
       "segment",
-      x    = c(crch_centre - crch_window/2, crch_centre + crch_window/2),
-      xend = c(crch_centre - crch_window/2, crch_centre + crch_window/2),
+      x    = c(crch_centre - t_interval_width/2, crch_centre + t_interval_width/2),
+      xend = c(crch_centre - t_interval_width/2, crch_centre + t_interval_width/2),
       y = c(-22, -22),
-      yend = c(21, 21),
+      yend = c(24, 24),
       colour = "white"
     ) +
     geom_vline(xintercept = crch_centre, colour = "white", linetype = "dotted") +
     geom_text(
-      aes(x = crch_centre, y = 21,
-          label = paste0("Captured cr_ch: ", crch_centre - crch_window/2, " < \u0394t < ", crch_centre + crch_window/2,
-                         "\nn(Admissions): ", admissions,
-                         "\nAUC: ", round(AUC, 4))),
+      aes(x = crch_centre, y = 24,
+          label = paste0("Captured cr_ch: ", crch_centre - t_interval_width/2, " < \u0394t < ", crch_centre + t_interval_width/2,
+                         "\nn(Admissions): ", admissions)),
       data = result_df,
       colour = "white", hjust = 0.5, vjust = -0.1,
     ) +
@@ -160,7 +170,9 @@ generate_example <- function(crch_window, crch_centre, min_hr_until_aki, max_hr_
     facet_wrap(~heatmap, nrow = 1) +
     scale_x_continuous(breaks = seq(0, 12, by = 2)) +
     coord_cartesian(xlim = c(0, 12), ylim = c(-25, 30), expand = FALSE) +
-    ggtitle("Creatinine Changes") +
+    ggtitle(paste0("Creatinine Changes in time interval ",
+                   crch_centre - t_interval_width/2, " < \u0394t < ", crch_centre + t_interval_width/2,
+                   " yields AUC: ", round(result_df$AUC[1], 4))) +
     xlab(expression("Duration of small change in Cr epis: "*Delta*"t"["cr_ch"]*" (hours)")) +
     ylab(expression("Change in Cr during epis: "*Delta*"cr"*" ("*mu*"mol/L)")) +
     scale_fill_viridis_d("Density") +
@@ -168,19 +180,21 @@ generate_example <- function(crch_window, crch_centre, min_hr_until_aki, max_hr_
 
   plot(heatmap_plot)
 
-  return(result_df)
+  return(result)
 }
 
 # ---- example_1 ----
 example_1 <- generate_example(
-  crch_window = 3,
   crch_centre = 4,
+  t_interval_width = 3,
   min_hr_until_aki = 8,
   max_hr_until_aki = 48)
+kable(publish(example_1$model, print=FALSE)$regressionTable)
 
 # ---- example_2 ----
 example_2 <- generate_example(
-  crch_window = 1,
   crch_centre = 6.5,
+  t_interval_width = 1,
   min_hr_until_aki = 8,
   max_hr_until_aki = 16)
+kable(publish(example_2$model, print=FALSE)$regressionTable)

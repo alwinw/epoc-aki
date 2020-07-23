@@ -20,9 +20,9 @@ Oliguria Episodes:
 - Time Oliguria episode started: T<sub>olig_4</sub> = T<sub>0</sub> - 4
 - Time between olig epis and AKI (hrs or NA): Δt<sub>aki</sub> - T<sub>AKI</sub> - T<sub>0</sub>
 
-### Inspection
+### Exploration
 
-![Data Inspection](/doc/images/cr_ch_heatmap.png)
+![Data Exploration](/doc/images/cr_ch_heatmap.png)
 
 Example: Significant difference in creatinine changes 8 < Δt<sub>cr_ch</sub> < 12 between 'No AKI' and 't<sub>AKI</sub> in 4-8 hrs'
 

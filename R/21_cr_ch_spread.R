@@ -1,5 +1,3 @@
-
-
 # ---- generator_function ----
 gen_cr_ch_model <- function(lower, upper, step, min_hr_until_aki, max_hr_until_aki) {
   cr_ch_steps = seq(lower, upper, by = step)
@@ -39,8 +37,9 @@ ggplot(cr_ch_steps, aes(x = del_t_ch_range, y = values, fill = names)) +
       trans = ~.*length(unique(logit_df$AdmissionID)),
       name = "Number of Admissions"))
 
-
-  facet_wrap(~names, scales = "free_y", nrow = 2)
+# Add AUC text labels
+# Better vertical axis scaling
+# Fix legend
 
 
 
