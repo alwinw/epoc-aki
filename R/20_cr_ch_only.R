@@ -122,22 +122,30 @@ ggplot(heatmap_ts, aes(x = del_t_ch, y = del_cr)) +
   geom_density_2d_filled(contour_var = "density") +
   geom_hline(yintercept = 0, colour = "white", linetype = "dotted") +
   annotate("tile", x = crch_centre, y = 2.5, width = crch_window, height = 55,
-    fill = "white", colour = "white", alpha = 0.1, size = 0.2
+    fill = "white", colour = NA, alpha = 0.1, size = 0.2
   ) +
+  annotate(
+    "segment", 
+    x    = c(crch_centre - crch_window/2, crch_centre + crch_window/2), 
+    xend = c(crch_centre - crch_window/2, crch_centre + crch_window/2), 
+    y = c(-22, -22), 
+    yend = c(22, 22),
+    colour = "white"
+  ) + 
   geom_vline(xintercept = crch_centre, colour = "white", linetype = "dotted") +
   geom_text(
-    aes(x = 0.2, y = -23,
+    aes(x = crch_centre - crch_window/2 - 0.5, y = 22,
+        label = paste0("Captured cr_ch: ", crch_centre - crch_window/2, " < \u0394 t < ", crch_centre + crch_window/2,
+                       "\nn(Admissions): ", admissions,
+                       "\nAUC: ", round(AUC, 4))),
+    data = result_df,
+    colour = "white", hjust = -0, vjust = -0.1,
+  ) +
+  geom_text(
+    aes(x = 0.2, y = -24,
         label = paste0("All cr_ch:\nn(Admissions): ", n_admission, "\nn(cr_ch events): ", n_cr)),
     data = heatmap_count,
     colour = "white", hjust = 0, vjust = 0
-  ) +
-  geom_text(
-    aes(x = crch_centre + crch_window/2 + 0.1, y = 29,
-        label = paste0("Captured cr_ch: ", crch_centre - crch_window/2, " < Δt < ", crch_centre + crch_window/2,
-                       "\n n(Admissions): ", admissions,
-                       "\n AUC: ", round(AUC, 4))),
-    data = result_df,
-    colour = "white", hjust = 0, vjust = 1
   ) +
   facet_wrap(~heatmap, nrow = 1) +
   scale_x_continuous(breaks = seq(0, 12, by = 2)) +
