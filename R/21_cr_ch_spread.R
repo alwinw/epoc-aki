@@ -52,7 +52,7 @@ ggplot(cr_ch_steps, aes(x = del_t_ch_range, y = values, fill = names, colour = n
   ) +
   scale_y_continuous(
     limits = c(0, 0.95),
-    breaks = seq(0, 0.9, by = 0.2),
+    breaks = seq(0, 0.9, by = 0.1),
     sec.axis = sec_axis(
       trans = ~.*n_admin_total,
       name = "Number of Included Admissions",
@@ -67,41 +67,71 @@ ggplot(cr_ch_steps, aes(x = del_t_ch_range, y = values, fill = names, colour = n
 
 # ---- next ----
 
-
-plot_cr_ch = expand.grid(seq(0, 30, by = 0.1), seq(0, 3, by = 0.1)) %>%
-  rename(centre = Var1, tol = Var2) %>%
+cr_ch_grid = expand.grid(seq(1, 12, by = 0.1), seq(0.2, 2, by = 0.025)) %>%
+  rename(centre = Var1, width = Var2) %>%
   mutate(
-    lower = centre - tol,
-    upper = centre + tol) %>%
-  filter(upper > lower, lower > 0) %>%
-  rowwise() %>%
-  do(data.frame(., cr_ch_model(.$lower, .$upper, 12))) %>%
-  ungroup()
+    lower = centre - width/2,
+    upper = centre + width/2
+  )
 
-# Consider parallising above^
-# cluster <- new_cluster(4)
-# cluster_assign(cluster, logit_df = logit_df, cr_ch_model = cr_ch_model)
-# partition(cluster)
+cr_ch_list <- split(cr_ch_grid, rownames(cr_ch_grid))
+cl <- makeCluster(detectCores() - 1)
+invisible(clusterEvalQ(cl, library("dplyr")))
+invisible(clusterEvalQ(cl, library("cutpointr")))
+clusterExport(cl, c("logit_df", "cr_ch_model"))
+cr_ch_dump <- pblapply(
+  cr_ch_list, function(df) {
+    data.frame(df, cr_ch_model(c(df$lower, df$upper), c(8, 16)))
+  },
+  cl = cl
+)
+stopCluster(cl)
 
-head(plot_cr_ch %>% arrange(desc(heuristic), desc(AUC)))
+cr_ch_plot <- bind_rows(cr_ch_dump) %>%
+  select(centre, width, AUC, n_admissions)
+
+
+ggplot(cr_ch_plot %>% filter(AUC > 0), aes(centre, width, fill = AUC)) +
+  geom_raster() +
+  scale_fill_viridis_c()
+
+ggplot(cr_ch_plot, aes(centre, width)) +
+  geom_contour_filled(aes(z = AUC), fill = NA, colour = "black")
+
+ggplot(cr_ch_plot, aes(centre, width)) +
+  geom_contour_filled(aes(z = AUC), bins = 16, alpha = 0.8) +
+  geom_contour(aes(z = n_admissions), colour = "white", binwidth = 20) +
+  geom_text_contour(aes(z = n_admissions), colour = "white") +
+  scale_x_continuous(
+    breaks = seq(0, 20, by = 1),
+    limits = c(min(cr_ch_plot$centre), max(cr_ch_plot$centre)),
+    expand = c(0, 0)) +
+  scale_y_continuous(expand = c(0, 0))
+
+
+
+
+head(plot_cr_ch %>% arrange(desc(AUC)))
 head(plot_cr_ch %>% mutate(heuristic = (AUC*3 + (n_admissions/313))) %>% arrange(desc(heuristic), desc(AUC)), 20)
 
-ggplot(plot_cr_ch %>% filter(AUC > 0), aes(centre, tol, fill = AUC)) +
+ggplot(plot_cr_ch %>% filter(AUC > 0), aes(centre, width, fill = AUC)) +
   geom_tile() +
   geom_contour(aes(z = AUC, colour = after_stat(level)),
                binwidth = 0.01) + #, colour = after_stat(level))) +
-  coord_fixed() +
   scale_fill_viridis_c() +
   scale_colour_viridis_c()
 
-ggplot(plot_cr_ch %>% filter(AUC > 0), aes(centre, tol, fill = heuristic)) +
+
+
+
+ggplot(plot_cr_ch %>% filter(AUC > 0), aes(centre, width, fill = heuristic)) +
   geom_tile() +
   geom_contour(aes(z = heuristic), colour = "white", binwidth = 0.025) + #, colour = after_stat(level))) +
-  coord_fixed() +
+  # coord_fixed() +
   scale_fill_viridis_c() +
   scale_colour_viridis_c()
 
-ggplot(plot_cr_ch %>% filter(AUC > 0), aes(centre, tol, fill = n_admissions)) +
+ggplot(plot_cr_ch %>% filter(AUC > 0), aes(centre, width, fill = n_admissions)) +
   geom_tile() +
   geom_contour(aes(z = n_admissions), colour = "white", binwidth = 20) + #, colour = after_stat(level))) +
   geom_text_contour(aes(z = n_admissions), colour = "white") +
