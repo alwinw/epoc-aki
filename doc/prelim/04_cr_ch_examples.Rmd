@@ -12,6 +12,8 @@ $$
 \end{align}
 $$
 
+Here you can see that two more terms are added into the model. The first added term $\beta_{14}\cdot\Delta\text{cr}$ is the creatinine change during an event. The second added term is $\beta_{15}\cdot\text{cr}$ and is the creatinine level after the event.
+
 ```{r 20_cr_ch_only, include=FALSE, cache=FALSE}
 knitr::read_chunk(file.path(rel_path, "R", "20_cr_ch_only.R"))
 ```
@@ -30,6 +32,11 @@ knitr::read_chunk(file.path(rel_path, "R", "20_cr_ch_only.R"))
 ```{r example_1, echo=TRUE, fig.width=9}
 ```
 
+Interestly, now you can see that Age is a highly significant variable whereas it was not in the baseline model.
+
 ## Example 2
+
 ```{r example_2, echo=TRUE, fig.width=9}
 ```
+
+This model has much fewer admissions, but has a much higher ROC value. There must be some parsimonious model with the best predictor, minimum variables but maximum included number of admissions.

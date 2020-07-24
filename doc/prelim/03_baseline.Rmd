@@ -6,6 +6,8 @@ knitr::read_chunk(file.path(rel_path, "R", "12_base_multi.R"))
 
 ## Known Risk Factors
 
+Multivariable logistic regression to determine the baseline model and AUC value.
+
 $$
 \begin{align}
 \log(\text{Odds}(\text{AKI}=1)) &= \beta_0 + \beta_1\cdot\text{Age} + \beta_2\cdot\text{APACHE}_\text{II} + \beta_3\cdot\text{APACHE}_\text{III} \\
@@ -18,15 +20,16 @@ $$
 ```{r baseline_model, echo=FALSE}
 ```
 
+From the output, you can see that some variables are more significant than others.
+
 ## Baseline AUROC
 
 ```{r auroc_plot, echo=FALSE, fig.height=4}
 ```
 
-<!-- Seems to make it much worse e.g example 2 goes from 0.85 -> 0.81
 ## Reduced Model
 
-Consider only the more relevant variables. Notice that the AUC actually slightly improves.
+Consider only the more significant variables.
 
 $$
 \begin{align}
@@ -36,6 +39,7 @@ $$
 \end{align}
 $$
 
+You can see that there is no significant improvement. The decision was made to retain all the variables in the subsequent analyses as they may become significant once the creatinine change events are added
+
 ```{r reduced_baseline_model, echo=FALSE, fig.height=4}
 ```
--->

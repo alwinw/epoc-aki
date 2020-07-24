@@ -7,14 +7,16 @@ knitr::read_chunk(file.path(rel_path, "R", "05_creatinine_ts.R"))
 ```{r combine_blood_gas_bio_chem, echo=FALSE}
 ```
 
-## Example Cr Plot
+## Example Creatinine Plot
+
+Below you can see an example time series plot of creatinine for a patient admitted twice into ICU. Both the BioChem and ABG results are shown.
 
 ```{r example_creatinine_plot, echo=FALSE, fig.height=4}
 ```
 
 ## Comparison Between BioChem and ABG
 
-This uses a `[@TBC]` to determine the difference between the two measurements as:
+This uses a [@Udy2009] to determine the difference between the two measurements as:
 Cr<sub>ABG</sub> - Cr<sub>BioChem</sub> = `r blood_gas_adjust`.
 Below you can see that this is still not perfect as the centreline is not zero for
 all cases.
@@ -30,7 +32,11 @@ all cases.
 ```{r admission_ts, echo=FALSE}
 ```
 
+Insert image to show the creatinine changes and nomenclature
+
 ## Exploration
+
+Each of the possible creatinine change events is calculated and plotted below. It shows that for admissions with no AKI, the creatinine change is approximately symmetric. <!-- Add some additional words -->
 
 ```{r heatmap_plot, echo=FALSE, fig.width=8}
 ```
