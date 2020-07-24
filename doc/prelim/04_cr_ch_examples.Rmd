@@ -1,4 +1,6 @@
-# Cr Change Model Selection
+# Example Cr Change Models
+
+## Logistic Regression Model
 
 $$
 \begin{align}
@@ -9,8 +11,6 @@ $$
   &\qquad + \boxed{\beta_{14}\cdot\Delta\text{cr}} + \boxed{\beta_{15}\cdot\text{cr}}
 \end{align}
 $$
-
-## Example Models
 
 ```{r 20_cr_ch_only, include=FALSE, cache=FALSE}
 knitr::read_chunk(file.path(rel_path, "R", "20_cr_ch_only.R"))
@@ -25,14 +25,11 @@ knitr::read_chunk(file.path(rel_path, "R", "20_cr_ch_only.R"))
 ```{r generate_example_fun, echo=FALSE}
 ```
 
+## Example 1
+
 ```{r example_1, echo=TRUE, fig.width=9}
 ```
 
+## Example 2
 ```{r example_2, echo=TRUE, fig.width=9}
 ```
-
-## Model Exploration
-
-
-
-## Parameter Optimisation

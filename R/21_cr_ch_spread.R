@@ -19,7 +19,9 @@ gen_cr_ch_model <- function(lower, upper, step, min_hr_until_aki, max_hr_until_a
   return(cr_ch_steps_df)
 }
 
-# ---- example_models ----
+# ---- Example_1hr_incr_spread ----
+n_admin_total = round(length(unique(logit_df$AdmissionID))/100, 0)*100
+
 cr_ch_steps = gen_cr_ch_model(
   lower = 0,
   upper = 20,
@@ -28,20 +30,42 @@ cr_ch_steps = gen_cr_ch_model(
   max_hr_until_aki = 16
 ) %>%
   select(-sensitivity:-optimal_cutpoint) %>%
-  pivot_longer(cols = c(AUC, per_admin_in), names_to = "names", values_to = "values")
+  mutate(heuristic = (AUC*1.1 + per_admin_in)/2.1) %>%
+  pivot_longer(cols = c(AUC, per_admin_in), names_to = "names", values_to = "values") %>%
+  mutate(
+    labels = if_else(names == "AUC", round(values, 2), round(values*n_admin_total, 0)),
+    names  = if_else(names == "AUC", "AUC", "Admissions"),
+    names  = factor(names, levels = c("AUC", "Admissions"))
+  )
 
-ggplot(cr_ch_steps, aes(x = del_t_ch_range, y = values, fill = names)) +
-  geom_col(position = "dodge") +
+ggplot(cr_ch_steps, aes(x = del_t_ch_range, y = values, fill = names, colour = names)) +
+  geom_col(position = "dodge", alpha = 0.5, colour = NA) +
+  geom_label(
+    aes(label = labels),
+    position = position_dodge(0.9), vjust = -0.2, fill = "white",
+    show.legend = FALSE
+  ) +
+  geom_point(position = position_dodge(0.9)) +
+  geom_point(
+    aes(x = del_t_ch_range, y = heuristic, fill = "Heuristic", colour = "Heuristic"),
+    data = cr_ch_steps %>% filter(names == "AUC"),
+  ) +
   scale_y_continuous(
+    limits = c(0, 0.95),
+    breaks = seq(0, 0.9, by = 0.2),
     sec.axis = sec_axis(
-      trans = ~.*length(unique(logit_df$AdmissionID)),
-      name = "Number of Admissions"))
+      trans = ~.*n_admin_total,
+      name = "Number of Included Admissions",
+      breaks = seq(0, 0.9, by = 0.2)*n_admin_total)
+  ) +
+  ggtitle("AUC and Number of Admissions for Various \u0394t Increments") +
+  xlab(expression("Duration of small change in Cr epis: "*Delta*"t"["cr_ch"]*" (hours)")) +
+  ylab("AUC") +
+  scale_fill_manual(name = "Legend", values=c("orange","blue", "black")) +
+  scale_colour_manual(name = "Legend", values=c("orange","blue", "black")) +
+  theme(legend.position="bottom")
 
-# Add AUC text labels
-# Better vertical axis scaling
-# Fix legend
-
-
+# ---- next ----
 
 
 plot_cr_ch = expand.grid(seq(0, 30, by = 0.1), seq(0, 3, by = 0.1)) %>%

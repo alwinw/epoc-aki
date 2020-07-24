@@ -190,6 +190,7 @@ example_1 <- generate_example(
   min_hr_until_aki = 8,
   max_hr_until_aki = 48)
 kable(publish(example_1$model, print=FALSE)$regressionTable)
+plot(example_1$cutpoint)
 
 # ---- example_2 ----
 example_2 <- generate_example(
@@ -198,3 +199,4 @@ example_2 <- generate_example(
   min_hr_until_aki = 8,
   max_hr_until_aki = 16)
 kable(publish(example_2$model, print=FALSE)$regressionTable)
+plot(example_2$cutpoint)
