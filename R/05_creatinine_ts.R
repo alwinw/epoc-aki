@@ -45,8 +45,7 @@ ggplot(
 ) +
   geom_line(linetype = "dashed", colour = "grey") +
   geom_point(aes(colour = Pathology)) +
-  facet_wrap(vars(ICU_Admission), nrow = 1, scales = "free_x") +
-  scale_colour_viridis_d()
+  facet_wrap(vars(ICU_Admission), nrow = 1, scales = "free_x")
 
 rm(UR_number, UR_number_list)
 

@@ -6,14 +6,40 @@ knitr::read_chunk(file.path(rel_path, "R", "12_base_multi.R"))
 
 ## Known Risk Factors
 
-$$\log(\text{Odds}(\text{AKI}=1)) = \beta_0 + \beta_1\text{Age} + \beta_2\text{APACHE}_\text{II} + \beta_3\text{APACHE}_\text{III} + \\
-  \beta_4\text{Cr}_\text{Baseline} + \beta_5\text{PCs_Cardio} + \beta_6\text{Vasopressor} + \beta_7\text{Diabetes} + \\
-  \beta_8\text{AF} + \beta_9\text{IHD} + \beta_10\text{HF} + \beta_11\text{HT} + \beta_12\text{PVD} + \beta_13\text{Chronic_Liver_Disease}$$
+Multivariable logistic regression to determine the baseline model and AUC value.
+
+$$
+\begin{align}
+\log(\text{Odds}(\text{AKI}=1)) &= \beta_0 + \beta_1\cdot\text{Age} + \beta_2\cdot\text{APACHE}_\text{II} + \beta_3\cdot\text{APACHE}_\text{III} \\
+  &\qquad + \beta_4\cdot\text{Cr}_\text{Baseline} + \beta_5\cdot\text{PCs_Cardio} + \beta_6\cdot\text{Vasopressor} \\
+  &\qquad + \beta_7\cdot\text{Diabetes} + \beta_8\cdot\text{AF} + \beta_9\cdot\text{IHD} + \beta_{10}\cdot\text{HF} \\
+  &\qquad + \beta_{11}\cdot\text{HT} + \beta_{12}\cdot\text{PVD} + \beta_{13}\cdot\text{ChronicLiverDisease}
+\end{align}
+$$
 
 ```{r baseline_model, echo=FALSE}
 ```
 
-## Sensitivity and Specificity
+From the output, you can see that some variables are more significant than others.
+
+## Baseline AUROC
 
 ```{r auroc_plot, echo=FALSE, fig.height=4}
+```
+
+## Reduced Model
+
+Consider only the more significant variables.
+
+$$
+\begin{align}
+\log(\text{Odds}(\text{AKI}=1)) &= \beta_0 + \beta_1\cdot\text{Age} + \beta_2\cdot\text{APACHE}_\text{II} + \beta_3\cdot\text{PCs_Cardio}\\
+  &\qquad + \beta_4\cdot\text{Vasopressor} + \beta_5\cdot\text{Diabetes} + \beta_6\cdot\text{AF} + \beta7\cdot\text{IHD} \\
+  &\qquad + \beta_8\cdot\text{HF} + \beta_9\cdot\text{HT} + \beta_{10}\cdot\text{PVD} + \beta_{11}\cdot\text{ChronicLiverDisease}
+\end{align}
+$$
+
+You can see that there is no significant improvement. The decision was made to retain all the variables in the subsequent analyses as they may become significant once the creatinine change events are added
+
+```{r reduced_baseline_model, echo=FALSE, fig.height=4}
 ```

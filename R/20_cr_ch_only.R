@@ -16,32 +16,37 @@ logit_df <- admission_ts %>%
     APACHE_III = if_else(is.na(APACHE_III), median(APACHE_III,na.rm = TRUE), APACHE_III)
   ) %>%   # FIXME Replace with REAL data
   ungroup() %>%
-  filter(abs(del_cr) < 50)
-
-# ---- cr_ch_heatmap ----
-ggplot(logit_df, aes(x = del_t_ch, y = del_cr)) +
-  geom_hex()
+  filter(abs(del_cr) < 50) %>%  # Consider if this is reasonable or not
+  mutate(
+    del_t_ch_hr  = as.numeric(del_t_ch, "hours"),
+    del_t_aki_hr = as.numeric(del_t_aki, "hours"))
 
 # ---- cr_ch_function ----
-cr_ch_model <- function(lower_hr_del_t_ch, upper_hr_del_t_ch, hr_before_aki, plot = FALSE) {
+cr_ch_model <- function(vec_del_t_ch_hr, vec_del_t_aki_hr, plot = FALSE, model = FALSE) {
+  vec_del_t_ch_hr  = sort(vec_del_t_ch_hr)
+  vec_del_t_aki_hr = sort(vec_del_t_aki_hr)
   logit_ts <- logit_df %>%
     filter(
-      duration(hour = lower_hr_del_t_ch) < del_t_ch,
-      del_t_ch <= duration(hour = upper_hr_del_t_ch),
-      is.na(del_t_aki) | del_t_aki >= duration(minute = hr_before_aki)
+      del_t_ch_hr >= vec_del_t_ch_hr[1],
+      del_t_ch_hr <= vec_del_t_ch_hr[2],
+      is.na(del_t_aki) |
+        del_t_aki_hr >= vec_del_t_aki_hr[1] &
+        del_t_aki_hr <= vec_del_t_aki_hr[2]
     )
-  if(nrow(logit_ts) == 0 | lower_hr_del_t_ch < 0){
+  if(nrow(logit_ts) == 0 | vec_del_t_ch_hr[1] < 0 | vec_del_t_aki_hr[1] < 0){
     return(data.frame(
-      heuristic        = 0,
       AUC              = 0,
       sensitivity      = 0,
       specificity      = 0,
       optimal_cutpoint = 0,
+      per_admin_in     = 0,
       n_admissions     = 0,
+      n_admissions_pos = 0,
+      n_admissions_neg = 0,
       n_UR             = 0,
       n                = 0,
-      n_pos            = 0,
-      n_neg            = 0
+      n_event_pos      = 0,
+      n_event_neg      = 0
     ))
   }
 
@@ -62,99 +67,136 @@ cr_ch_model <- function(lower_hr_del_t_ch, upper_hr_del_t_ch, hr_before_aki, plo
   if (plot) {
     print(summary(logit_model))
     print(summary(logit_cut))
-    print(plot(logit_cut))  #geom_segment(aes(x = 1, xend = 0, y = 0, yend = 1), color="grey", linetype="dashed")
+    print(plot(logit_cut))
   }
 
   per_admin_in = length(unique(logit_ts$AdmissionID))/length(unique(logit_df$AdmissionID))
 
-  return(data.frame(
-    heuristic        = (logit_cut$AUC * 3 + per_admin_in^0.2)/4,
+  # TODO consider using summarise to generate pos/neg breakdown
+
+  output = data.frame(
     AUC              = logit_cut$AUC,
     sensitivity      = logit_cut$sensitivity[[1]],
     specificity      = logit_cut$specificity[[1]],
     optimal_cutpoint = logit_cut$optimal_cutpoint,
+    per_admin_in     = per_admin_in,
     n_admissions     = length(unique(logit_ts$AdmissionID)),
+    n_admissions_pos = length(unique(logit_ts$AdmissionID[logit_ts$AKI_ICU == 1])),
+    n_admissions_neg = length(unique(logit_ts$AdmissionID[logit_ts$AKI_ICU == 0])),
     n_UR             = length(unique(logit_ts$`UR number`)),
     n                = nrow(logit_ts),
-    n_pos            = sum(logit_ts$AKI_ICU == 1),
-    n_neg            = sum(logit_ts$AKI_ICU == 0)
-  ))
+    n_event_pos      = sum(logit_ts$AKI_ICU == 1),
+    n_event_neg      = sum(logit_ts$AKI_ICU == 0)
+  )
+  if (model) {
+    return(list(model = logit_model, cutpoint = logit_cut, output = output))
+  } else {
+    return(output)
+  }
 }
 
-# ---- generator_function ----
-gen_cr_ch_model <- function(lower, upper, step, hr_before_aki) {
-  cr_ch_steps = seq(lower, upper, by = step)
-  cr_ch_steps_df = data.frame(
-    lower_hr_del_t_ch = head(cr_ch_steps, -1),
-    upper_hr_del_t_ch = tail(cr_ch_steps, -1),
-    hr_before_aki     = hr_before_aki
-  ) %>%
-    mutate(del_t_ch_range = paste0("[", lower_hr_del_t_ch, ", ", upper_hr_del_t_ch, "]")) %>%
-    rowwise() %>%
-    do(data.frame(., cr_ch_model(.$lower_hr_del_t_ch, .$upper_hr_del_t_ch, .$hr_before_aki))) %>%
-    ungroup() %>%
-    arrange(desc(heuristic), desc(AUC))
+# ---- generate_example_fun ----
+generate_example <- function(crch_centre, t_interval_width, min_hr_until_aki, max_hr_until_aki) {
+  result <- cr_ch_model(
+    c(crch_centre - t_interval_width/2, crch_centre + t_interval_width/2),
+    c(min_hr_until_aki, max_hr_until_aki),
+    model = TRUE
+  )
 
-  return(cr_ch_steps_df)
+  result_df <- result$output %>%
+    pivot_longer(
+      ends_with("pos")|ends_with("neg"),
+      names_to = c("admission", "heatmap"), values_to = "count",
+      names_pattern = "n_?(.*)_(.*)"
+    ) %>%
+    pivot_wider(
+      names_from = admission,
+      values_from = count
+    ) %>%
+    mutate(
+      heatmap = if_else(
+        heatmap == "neg",
+        "No AKI",
+        paste0("T_AKI in  ", min_hr_until_aki, "-", max_hr_until_aki, "hrs after cr_ch"))
+    )
+
+  heatmap_all <- logit_df %>%
+    filter(is.na(del_t_aki_hr) | del_t_aki_hr > min_hr_until_aki & del_t_aki_hr < max_hr_until_aki) %>%
+    mutate(
+      heatmap = case_when(  # TODO change to factor and make easier to use
+        is.na(del_t_aki_hr)          ~ "No AKI",
+        del_t_aki_hr > max_hr_until_aki  ~ paste0("T_AKI in ", max_hr_until_aki, "+hrs after cr_ch"),
+        del_t_aki_hr > min_hr_until_aki ~ paste0("T_AKI in  ", min_hr_until_aki, "-", max_hr_until_aki, "hrs after cr_ch"),
+        TRUE                      ~ NA_character_
+      ),
+    )
+
+  heatmap_count <- heatmap_all %>%
+    group_by(heatmap) %>%
+    summarise(n_cr = n(), n_admission = n_distinct(AdmissionID), .groups = "keep")
+
+  heatmap_ts <- heatmap_all %>%
+    filter(del_t_ch_hr < 13, abs(del_cr) < 50) %>%
+    select(del_t_ch_hr, del_cr, heatmap)
+
+  heatmap_plot <- ggplot(heatmap_ts, aes(x = del_t_ch_hr, y = del_cr)) +
+    geom_density_2d_filled(contour_var = "density") +
+    geom_hline(yintercept = 0, colour = "white", linetype = "dotted") +
+    annotate("tile", x = crch_centre, y = 2.5, width = t_interval_width, height = 55,
+      fill = "white", colour = NA, alpha = 0.1, size = 0.2
+    ) +
+    annotate(
+      "segment",
+      x    = c(crch_centre - t_interval_width/2, crch_centre + t_interval_width/2),
+      xend = c(crch_centre - t_interval_width/2, crch_centre + t_interval_width/2),
+      y = c(-22, -22),
+      yend = c(24, 24),
+      colour = "white"
+    ) +
+    geom_vline(xintercept = crch_centre, colour = "white", linetype = "dotted") +
+    geom_text(
+      aes(x = crch_centre, y = 24,
+          label = paste0("Captured cr_ch: ", crch_centre - t_interval_width/2, " < \u0394t < ", crch_centre + t_interval_width/2,
+                         "\nn(Admissions): ", admissions)),
+      data = result_df,
+      colour = "white", hjust = 0.5, vjust = -0.1,
+    ) +
+    geom_text(
+      aes(x = 0.2, y = -24,
+          label = paste0("All cr_ch:\nn(Admissions): ", n_admission, "\nn(cr_ch events): ", n_cr)),
+      data = heatmap_count,
+      colour = "white", hjust = 0, vjust = 0
+    ) +
+    facet_wrap(~heatmap, nrow = 1) +
+    scale_x_continuous(breaks = seq(0, 12, by = 2)) +
+    coord_cartesian(xlim = c(0, 12), ylim = c(-25, 30), expand = FALSE) +
+    ggtitle(paste0("Creatinine Changes in time interval ",
+                   crch_centre - t_interval_width/2, " < \u0394t < ", crch_centre + t_interval_width/2,
+                   " yields AUC: ", round(result_df$AUC[1], 4))) +
+    xlab(expression("Duration of small change in Cr epis: "*Delta*"t"["cr_ch"]*" (hours)")) +
+    ylab(expression("Change in Cr during epis: "*Delta*"cr"*" ("*mu*"mol/L)")) +
+    scale_fill_viridis_d("Density") +
+    theme(panel.spacing = unit(0.8, "lines"))
+
+  plot(heatmap_plot)
+
+  return(result)
 }
 
-gen_cr_ch_model(0, 20, 1, 12)
+# ---- example_1 ----
+example_1 <- generate_example(
+  crch_centre = 4,
+  t_interval_width = 3,
+  min_hr_until_aki = 8,
+  max_hr_until_aki = 48)
+kable(publish(example_1$model, print=FALSE)$regressionTable)
+plot(example_1$cutpoint)
 
-plot_cr_ch = expand.grid(seq(0, 30, by = 0.1), seq(0, 3, by = 0.1)) %>%
-  rename(centre = Var1, tol = Var2) %>%
-  mutate(
-    lower = centre - tol,
-    upper = centre + tol) %>%
-  filter(upper > lower, lower > 0) %>%
-  rowwise() %>%
-  do(data.frame(., cr_ch_model(.$lower, .$upper, 12))) %>%
-  ungroup()
-
-# Consider parallising above^
-# cluster <- new_cluster(4)
-# cluster_assign(cluster, logit_df = logit_df, cr_ch_model = cr_ch_model)
-# partition(cluster)
-
-head(plot_cr_ch %>% arrange(desc(heuristic), desc(AUC)))
-head(plot_cr_ch %>% mutate(heuristic = (AUC*3 + (n_admissions/313))) %>% arrange(desc(heuristic), desc(AUC)), 20)
-
-ggplot(plot_cr_ch %>% filter(AUC > 0), aes(centre, tol, fill = AUC)) +
-  geom_tile() +
-  geom_contour(aes(z = AUC, colour = after_stat(level)),
-               binwidth = 0.01) + #, colour = after_stat(level))) +
-  coord_fixed() +
-  scale_fill_viridis_c() +
-  scale_colour_viridis_c()
-
-ggplot(plot_cr_ch %>% filter(AUC > 0), aes(centre, tol, fill = heuristic)) +
-  geom_tile() +
-  geom_contour(aes(z = heuristic), colour = "white", binwidth = 0.025) + #, colour = after_stat(level))) +
-  coord_fixed() +
-  scale_fill_viridis_c() +
-  scale_colour_viridis_c()
-
-ggplot(plot_cr_ch %>% filter(AUC > 0), aes(centre, tol, fill = n_admissions)) +
-  geom_tile() +
-  geom_contour(aes(z = n_admissions), colour = "white", binwidth = 20) + #, colour = after_stat(level))) +
-  geom_text_contour(aes(z = n_admissions), colour = "white") +
-  coord_fixed() +
-  scale_fill_viridis_c() +
-  scale_colour_viridis_c()
-
-ggplot(plot_cr_ch %>% filter(AUC > 0), aes(centre, tol)) +
-  geom_tile(aes(fill = AUC)) +
-  geom_contour(aes(z = n_admissions), colour = "white", binwidth = 20) + #, colour = after_stat(level))) +
-  geom_text_contour(aes(z = n_admissions), colour = "white") +
-  # geom_text_contour(aes(z = AUC), colour = "white") +
-  coord_fixed() +
-  scale_fill_viridis_c() +
-  scale_colour_viridis_c()
-
-# ---- optimisation ----
-optim(
-  c(10, 11),
-  function(x) -cr_ch_model(x[1], x[2], 12)$heuristic,
-  lower = c(0, 0),
-  upper = c(200, 200),
-  method = "L-BFGS-B"
-)
+# ---- example_2 ----
+example_2 <- generate_example(
+  crch_centre = 6.5,
+  t_interval_width = 1,
+  min_hr_until_aki = 8,
+  max_hr_until_aki = 16)
+kable(publish(example_2$model, print=FALSE)$regressionTable)
+plot(example_2$cutpoint)

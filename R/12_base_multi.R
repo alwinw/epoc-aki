@@ -24,7 +24,7 @@ baseline_model <- glm(
     Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease,
   family = "binomial", data = baseline_df)
 
-summary(baseline_model)
+# summary(baseline_model)
 kable(publish(baseline_model, print=FALSE)$regressionTable)
 
 baseline_df$model <- predict(baseline_model, type = "response")
@@ -33,11 +33,30 @@ baseline_cut <- cutpointr(
   use_midpoints = TRUE,
   direction = ">=", pos_class = 1, neg_class = 0,
   method = maximize_metric, metric = youden)
-
+summary(baseline_cut)
 
 # ---- auroc_plot ----
-summary(baseline_cut)
 plot(baseline_cut)
-# plot_metric(baseline_cut, conf_lvl = 0.9)
+plot_metric(baseline_cut, conf_lvl = 0.9)
 # plot_sensitivity_specificity(baseline_cut)
 
+# ---- reduced_baseline_model ----
+reduced_df <- baseline_df
+reduced_model <- glm(
+  AKI_ICU ~ Age + APACHE_II + PCs_cardio +
+    Vasopressor + Diabetes + AF + HF + HT + PVD + Chronic_liver_disease,
+  family = "binomial", data = baseline_df)
+
+summary(reduced_model)
+kable(publish(reduced_model, print=FALSE)$regressionTable)
+
+reduced_df$model <- predict(reduced_model, type = "response")
+reduced_cut <- cutpointr(
+  reduced_df, model, AKI_ICU,
+  use_midpoints = TRUE,
+  direction = ">=", pos_class = 1, neg_class = 0,
+  method = maximize_metric, metric = youden)
+summary(reduced_cut)
+
+plot(baseline_cut)
+plot_metric(baseline_cut, conf_lvl = 0.9)

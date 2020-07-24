@@ -1,0 +1,24 @@
+# Cr ch Model Selection
+
+```{r 21_cr_ch_spread, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "21_cr_ch_spread.R"))
+```
+
+## Model Exploration
+
+Consider the various possible creatinine change episodes with a time interval width of 1hr.
+Investigate only T<sub>AKI</sub> in 8-16hrs after cr<sub>ch</sub>
+
+A heuristic is defined as
+$$
+\text{heuristic} = \frac{1}{2.1}\left(\text{AUC}\times1.1 + \frac{n(\text{Included Admissions})}{n(\text{All Admissions})}\right)
+$$
+in order to help with model selection. This heuristic is normalised between $[0,1]$ and provides a slightly heavier weighting to $\text{AUC}$.
+
+```{r generator_function, echo=FALSE}
+```
+
+```{r Example_1hr_incr_spread, echo=FALSE, fig.height=6.5, fig.width=11}
+```
+
+## Parameter Optimisation
