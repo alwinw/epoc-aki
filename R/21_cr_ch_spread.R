@@ -67,7 +67,7 @@ ggplot(cr_ch_steps, aes(x = del_t_ch_range, y = values, fill = names, colour = n
 
 # ---- next ----
 
-cr_ch_grid = expand.grid(seq(1, 12, by = 0.1), seq(0.2, 2, by = 0.025)) %>%
+cr_ch_grid = expand.grid(seq(1, 12, by = 0.1), seq(0.2, 3, by = 0.05)) %>%
   rename(centre = Var1, width = Var2) %>%
   mutate(
     lower = centre - width/2,
@@ -88,65 +88,41 @@ cr_ch_dump <- pblapply(
 stopCluster(cl)
 
 cr_ch_plot <- bind_rows(cr_ch_dump) %>%
-  select(centre, width, AUC, n_admissions)
+  select(centre, width, AUC, n_admissions, per_admin_in) %>% 
+  mutate(heuristic = (AUC*1.1 + per_admin_in)/2.1) %>% 
+  mutate(AUC = if_else(AUC == 0, NA_real_, AUC))
 
-
-ggplot(cr_ch_plot %>% filter(AUC > 0), aes(centre, width, fill = AUC)) +
-  geom_raster() +
-  scale_fill_viridis_c()
 
 ggplot(cr_ch_plot, aes(centre, width)) +
-  geom_contour_filled(aes(z = AUC), fill = NA, colour = "black")
-
-ggplot(cr_ch_plot, aes(centre, width)) +
-  geom_contour_filled(aes(z = AUC), bins = 16, alpha = 0.8) +
+  # geom_raster(aes(fill = AUC)) +
+  geom_contour_fill(aes(z = AUC), bins = 24, alpha = 1, na.fill = TRUE) +
   geom_contour(aes(z = n_admissions), colour = "white", binwidth = 20) +
   geom_text_contour(aes(z = n_admissions), colour = "white") +
   scale_x_continuous(
     breaks = seq(0, 20, by = 1),
     limits = c(min(cr_ch_plot$centre), max(cr_ch_plot$centre)),
-    expand = c(0, 0)) +
-  scale_y_continuous(expand = c(0, 0))
+    expand = c(0, 0)
+  ) +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_fill_viridis_c(name = "AUC")
 
 
+ggplot(cr_ch_plot, aes(centre, width)) +
+  geom_contour_fill(aes(z = heuristic), alpha = 0.8) + 
+  # geom_contour(aes(z = n_admissions), colour = "white", binwidth = 20) +
+  # geom_text_contour(aes(z = n_admissions), colour = "white") +
+  geom_contour(aes(z = AUC, colour = after_stat(level)), bins = 16) +
+  scale_x_continuous(
+    breaks = seq(0, 20, by = 1),
+    limits = c(min(cr_ch_plot$centre), max(cr_ch_plot$centre)),
+    expand = c(0, 0)
+  ) +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_fill_viridis_c(name = "Heuristic", option = "A")
+
+head(cr_ch_plot %>% arrange(desc(heuristic)), 20)
 
 
-head(plot_cr_ch %>% arrange(desc(AUC)))
-head(plot_cr_ch %>% mutate(heuristic = (AUC*3 + (n_admissions/313))) %>% arrange(desc(heuristic), desc(AUC)), 20)
-
-ggplot(plot_cr_ch %>% filter(AUC > 0), aes(centre, width, fill = AUC)) +
-  geom_tile() +
-  geom_contour(aes(z = AUC, colour = after_stat(level)),
-               binwidth = 0.01) + #, colour = after_stat(level))) +
-  scale_fill_viridis_c() +
-  scale_colour_viridis_c()
-
-
-
-
-ggplot(plot_cr_ch %>% filter(AUC > 0), aes(centre, width, fill = heuristic)) +
-  geom_tile() +
-  geom_contour(aes(z = heuristic), colour = "white", binwidth = 0.025) + #, colour = after_stat(level))) +
-  # coord_fixed() +
-  scale_fill_viridis_c() +
-  scale_colour_viridis_c()
-
-ggplot(plot_cr_ch %>% filter(AUC > 0), aes(centre, width, fill = n_admissions)) +
-  geom_tile() +
-  geom_contour(aes(z = n_admissions), colour = "white", binwidth = 20) + #, colour = after_stat(level))) +
-  geom_text_contour(aes(z = n_admissions), colour = "white") +
-  coord_fixed() +
-  scale_fill_viridis_c() +
-  scale_colour_viridis_c()
-
-ggplot(plot_cr_ch %>% filter(AUC > 0), aes(centre, tol)) +
-  geom_tile(aes(fill = AUC)) +
-  geom_contour(aes(z = n_admissions), colour = "white", binwidth = 20) + #, colour = after_stat(level))) +
-  geom_text_contour(aes(z = n_admissions), colour = "white") +
-  # geom_text_contour(aes(z = AUC), colour = "white") +
-  coord_fixed() +
-  scale_fill_viridis_c() +
-  scale_colour_viridis_c()
 
 # ---- optimisation ----
 optim(
