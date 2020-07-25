@@ -67,7 +67,7 @@ ggplot(cr_ch_steps, aes(x = del_t_ch_range, y = values, fill = names, colour = n
 
 # ---- next ----
 
-cr_ch_grid = expand.grid(seq(1, 12, by = 0.1), seq(0.2, 3, by = 0.05)) %>%
+cr_ch_grid = expand.grid(seq(1.75, 12, by = 0.1), seq(0.2, 3, by = 0.05)) %>%
   rename(centre = Var1, width = Var2) %>%
   mutate(
     lower = centre - width/2,
@@ -89,8 +89,8 @@ stopCluster(cl)
 
 cr_ch_plot <- bind_rows(cr_ch_dump) %>%
   select(centre, width, AUC, n_admissions, per_admin_in) %>% 
-  mutate(heuristic = (AUC*1.1 + per_admin_in)/2.1) %>% 
-  mutate(AUC = if_else(AUC == 0, NA_real_, AUC))
+  mutate(AUC = if_else(AUC == 0, NA_real_, AUC)) %>% 
+  mutate(heuristic = (AUC*1.1 + per_admin_in)/2.1)
 
 
 ggplot(cr_ch_plot, aes(centre, width)) +
@@ -108,7 +108,7 @@ ggplot(cr_ch_plot, aes(centre, width)) +
 
 
 ggplot(cr_ch_plot, aes(centre, width)) +
-  geom_contour_fill(aes(z = heuristic), alpha = 0.8) + 
+  geom_contour_fill(aes(z = heuristic), alpha = 0.8, na.fill = TRUE) + 
   # geom_contour(aes(z = n_admissions), colour = "white", binwidth = 20) +
   # geom_text_contour(aes(z = n_admissions), colour = "white") +
   geom_contour(aes(z = AUC, colour = after_stat(level)), bins = 16) +
@@ -118,7 +118,7 @@ ggplot(cr_ch_plot, aes(centre, width)) +
     expand = c(0, 0)
   ) +
   scale_y_continuous(expand = c(0, 0)) +
-  scale_fill_viridis_c(name = "Heuristic", option = "A")
+  scale_fill_viridis_c(name = "Heuristic", option = "C")
 
 head(cr_ch_plot %>% arrange(desc(heuristic)), 20)
 
