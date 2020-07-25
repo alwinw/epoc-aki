@@ -40,8 +40,8 @@ read_R <- function(file) readLines(file.path(rel_path, "R", file))
 
 Preliminary results from the analysis of creatinine time series data.
 
-<!-- FIXME this should work fine using a local image!! Maybe html file in sub folder?? -->
-![Overview]("../images/overview.png")
+<!-- FIXME image is not in a subfoler. Should use R to "create" and cache this image -->
+![Overview](../images/overview.png)
 
 
 ```{r 01_config, include=FALSE, cache=FALSE}

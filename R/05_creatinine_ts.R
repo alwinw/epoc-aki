@@ -30,14 +30,15 @@ creatinine_ts <- rbind(blood_gas_ts, bio_chem_ts) %>%
   mutate(ICU_Admission = cumsum(TC_ICU_ADMISSION_DTTM != lag(TC_ICU_ADMISSION_DTTM, default = as.POSIXct("1990-01-01")))) %>%  # Arbitrarily chosen
   arrange(`UR number`, Pathology_Result_DTTM)
 
-rm(blood_gas_ts, bio_chem_ts, UR_number_list)
+# rm(blood_gas_ts, bio_chem_ts, UR_number_list)
 
 # ---- example_creatinine_plot ----
-UR_number_list = creatinine_ts %>% arrange(-ICU_Admission) %>% select(`UR number`) %>% unique(.)
-UR_number = UR_number_list[3,]
+UR_number = creatinine_ts %>% arrange(-ICU_Admission) %>% select(`UR number`) %>% unique(.) %>% .[[3,1]]
+Baseline_Cr = admission_data %>% filter(`UR number` == UR_number) %>% select(Baseline_Cr) %>% .[[1,1]]
+example_cr_plot = filter(creatinine_ts, `UR number` == UR_number) %>% mutate(ICU_Admission = paste0("ICU Admission ", ICU_Admission))
 
 ggplot(
-  filter(creatinine_ts, `UR number` == UR_number) %>% mutate(ICU_Admission = paste0("ICU Admission ", ICU_Admission)),
+  example_cr_plot,
   aes(x = Pathology_Result_DTTM,
       y = Creatinine_level,
       group = ICU_Admission,
@@ -45,9 +46,16 @@ ggplot(
 ) +
   geom_line(linetype = "dashed", colour = "grey") +
   geom_point(aes(colour = Pathology)) +
-  facet_wrap(vars(ICU_Admission), nrow = 1, scales = "free_x")
+  geom_hline(yintercept = Baseline_Cr * c(1, 1.5, 2, 3)) +
+  geom_label(aes(max(example_cr_plot$Pathology_Result_DTTM), Baseline_Cr, label = "Baseline Cr"), hjust = 1) +
+  geom_label(aes(max(example_cr_plot$Pathology_Result_DTTM), Baseline_Cr * 1.5, label = "AKI Stage 1"), hjust = 1) +
+  facet_wrap(vars(ICU_Admission), nrow = 1, scales = "free_x") +
+  coord_cartesian(
+    ylim = c(max(min(example_cr_plot$Creatinine_level), Baseline_Cr), 
+             min(max(example_cr_plot$Creatinine_level), Baseline_Cr * 3))
+  )
 
-rm(UR_number, UR_number_list)
+# rm(UR_number, UR_number_list)
 
 # ---- plot_blood_gas_vs_bio_chem ----
 bio_chem_blood_gas <- creatinine_ts %>%
@@ -84,7 +92,7 @@ ggplot(bio_chem_blood_gas, aes(x = Delta_t, y = Delta_cr, colour = Pathology_typ
   theme(legend.position="bottom") +
   guides(colour = guide_legend(ncol = 1))
 
-rm(blood_gas_adjust)
+# rm(blood_gas_adjust)
 
 # ---- aki_cr_ch_fun ----
 aki_cr_ch <- function(
@@ -98,10 +106,12 @@ aki_cr_ch <- function(
       Pathology_Result_DTTM > DateTime_ICU_admit,
       Pathology_Result_DTTM < DateTime_ICU_dc
     ) %>%
-    select(Pathology_Result_DTTM, Creatinine_level)
+    select(Pathology_Result_DTTM, Creatinine_level) %>% 
+    unique(.)  # To remove any duplicate DTTM entries
 
   if (nrow(cr_ts) < 2) {
     return(data.frame(
+      DateTime_Pathology_Result = as_datetime(NA_real_),
       del_t_ch  = as.duration(NA_real_),
       del_t_aki = as.duration(NA_real_),
       del_cr    = NA_real_,
@@ -114,13 +124,14 @@ aki_cr_ch <- function(
   Ti_1 = cr_ts[combns[1,],]
   Ti   = cr_ts[combns[2,],]
 
-  if(AKI_ICU == 1) {
-    del_t_aki = as.duration(DateTime_AKI_Dx - Ti$Pathology_Result_DTTM)
-  } else {
+  if(AKI_ICU == 0 | is.na(AKI_ICU)) {
     del_t_aki = rep(as.duration(NA_real_), nrow(Ti))
+  } else {
+    del_t_aki = as.duration(DateTime_AKI_Dx - Ti$Pathology_Result_DTTM)
   }
 
   return(data.frame(
+    DateTime_Pathology_Result = Ti$Pathology_Result_DTTM,
     del_t_ch  = as.duration(Ti$Pathology_Result_DTTM - Ti_1$Pathology_Result_DTTM),
     del_t_aki = del_t_aki,
     del_cr    = Ti$Creatinine_level - Ti_1$Creatinine_level,
@@ -130,10 +141,9 @@ aki_cr_ch <- function(
 
 # ---- admission_ts ----
 
-admission_ts <- admission_data %>%
+admission_ts_all <- admission_data %>%
   filter(
     Excl_criteria_ok == 1,
-    !is.na(AKI_ICU)  # TODO Remove this restriction later as we can calculate AKI from the Cr data!!!
   ) %>%
   mutate(
     DateTime_ICU_dc = Date_ICU_dc + hours(23) + minutes(59) + seconds(59)
@@ -157,7 +167,49 @@ admission_ts <- admission_data %>%
     `AKI Dx Cr 1.5 times` = AKI.Dx.Cr.1.5.times,
     `AKI Dx oliguria` = AKI.Dx.oliguria,
     `Criteria for stage of AKI` = Criteria.for.stage.of.AKI
-  )
+  ) # %>% 
+  # filter(!is.na(AKI_ICU)) # TODO Remove this restriction later as we can calculate AKI from the Cr data!!!
+
+# CHECK "023843"
+
+new_ts <- admission_ts_all %>% 
+  select(AdmissionID, Baseline_Cr, AKI_ICU:cr_i) %>% 
+  filter(is.na(AKI_ICU)) %>% 
+  filter(!is.na(cr_i)) %>%  # Was only one measurement in ICU
+  group_by(AdmissionID) %>% 
+  mutate(  # No need to check for olig definition of AKI, else would have had "oliguria episode"
+    Baseline_Cr = min(cr_i),
+    AKI_ICU = if_else(cr_i > Baseline_Cr*1.5, 1, 0),  ## FIXME NEED TO PROGRAM IN THE RISE CASE TOO
+    AKI_stage = case_when(  # TODO Add other variables too!
+      cr_i > Baseline_Cr*3   ~ 3,
+      cr_i > Baseline_Cr*2   ~ 2,
+      cr_i > Baseline_Cr*1.5 ~ 1,
+      TRUE ~ 0),
+    Max_Cr_ICU = max(cr_i),
+  ) %>%
+  arrange(AdmissionID, desc(cr_i)) %>% 
+  mutate(
+    Max_Cr_DateTime = first(DateTime_Pathology_Result)
+  ) %>% 
+  arrange(AdmissionID, desc(AKI_ICU), DateTime_Pathology_Result) %>% 
+  mutate(
+    DateTime_AKI_Dx = if_else(first(AKI_ICU) == 1, first(DateTime_Pathology_Result), as_datetime(NA_real_))
+  ) %>% 
+  arrange(AdmissionID, DateTime_Pathology_Result) %>% 
+  mutate(
+    AKI_ICU   = max(AKI_ICU, na.rm = TRUE),  # Must be done AFTER arrange() and mutate()
+    AKI_stage = max(AKI_stage, na.rm = TRUE),
+    AKI_stage = if_else(AKI_stage == 0, NA_real_, AKI_stage),
+    del_t_aki = if_else(AKI_ICU == 1, as.duration(DateTime_AKI_Dx - DateTime_Pathology_Result), as.duration(NA_real_))
+  ) %>% 
+  ungroup()
+
+admission_ts <- rbind(
+  admission_ts_all %>% filter(!is.na(AKI_ICU)),
+  new_ts
+)
+
+# Add checks on number of rows, etc
 
 rm(bio_chem_blood_gas, creatinine_ts)
 
@@ -170,9 +222,6 @@ ggplot(admission_ts, aes(x = del_t_ch/3600)) +
 ggplot(admission_ts, aes(x = del_cr)) +
   geom_histogram(bins = 50, fill = "cyan", colour = "blue") +
   xlim(0, 100)
-
-# ggplot(admission_ts, aes(x = log(del_t_ch/3600), y = del_cr)) +
-#   geom_hex()
 
 ggplot(admission_ts, aes(x = del_t_ch/3600, y = del_cr)) +
   geom_hex(bins = 100) +
@@ -194,25 +243,19 @@ heatmap_all <- admission_ts %>%
     ),
   )
 
-
 heatmap_count <- heatmap_all %>%
   group_by(heatmap) %>%
   summarise(n_cr = n(), n_admission = n_distinct(AdmissionID), .groups = "keep")
-
 heatmap_ts <- heatmap_all %>%
   filter(del_t_ch/3600 < 13, abs(del_cr) < 50)
-
 heatmap_plot <- ggplot(heatmap_ts, aes(x = del_t_ch/3600, y = del_cr)) +
-  geom_density_2d_filled(contour_var = "density") + #, breaks = c(0, round(1.4^seq(1:11),0)/50, 1)) + #= c(seq(0, 10), 20, 30, 40, 50, 60)) + #, bins = 20) +
+  geom_density_2d_filled(contour_var = "density") +
   scale_x_continuous(breaks = seq(0, 12, by = 2)) +
-  # geom_point(alpha = 0.1, shape = 21, fill = NA, colour = "white", size = 0.9) +
-  # ylim(-30, 30) +
   coord_cartesian(xlim = c(0, 12), ylim = c(-25, 30), expand = FALSE) +
   facet_wrap(~heatmap) +
   scale_fill_viridis_d("Density") +
   geom_hline(yintercept = 0, colour = "white", linetype = "solid") +
   geom_vline(xintercept = seq(0, 16, by = 4), colour = "white", linetype = "dotted") +
-  # theme(panel.background = element_rect(fill = NA), panel.ontop = TRUE, panel.grid.minor = element_line(colour = NA)) +
   geom_text(
     data = heatmap_count,
     aes(x = 0.2, y = -23, label = paste0("n(Admissions): ", n_admission, "\nn(cr_ch events): ", n_cr)),
@@ -222,7 +265,6 @@ heatmap_plot <- ggplot(heatmap_ts, aes(x = del_t_ch/3600, y = del_cr)) +
   xlab(expression("Duration of small change in Cr epis: "*Delta*"t"["cr_ch"]*" (hours)")) +
   ylab(expression("Change in Cr during epis: "*Delta*"cr"*" ("*mu*"mol/L)")) +
   theme(panel.spacing = unit(0.8, "lines"))
-
 print(heatmap_plot)
 
 ggsave("cr_ch_heatmap.png", heatmap_plot, path = paste0(rel_path, "/doc/images/"),
