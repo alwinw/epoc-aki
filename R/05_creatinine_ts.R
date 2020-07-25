@@ -1,5 +1,5 @@
 # ---- combine_blood_gas_bio_chem ----
-UR_number_list <- unique(filter(admission_data, Event != "Neither")$`UR number`)
+UR_number_list <- unique(admission_data$`UR number`)
 blood_gas_adjust = 2  # FIXME Estimated!! Would need something that matches the mean AND the variance
 
 blood_gas_ts <- xlsx_data$creat_furo$blood_gas %>%
@@ -30,7 +30,7 @@ creatinine_ts <- rbind(blood_gas_ts, bio_chem_ts) %>%
   mutate(ICU_Admission = cumsum(TC_ICU_ADMISSION_DTTM != lag(TC_ICU_ADMISSION_DTTM, default = as.POSIXct("1990-01-01")))) %>%  # Arbitrarily chosen
   arrange(`UR number`, Pathology_Result_DTTM)
 
-# rm(blood_gas_ts, bio_chem_ts, UR_number_list)
+rm(blood_gas_ts, bio_chem_ts, UR_number_list)
 
 # ---- example_creatinine_plot ----
 UR_number = creatinine_ts %>% arrange(-ICU_Admission) %>% select(`UR number`) %>% unique(.) %>% .[[3,1]]
@@ -51,11 +51,11 @@ ggplot(
   geom_label(aes(max(example_cr_plot$Pathology_Result_DTTM), Baseline_Cr * 1.5, label = "AKI Stage 1"), hjust = 1) +
   facet_wrap(vars(ICU_Admission), nrow = 1, scales = "free_x") +
   coord_cartesian(
-    ylim = c(max(min(example_cr_plot$Creatinine_level), Baseline_Cr), 
+    ylim = c(max(min(example_cr_plot$Creatinine_level), Baseline_Cr),
              min(max(example_cr_plot$Creatinine_level), Baseline_Cr * 3))
   )
 
-# rm(UR_number, UR_number_list)
+rm(UR_number, Baseline_Cr, example_cr_plot)
 
 # ---- plot_blood_gas_vs_bio_chem ----
 bio_chem_blood_gas <- creatinine_ts %>%
@@ -92,7 +92,7 @@ ggplot(bio_chem_blood_gas, aes(x = Delta_t, y = Delta_cr, colour = Pathology_typ
   theme(legend.position="bottom") +
   guides(colour = guide_legend(ncol = 1))
 
-# rm(blood_gas_adjust)
+rm(blood_gas_adjust)
 
 # ---- aki_cr_ch_fun ----
 aki_cr_ch <- function(
@@ -106,7 +106,7 @@ aki_cr_ch <- function(
       Pathology_Result_DTTM > DateTime_ICU_admit,
       Pathology_Result_DTTM < DateTime_ICU_dc
     ) %>%
-    select(Pathology_Result_DTTM, Creatinine_level) %>% 
+    select(Pathology_Result_DTTM, Creatinine_level) %>%
     unique(.)  # To remove any duplicate DTTM entries
 
   if (nrow(cr_ts) < 2) {
@@ -167,16 +167,13 @@ admission_ts_all <- admission_data %>%
     `AKI Dx Cr 1.5 times` = AKI.Dx.Cr.1.5.times,
     `AKI Dx oliguria` = AKI.Dx.oliguria,
     `Criteria for stage of AKI` = Criteria.for.stage.of.AKI
-  ) # %>% 
-  # filter(!is.na(AKI_ICU)) # TODO Remove this restriction later as we can calculate AKI from the Cr data!!!
+  )
 
-# CHECK "023843"
-
-new_ts <- admission_ts_all %>% 
-  select(AdmissionID, Baseline_Cr, AKI_ICU:cr_i) %>% 
-  filter(is.na(AKI_ICU)) %>% 
+new_ts <- admission_ts_all %>%
+  # select(AdmissionID, Baseline_Cr, AKI_ICU:cr_i) %>%
+  filter(is.na(AKI_ICU)) %>%
   filter(!is.na(cr_i)) %>%  # Was only one measurement in ICU
-  group_by(AdmissionID) %>% 
+  group_by(AdmissionID) %>%
   mutate(  # No need to check for olig definition of AKI, else would have had "oliguria episode"
     Baseline_Cr = min(cr_i),
     AKI_ICU = if_else(cr_i > Baseline_Cr*1.5, 1, 0),  ## FIXME NEED TO PROGRAM IN THE RISE CASE TOO
@@ -187,31 +184,32 @@ new_ts <- admission_ts_all %>%
       TRUE ~ 0),
     Max_Cr_ICU = max(cr_i),
   ) %>%
-  arrange(AdmissionID, desc(cr_i)) %>% 
+  arrange(AdmissionID, desc(cr_i)) %>%
   mutate(
     Max_Cr_DateTime = first(DateTime_Pathology_Result)
-  ) %>% 
-  arrange(AdmissionID, desc(AKI_ICU), DateTime_Pathology_Result) %>% 
+  ) %>%
+  arrange(AdmissionID, desc(AKI_ICU), DateTime_Pathology_Result) %>%
   mutate(
     DateTime_AKI_Dx = if_else(first(AKI_ICU) == 1, first(DateTime_Pathology_Result), as_datetime(NA_real_))
-  ) %>% 
-  arrange(AdmissionID, DateTime_Pathology_Result) %>% 
+  ) %>%
+  arrange(AdmissionID, DateTime_Pathology_Result) %>%
   mutate(
     AKI_ICU   = max(AKI_ICU, na.rm = TRUE),  # Must be done AFTER arrange() and mutate()
     AKI_stage = max(AKI_stage, na.rm = TRUE),
     AKI_stage = if_else(AKI_stage == 0, NA_real_, AKI_stage),
     del_t_aki = if_else(AKI_ICU == 1, as.duration(DateTime_AKI_Dx - DateTime_Pathology_Result), as.duration(NA_real_))
-  ) %>% 
+  ) %>%
   ungroup()
+# length(unique(new_ts$AdmissionID))
 
 admission_ts <- rbind(
   admission_ts_all %>% filter(!is.na(AKI_ICU)),
   new_ts
 )
 
-# Add checks on number of rows, etc
+# TODO Add checks on number of rows, etc
 
-rm(bio_chem_blood_gas, creatinine_ts)
+rm(bio_chem_blood_gas, creatinine_ts, admission_ts_all, new_ts)
 
 # ---- summary_plots ----
 ggplot(admission_ts, aes(x = del_t_ch/3600)) +
