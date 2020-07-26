@@ -13,7 +13,6 @@ resources/
 
 !data/*.R
 !data/*.md
-!preamble.tex
 
 # History files
 .Rhistory

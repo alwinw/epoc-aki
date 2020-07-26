@@ -79,14 +79,14 @@ if (nrow(obs_data) != nrow(data_set) + nrow(filter(screening_log, Event == "Neit
   stop("Number of total events has changed!")
 }
 
-# ---- add-outcomes ----
+# ---- add-outcomes-from-obs ----
 
 # Various outcomes here
 # Check individual columns next...
 # Sort columns by UR, PTSn, Admission, Event Type, etc
 
 
-# ---- clean-binary-columns ----
+# ---- clean-obs-binary-columns ----
 epoc_aki <- obs_data %>%
   mutate(AdmissionID = paste(`UR number`, Admission, sep = ".")) %>%
   group_by(`UR number`) %>%
@@ -164,12 +164,12 @@ epoc_aki <- obs_data %>%
   ) %>%
   arrange(AdmissionID)
 
-glimpse(epoc_aki)
+# glimpse(epoc_aki)
 # setdiff(colnames(obs_data), colnames(epoc_aki))
 
 
 # ---- admission-data-errors ----
-# TODO Add additional checks
+# FIXME Add additional checks
 epoc_aki_check <- epoc_aki %>%
   select(`UR number`:AdmissionID, Pt_Study_no:Total_no_olig_epis) %>%
   # Check incl / excl criteria
@@ -199,6 +199,8 @@ epoc_aki %>%
 # Reason: Cr and Olig epis happen at different times
 # If there is a large enough difference, then the obs data will be different
 
+rm(epoc_aki_check)
+
 # ---- admission-data ----
 admission_data <- epoc_aki %>%
   select(
@@ -221,3 +223,5 @@ check_merge_data(
   screening_log$`UR number`,
   "Number of admissions is different!"
 )
+
+rm(check_merge_data)

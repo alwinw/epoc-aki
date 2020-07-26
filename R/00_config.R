@@ -15,7 +15,7 @@ load_library <- function(req_file = "requirements.txt", bib_file = NULL) {
       # update.packages()
 
       if (!is.null(bib_file))
-        knitr::write_bib(packages, file = bib_file)
+        knitr::write_bib(unique(c(.packages(), packages)), file = bib_file)
 
       return(NULL)
     }
@@ -26,3 +26,5 @@ load_library(
   file.path(rel_path, "doc/bib/R-references.bib")
 )
 theme_set(theme_bw())
+
+rm(load_library)

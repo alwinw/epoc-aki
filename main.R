@@ -16,8 +16,8 @@
 
 file_sources <- list.files(path = "R/", pattern = "^[0-9][0-9].*.R$", full.names = TRUE)
 
-max_num = 20
-excl_num = c(7)
+max_num = 19
+excl_num = c(10, 11)
 file_nums = as.numeric(gsub(".*R/(.+[0-9])_[A-Za-z].*", "\\1", file_sources))
 file_sources = file_sources[file_nums <= max_num & !(file_nums %in% excl_num)]
 rm(max_num, excl_num, file_nums)
