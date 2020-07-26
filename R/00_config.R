@@ -15,7 +15,7 @@ load_library <- function(req_file = "requirements.txt", bib_file = NULL) {
       # update.packages()
 
       if (!is.null(bib_file))
-        knitr::write_bib(packages, file = bib_file)
+        knitr::write_bib(unique(c(.packages(), packages)), file = bib_file)
 
       return(NULL)
     }

@@ -130,12 +130,14 @@ xlsx_data$oliguria$screen_log <- xlsx_data$oliguria$screen_log %>%
   ) %>%
   select(-errors_logi)
 
-knitr::kable(
-  xlsx_data$creatinine$screen_log[errors_logi, c(13, 2:4, 12, 14)], caption = 'Creatinine Fixed Rows',
+kable(
+  xlsx_data$creatinine$screen_log[errors_logi, c(13, 2:4, 12, 14)],
+  caption = 'Creatinine Fixed Rows',
   booktabs = TRUE
 )
-knitr::kable(
-  xlsx_data$oliguria$screen_log[errors_logi, c(13, 2:4, 12, 14)], caption = 'Oliguria Fixed Rows',
+kable(
+  xlsx_data$oliguria$screen_log[errors_logi, c(13, 2:4, 12, 14)],
+  caption = 'Oliguria Fixed Rows',
   booktabs = TRUE
 )
 
