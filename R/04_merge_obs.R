@@ -223,3 +223,5 @@ check_merge_data(
   screening_log$`UR number`,
   "Number of admissions is different!"
 )
+
+rm(check_merge_data)

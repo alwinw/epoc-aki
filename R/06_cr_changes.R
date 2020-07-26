@@ -45,7 +45,7 @@ generate_cr_ch <- function(
 
 
 # ---- generate_cr_changes ----
-admission_ts_all <- admission_data %>%
+cr_ch_ts_all <- admission_data %>%
   filter(
     Excl_criteria_ok == 1,
   ) %>%
@@ -73,7 +73,7 @@ admission_ts_all <- admission_data %>%
     `Criteria for stage of AKI` = Criteria.for.stage.of.AKI
   )
 
-neither_ts <- admission_ts_all %>%
+neither_ts <- cr_ch_ts_all %>%
   filter(is.na(AKI_ICU)) %>%
   filter(!is.na(cr_i)) %>%  # Only one measurement in ICU
   group_by(AdmissionID) %>%
@@ -107,18 +107,18 @@ neither_ts <- admission_ts_all %>%
   ungroup()
 # length(unique(neither_ts$AdmissionID))
 
-admission_ts <- rbind(
-  admission_ts_all %>% filter(!is.na(AKI_ICU)),
+cr_ch_ts <- rbind(
+  cr_ch_ts_all %>% filter(!is.na(AKI_ICU)),
   neither_ts
 )
 
 # TODO Add checks on number of rows, etc
 
-rm(admission_ts_all, neither_ts, generate_cr_ch)
+rm(cr_ch_ts_all, neither_ts, generate_cr_ch)
 
 
 # ---- cr_changes_overview ----
-admission_ts %>%
+cr_ch_ts %>%
   filter(abs(del_cr) < 50) %>%
   mutate(
     t_AKI = if_else(is.na(del_t_aki) | del_t_aki > 0, "Before", "After")
@@ -137,23 +137,23 @@ admission_ts %>%
 
 
 # ---- summary_plots ----
-# ggplot(admission_ts, aes(x = del_t_ch/3600)) +
+# ggplot(cr_ch_ts, aes(x = del_t_ch/3600)) +
 #   geom_histogram(bins = 100, fill = "cyan", colour = "blue") +
 #   xlim(0, 48)
 # # Add another plot based on admissions?
 #
-# ggplot(admission_ts, aes(x = del_cr)) +
+# ggplot(cr_ch_ts, aes(x = del_cr)) +
 #   geom_histogram(bins = 50, fill = "cyan", colour = "blue") +
 #   xlim(0, 100)
 #
-# ggplot(admission_ts, aes(x = del_t_ch/3600, y = del_cr)) +
+# ggplot(cr_ch_ts, aes(x = del_t_ch/3600, y = del_cr)) +
 #   geom_hex(bins = 100) +
 #   xlim(0, 48) + ylim(-100, 100) +
 #   coord_cartesian(expand = FALSE) +
 #   scale_fill_viridis_c()
 
 # ---- heatmap_plot ----
-heatmap_all <- admission_ts %>%
+heatmap_all <- cr_ch_ts %>%
   filter(is.na(del_t_aki) | del_t_aki > 0) %>%
   mutate(
     heatmap = case_when(
@@ -173,7 +173,7 @@ heatmap_ts <- heatmap_all %>%
   filter(del_t_ch/3600 < 13, abs(del_cr) < 50)
 heatmap_plot <- ggplot(heatmap_ts, aes(x = del_t_ch/3600, y = del_cr)) +
   geom_density_2d_filled(
-    aes(fill = after_stat(level_high)),
+    aes(fill = after_stat(level_mid)),
     contour_var = "density"
   ) +
   scale_x_continuous(breaks = seq(0, 12, by = 2)) +
