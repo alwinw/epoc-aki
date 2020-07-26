@@ -3,7 +3,7 @@ logit_df <- admission_ts %>%
   select(
     `UR number`:Admission, Pt_Study_nos, Event,
     Age, APACHE_II, APACHE_III, Baseline_Cr, PCs_cardio, Vasopressor:Chronic_liver_disease,
-    AKI_ICU,
+    AKI_ICU, DateTime_Pathology_Result,
     del_t_ch:cr_i
   ) %>%
   mutate(
@@ -21,8 +21,11 @@ logit_df <- admission_ts %>%
     del_t_ch_hr  = as.numeric(del_t_ch, "hours"),
     del_t_aki_hr = as.numeric(del_t_aki, "hours"))
 
+# nrow(logit_df %>% filter(del_t_aki_hr > 0 | is.na(del_t_aki_hr)))
+# nrow(logit_df %>% filter(del_t_aki_hr > 0 | is.na(del_t_aki_hr)) %>%  select(AdmissionID, DateTime_Pathology_Result) %>% unique(.))
+
 # ---- cr_ch_function ----
-cr_ch_cont_model <- function(vec_del_t_ch_hr, vec_del_t_aki_hr, plot = FALSE, model = FALSE) {
+cr_ch_binary_model <- function(vec_del_t_ch_hr, vec_del_t_aki_hr, binary_mapping, plot = FALSE, model = FALSE) {
   vec_del_t_ch_hr  = sort(vec_del_t_ch_hr)
   vec_del_t_aki_hr = sort(vec_del_t_aki_hr)
   logit_ts <- logit_df %>%
@@ -50,10 +53,13 @@ cr_ch_cont_model <- function(vec_del_t_ch_hr, vec_del_t_aki_hr, plot = FALSE, mo
     ))
   }
 
+  logit_ts <- logit_ts %>%
+    mutate(binary_del_cr = if_else(del_cr >= binary_mapping*del_t_ch_hr, 1, 0))
+
   logit_model <- glm(
     AKI_ICU ~ Age + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio +
       Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease +
-      del_cr + cr_i,
+      binary_del_cr + cr_i,
     family = "binomial",
     data = logit_ts)
 
@@ -79,6 +85,7 @@ cr_ch_cont_model <- function(vec_del_t_ch_hr, vec_del_t_aki_hr, plot = FALSE, mo
     sensitivity      = logit_cut$sensitivity[[1]],
     specificity      = logit_cut$specificity[[1]],
     optimal_cutpoint = logit_cut$optimal_cutpoint,
+    # wilcox           = wilcox.test(model~AKI_ICU, logit_ts),
     per_admin_in     = per_admin_in,
     n_admissions     = length(unique(logit_ts$AdmissionID)),
     n_admissions_pos = length(unique(logit_ts$AdmissionID[logit_ts$AKI_ICU == 1])),
@@ -89,17 +96,21 @@ cr_ch_cont_model <- function(vec_del_t_ch_hr, vec_del_t_aki_hr, plot = FALSE, mo
     n_event_neg      = sum(logit_ts$AKI_ICU == 0)
   )
   if (model) {
-    return(list(model = logit_model, cutpoint = logit_cut, output = output))
+    return(list(model = logit_model, cutpoint = logit_cut, output = output, data = logit_ts))
   } else {
     return(output)
   }
 }
 
-# ---- generate_example_cont_fun ----
-generate_example <- function(crch_centre, t_interval_width, min_hr_until_aki, max_hr_until_aki) {
-  result <- cr_ch_cont_model(
-    c(crch_centre - t_interval_width/2, crch_centre + t_interval_width/2),
+# ---- generate_example_fun ----
+generate_example <- function(crch_centre, t_interval_width, min_hr_until_aki, max_hr_until_aki, binary_mapping) {
+  lower_crch = crch_centre - t_interval_width/2
+  upper_crch = crch_centre + t_interval_width/2
+
+  result <- cr_ch_binary_model(
+    c(lower_crch, upper_crch),
     c(min_hr_until_aki, max_hr_until_aki),
+    binary_mapping = binary_mapping,
     model = TRUE
   )
 
@@ -130,14 +141,18 @@ generate_example <- function(crch_centre, t_interval_width, min_hr_until_aki, ma
         TRUE                      ~ NA_character_
       ),
     )
-
   heatmap_count <- heatmap_all %>%
     group_by(heatmap) %>%
     summarise(n_cr = n(), n_admission = n_distinct(AdmissionID), .groups = "keep")
-
   heatmap_ts <- heatmap_all %>%
     filter(del_t_ch_hr < 13, abs(del_cr) < 50) %>%
     select(del_t_ch_hr, del_cr, heatmap)
+  heatmap_path <- data.frame(
+    heatmap = c(rep("No AKI", 4), rep(paste0("T_AKI in  ", min_hr_until_aki, "-", max_hr_until_aki, "hrs after cr_ch"), 4)),
+    x = rep(c(rep(lower_crch, 2), rep(upper_crch, 2)), 2),
+    y = c(-22, lower_crch*binary_mapping, upper_crch*binary_mapping, -22,
+           22, lower_crch*binary_mapping, upper_crch*binary_mapping,  22)
+  )
 
   heatmap_plot <- ggplot(heatmap_ts, aes(x = del_t_ch_hr, y = del_cr)) +
     geom_density_2d_filled(contour_var = "density") +
@@ -145,26 +160,18 @@ generate_example <- function(crch_centre, t_interval_width, min_hr_until_aki, ma
     annotate("tile", x = crch_centre, y = 2.5, width = t_interval_width, height = 55,
       fill = "white", colour = NA, alpha = 0.1, size = 0.2
     ) +
-    annotate(
-      "segment",
-      x    = c(crch_centre - t_interval_width/2, crch_centre + t_interval_width/2),
-      xend = c(crch_centre - t_interval_width/2, crch_centre + t_interval_width/2),
-      y = c(-22, -22),
-      yend = c(22, 22),
-      colour = "white"
-    ) +
-    geom_vline(xintercept = crch_centre, colour = "white", linetype = "dotted") +
+    geom_path(aes(x = x, y = y), data = heatmap_path, colour = "white") +
     geom_text(
       aes(x = crch_centre, y = 22,
-          label = paste0("Captured cr_ch: ", crch_centre - t_interval_width/2, " < \u0394t < ", crch_centre + t_interval_width/2,
+          label = paste0("Captured cr_ch: ", lower_crch, " < \u0394t < ", upper_crch,
                          "\nn(Admissions): ", admissions,
-                         "\nn(Events): ", event)),
+                         "\nn(Crch Epis): ", event)),
       data = result_df,
       colour = "white", hjust = 0.5, vjust = -0.1,
     ) +
     geom_text(
       aes(x = 0.2, y = -24,
-          label = paste0("All cr_ch:\nn(Admissions): ", n_admission, "\nn(cr_ch events): ", n_cr)),
+          label = paste0("All cr_ch:\nn(Admissions): ", n_admission, "\nn(cr_ch epis): ", n_cr)),
       data = heatmap_count,
       colour = "white", hjust = 0, vjust = 0
     ) +
@@ -172,7 +179,7 @@ generate_example <- function(crch_centre, t_interval_width, min_hr_until_aki, ma
     scale_x_continuous(breaks = seq(0, 12, by = 2)) +
     coord_cartesian(xlim = c(0, 12), ylim = c(-25, 30), expand = FALSE) +
     ggtitle(paste0("Creatinine Changes in time interval ",
-                   crch_centre - t_interval_width/2, " < \u0394t < ", crch_centre + t_interval_width/2,
+                   lower_crch, " < \u0394t < ", upper_crch,
                    " yields AUC: ", round(result_df$AUC[1], 4))) +
     xlab(expression("Duration of small change in Cr epis: "*Delta*"t"["cr_ch"]*" (hours)")) +
     ylab(expression("Change in Cr during epis: "*Delta*"cr"*" ("*mu*"mol/L)")) +
@@ -184,20 +191,34 @@ generate_example <- function(crch_centre, t_interval_width, min_hr_until_aki, ma
   return(result)
 }
 
-# ---- example_cont_1 ----
-example_cont_1 <- generate_example(
+# ---- example_1 ----
+example_1 <- generate_example(
   crch_centre = 4,
   t_interval_width = 3,
   min_hr_until_aki = 8,
-  max_hr_until_aki = 48)
-kable(publish(example_cont_1$model, print=FALSE)$regressionTable)
-plot(example_cont_1$cutpoint)
+  max_hr_until_aki = 48,
+  binary_mapping = 1)
+kable(publish(example_1$model, print=FALSE)$regressionTable)
+plot(example_1$cutpoint)
 
-# ---- example_cont_2 ----
-example_cont_2 <- generate_example(
+# ---- example_2 ----
+example_2 <- generate_example(
   crch_centre = 6.5,
   t_interval_width = 1,
   min_hr_until_aki = 8,
-  max_hr_until_aki = 16)
-kable(publish(example_cont_2$model, print=FALSE)$regressionTable)
-plot(example_cont_2$cutpoint)
+  max_hr_until_aki = 16,
+  binary_mapping = 1)
+kable(publish(example_2$model, print=FALSE)$regressionTable)
+plot(example_2$cutpoint)
+summary(example_2$cutpoint)
+# wilcox.test(example_2$data$model, example_2$data$AKI_ICU)
+
+manual_sens <- example_2$data %>%
+  mutate(predicted_AKI_ICU = if_else(
+    model > 0.1546, 1, 0
+  ))
+
+nrow(manual_sens %>% filter(AKI_ICU == 0, predicted_AKI_ICU == 0))
+nrow(manual_sens %>% filter(AKI_ICU == 1, predicted_AKI_ICU == 0))
+nrow(manual_sens %>% filter(AKI_ICU == 0, predicted_AKI_ICU == 1))
+nrow(manual_sens %>% filter(AKI_ICU == 1, predicted_AKI_ICU == 1))

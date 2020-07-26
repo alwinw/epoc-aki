@@ -3,13 +3,14 @@ bibtex
 tidyverse
 lubridate
 readxl
+parallel
+pbapply
+cutpointr
 ggridges
 metR
 fuzzyjoin
 janitor
 Publish
-pbapply
-cutpointr
 knitr
 rmarkdown
 bookdown
