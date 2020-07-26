@@ -1,3 +1,77 @@
+# ---- generate_example_cont_fun ----
+generate_example <- function(crch_centre, t_interval_width, min_hr_until_aki, max_hr_until_aki) {
+  lower_crch = crch_centre - t_interval_width/2
+  upper_crch = crch_centre + t_interval_width/2
+  
+  result <- analysis_wrapper(
+    outcome_var = "AKI_ICU",
+    baseline_predictors = c(
+      "Age + APACHE_II + APACHE_III + Baseline_Cr",
+      "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
+    ),
+    cr_predictors = c("del_cr", "cr"),
+    del_t_ch_hr_range = c(lower_crch, upper_crch),
+    del_t_aki_hr_range = c(min_hr_until_aki, max_hr_until_aki),
+    all_data = TRUE,
+    analysis_data = analysis_df
+  )
+  
+  result_df <- result$output %>%
+    pivot_longer(
+      ends_with("pos")|ends_with("neg"),
+      names_to = c("admission", "heatmap"), values_to = "count",
+      names_pattern = "n_?(.*)_(.*)"
+    ) %>%
+    pivot_wider(
+      names_from = admission,
+      values_from = count
+    ) %>%
+    mutate(
+      heatmap = if_else(
+        heatmap == "neg",
+        "No AKI",
+        paste0("T_AKI in  ", min_hr_until_aki, "-", max_hr_until_aki, "hrs after cr_ch"))
+    )
+  
+  heatmap_all <- logit_df %>%
+    filter(is.na(del_t_aki_hr) | del_t_aki_hr > min_hr_until_aki & del_t_aki_hr < max_hr_until_aki) %>%
+    mutate(
+      heatmap = case_when(  # TODO change to factor and make easier to use
+        is.na(del_t_aki_hr)          ~ "No AKI",
+        del_t_aki_hr > max_hr_until_aki  ~ paste0("T_AKI in ", max_hr_until_aki, "+hrs after cr_ch"),
+        del_t_aki_hr > min_hr_until_aki ~ paste0("T_AKI in  ", min_hr_until_aki, "-", max_hr_until_aki, "hrs after cr_ch"),
+        TRUE                      ~ NA_character_
+      ),
+    )
+  heatmap_count <- heatmap_all %>%
+    group_by(heatmap) %>%
+    summarise(n_cr = n(), n_admission = n_distinct(AdmissionID), .groups = "drop")
+  # heatmap_outcome <- heatmap_all %>%
+  #   group_by(heatmap, AKI_ICU) %>%
+  #   summarise(n_cr = n(), n_admission = n_distinct(AdmissionID), .groups = "drop")
+  heatmap_ts <- heatmap_all %>%
+    filter(del_t_ch_hr < 13, abs(del_cr) < 50) %>%
+    select(del_t_ch_hr, del_cr, heatmap)
+  heatmap_path <- data.frame(
+    heatmap = c(rep("No AKI", 4), rep(paste0("T_AKI in  ", min_hr_until_aki, "-", max_hr_until_aki, "hrs after cr_ch"), 4)),
+    x = rep(c(rep(lower_crch, 2), rep(upper_crch, 2)), 2),
+    y = c(-22, lower_crch*binary_mapping, upper_crch*binary_mapping, -22,
+          22, lower_crch*binary_mapping, upper_crch*binary_mapping,  22)
+  )
+  
+  return(result)
+}
+
+
+
+
+
+
+
+
+
+
+
 # ---- baseline_df ----
 logit_df <- admission_ts %>%
   select(

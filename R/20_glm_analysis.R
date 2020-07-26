@@ -28,9 +28,9 @@ analysis_df <- cr_ch_ts %>%
 analysis_wrapper <- function(
   outcome_var = "AKI_ICU",
   baseline_predictors = c("Age"),
+  cr_predictors = NULL,
   del_t_ch_hr_range  = NULL,
   del_t_aki_hr_range = NULL,
-  # add cr_ch predictors, as string?
   add_gradient_predictor = NULL,
   plot_cutpoint = FALSE,
   heuristic_only = FALSE,
@@ -78,6 +78,11 @@ analysis_wrapper <- function(
   if (nrow(analysis_data) == 0) {
     warning(paste0("No rows in analysis_data found"))
     return(null_return)
+  }
+
+  # Add cr variables
+  if (!is.null(cr_predictors)) {
+    glm_model <- paste(glm_model, paste(cr_predictors, collapse = " + "), sep = " + ")
   }
 
   # Add binary classification of Cr gradient
