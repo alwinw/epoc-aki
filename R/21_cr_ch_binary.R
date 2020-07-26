@@ -1,10 +1,10 @@
 # ---- baseline_df ----
-logit_df <- admission_ts %>%
+logit_df <- cr_ch_ts %>%
   select(
     `UR number`:Admission, Pt_Study_nos, Event,
     Age, APACHE_II, APACHE_III, Baseline_Cr, PCs_cardio, Vasopressor:Chronic_liver_disease,
     AKI_ICU, DateTime_Pathology_Result,
-    del_t_ch:cr_i
+    del_t_ch:cr
   ) %>%
   mutate(
     APACHE_II  = if_else(APACHE_II  == 0, NA_real_, APACHE_II),
@@ -59,7 +59,7 @@ cr_ch_binary_model <- function(vec_del_t_ch_hr, vec_del_t_aki_hr, binary_mapping
   logit_model <- glm(
     AKI_ICU ~ Age + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio +
       Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease +
-      binary_del_cr + cr_i,
+      binary_del_cr + cr,
     family = "binomial",
     data = logit_ts)
 
@@ -143,7 +143,10 @@ generate_example <- function(crch_centre, t_interval_width, min_hr_until_aki, ma
     )
   heatmap_count <- heatmap_all %>%
     group_by(heatmap) %>%
-    summarise(n_cr = n(), n_admission = n_distinct(AdmissionID), .groups = "keep")
+    summarise(n_cr = n(), n_admission = n_distinct(AdmissionID), .groups = "drop")
+  # heatmap_outcome <- heatmap_all %>%
+  #   group_by(heatmap, AKI_ICU) %>%
+  #   summarise(n_cr = n(), n_admission = n_distinct(AdmissionID), .groups = "drop")
   heatmap_ts <- heatmap_all %>%
     filter(del_t_ch_hr < 13, abs(del_cr) < 50) %>%
     select(del_t_ch_hr, del_cr, heatmap)
@@ -155,23 +158,33 @@ generate_example <- function(crch_centre, t_interval_width, min_hr_until_aki, ma
   )
 
   heatmap_plot <- ggplot(heatmap_ts, aes(x = del_t_ch_hr, y = del_cr)) +
-    geom_density_2d_filled(contour_var = "density") +
+    geom_density_2d_filled(aes(fill = after_stat(level_mid)), contour_var = "density") +
     geom_hline(yintercept = 0, colour = "white", linetype = "dotted") +
     annotate("tile", x = crch_centre, y = 2.5, width = t_interval_width, height = 55,
       fill = "white", colour = NA, alpha = 0.1, size = 0.2
     ) +
+    geom_abline(slope = 1, intercept = 0, colour = "white", linetype = "dotted") +
+    annotate("text", x = 10, y = 9, label = "1\u03BCmol/L/h", colour = "white", vjust = 1.3) +
     geom_path(aes(x = x, y = y), data = heatmap_path, colour = "white") +
+    annotate(
+      "segment",
+      x    = c(crch_centre - t_interval_width/2, crch_centre + t_interval_width/2),
+      xend = c(crch_centre - t_interval_width/2, crch_centre + t_interval_width/2),
+      y = c(-22, -22),
+      yend = c(22, 22),
+      colour = "white"
+    ) +
     geom_text(
       aes(x = crch_centre, y = 22,
           label = paste0("Captured cr_ch: ", lower_crch, " < \u0394t < ", upper_crch,
                          "\nn(Admissions): ", admissions,
-                         "\nn(Crch Epis): ", event)),
+                         "\nn(Cr_ch epis): ", event)),
       data = result_df,
       colour = "white", hjust = 0.5, vjust = -0.1,
     ) +
     geom_text(
       aes(x = 0.2, y = -24,
-          label = paste0("All cr_ch:\nn(Admissions): ", n_admission, "\nn(cr_ch epis): ", n_cr)),
+          label = paste0("All Cr_ch:\nn(Admissions): ", n_admission, "\nn(Cr_ch epis): ", n_cr)),
       data = heatmap_count,
       colour = "white", hjust = 0, vjust = 0
     ) +
@@ -183,10 +196,13 @@ generate_example <- function(crch_centre, t_interval_width, min_hr_until_aki, ma
                    " yields AUC: ", round(result_df$AUC[1], 4))) +
     xlab(expression("Duration of small change in Cr epis: "*Delta*"t"["cr_ch"]*" (hours)")) +
     ylab(expression("Change in Cr during epis: "*Delta*"cr"*" ("*mu*"mol/L)")) +
-    scale_fill_viridis_d("Density") +
+    scale_fill_viridis_c("n(Cr_ch epis)\nDensity", option = "D") +
     theme(panel.spacing = unit(0.8, "lines"))
 
   plot(heatmap_plot)
+
+  # ggsave("cr_ch_6-7_heatmap.png", heatmap_plot, path = paste0(rel_path, "/doc/images/"),
+  #        width = 12, height = 7, scale = 0.8)
 
   return(result)
 }

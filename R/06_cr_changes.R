@@ -179,15 +179,17 @@ heatmap_plot <- ggplot(heatmap_ts, aes(x = del_t_ch/3600, y = del_cr)) +
   scale_x_continuous(breaks = seq(0, 12, by = 2)) +
   coord_cartesian(xlim = c(0, 12), ylim = c(-25, 30), expand = FALSE) +
   facet_wrap(~heatmap) +
-  scale_fill_viridis_c("Density", option = "D") +
-  geom_hline(yintercept = 0, colour = "white", linetype = "solid") +
+  scale_fill_viridis_c("n(Cr_ch epis)\nDensity", option = "D") +
+  geom_hline(yintercept = 0, colour = "white", linetype = "dotted") +
   geom_vline(xintercept = seq(0, 16, by = 4), colour = "white", linetype = "dotted") +
+  geom_abline(slope = 1, intercept = 0, colour = "white", linetype = "solid") +
+  annotate("text", x = 10, y = 9, label = "1\u03BCmol/L/h", colour = "white", vjust = 1.3) +
   geom_text(
     data = heatmap_count,
     aes(x = 0.2, y = -23, label = paste0("n(Admissions): ", n_admission, "\nn(Cr_ch epis): ", n_cr)),
     colour = "white", hjust = 0, vjust = 0
   ) +
-  ggtitle("Distribution of Short-term Creatinine Change Episodes (Cr_ch)") +
+  ggtitle("Number of Creatinine Change Episodes which Predict AKI in X hours' time") +
   xlab(expression("Duration of short-term Cr change epis: "*Delta*"t"["cr_ch"]*" (hours)")) +
   ylab(expression("Change in Cr during epis: "*Delta*"cr"*" ("*mu*"mol/L)")) +
   theme(panel.spacing = unit(0.8, "lines"))
