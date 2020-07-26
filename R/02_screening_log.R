@@ -325,7 +325,7 @@ screening_log %>%
   adorn_totals("row") %>%
   kable(., caption = "Excluded Admissions", booktabs = TRUE)
 
-# Consider saving these and referring to them later
+# FIXME Consider saving these and referring to them later
 unique_comorbidities = unique(gsub(",", "", unlist(strsplit(paste0(screening_log$Comorbidities, collapse = ", "), ", "))))
 temp <- grep("T2DM|T1DM|IDDM|insulin", unique_comorbidities, value = TRUE)
 temp <- grep("AF|pAF", unique_comorbidities, value = TRUE)

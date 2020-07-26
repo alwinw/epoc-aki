@@ -66,6 +66,7 @@ data_set_joint <- rbind(creatinine_joint,  oliguria_joint)
 rm(creatinine_data, creatinine_outcomes, creatinine_joint,
    oliguria_data, oliguria_outcomes, oliguria_joint)
 
+
 # ---- merge_data_sets ----
 dttm_col = inner_join(
   find_cols("date", "DateTime", colnames(data_set_joint)),
@@ -125,6 +126,7 @@ data_set <- raw_data_set[, raw_data_set_cols] %>%
   filter(!(Pt_Study_no %in% xlsx_data$excluded_Pt_Study_no))
 
 rm(dttm_col, data_set_joint, raw_data_set, raw_data_set_cols, find_cols)
+
 
 # ---- epis_overview ----
 data_set %>%

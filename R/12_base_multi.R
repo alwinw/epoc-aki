@@ -1,7 +1,6 @@
 # ---- baseline_model ----
 baseline_df <- admission_data %>%
   filter(Excl_criteria_ok == 1) %>%
-  filter(Event != "Neither") %>%   # TODO In the future, this should not be an exclusion
   select(
     `UR number`:Admission, Pt_Study_nos, Event,
     Age, APACHE_II, APACHE_III, Baseline_Cr, PCs_cardio, Vasopressor:Chronic_liver_disease,
@@ -34,6 +33,7 @@ baseline_cut <- cutpointr(
   direction = ">=", pos_class = 1, neg_class = 0,
   method = maximize_metric, metric = youden)
 summary(baseline_cut)
+
 
 # ---- auroc_plot ----
 plot(baseline_cut)
