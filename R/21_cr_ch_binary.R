@@ -212,3 +212,13 @@ kable(publish(example_2$model, print=FALSE)$regressionTable)
 plot(example_2$cutpoint)
 summary(example_2$cutpoint)
 # wilcox.test(example_2$data$model, example_2$data$AKI_ICU)
+
+manual_sens <- example_2$data %>%
+  mutate(predicted_AKI_ICU = if_else(
+    model > 0.1546, 1, 0
+  ))
+
+nrow(manual_sens %>% filter(AKI_ICU == 0, predicted_AKI_ICU == 0))
+nrow(manual_sens %>% filter(AKI_ICU == 1, predicted_AKI_ICU == 0))
+nrow(manual_sens %>% filter(AKI_ICU == 0, predicted_AKI_ICU == 1))
+nrow(manual_sens %>% filter(AKI_ICU == 1, predicted_AKI_ICU == 1))

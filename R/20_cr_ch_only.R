@@ -50,13 +50,10 @@ cr_ch_cont_model <- function(vec_del_t_ch_hr, vec_del_t_aki_hr, plot = FALSE, mo
     ))
   }
 
-  logit_ts <- logit_ts %>%
-    mutate(binary_del_cr = if_else(del_cr > binary_mapping*del_t_ch_hr, 1, 0))
-
   logit_model <- glm(
     AKI_ICU ~ Age + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio +
       Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease +
-      binary_del_cr + cr_i,
+      del_cr + cr_i,
     family = "binomial",
     data = logit_ts)
 
