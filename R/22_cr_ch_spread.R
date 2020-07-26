@@ -1,5 +1,5 @@
 # ---- generator_function ----
-gen_cr_ch_model <- function(lower, upper, step, min_hr_until_aki, max_hr_until_aki) {
+gen_cr_ch_model <- function(lower, upper, step, min_hr_until_aki, max_hr_until_aki, binary_mapping) {
   cr_ch_steps = seq(lower, upper, by = step)
   cr_ch_steps_df = data.frame(
     lower_hr_del_t_ch = head(cr_ch_steps, -1),
@@ -9,8 +9,8 @@ gen_cr_ch_model <- function(lower, upper, step, min_hr_until_aki, max_hr_until_a
   ) %>%
     mutate(del_t_ch_range = paste0("[", lower_hr_del_t_ch, ", ", upper_hr_del_t_ch, "]")) %>%
     rowwise() %>%
-    do(data.frame(., cr_ch_model(
-      c(.$lower_hr_del_t_ch, .$upper_hr_del_t_ch), c(.$min_hr_until_aki, .$max_hr_until_aki)))
+    do(data.frame(., cr_ch_binary_model(
+      c(.$lower_hr_del_t_ch, .$upper_hr_del_t_ch), c(.$min_hr_until_aki, .$max_hr_until_aki), binary_mapping))
     ) %>%
     ungroup()
   cr_ch_steps_df$del_t_ch_range <- factor(
@@ -27,7 +27,8 @@ cr_ch_steps = gen_cr_ch_model(
   upper = 20,
   step = 1,
   min_hr_until_aki = 8,
-  max_hr_until_aki = 16
+  max_hr_until_aki = 16,
+  binary_mapping = 1
 ) %>%
   select(-sensitivity:-optimal_cutpoint) %>%
   mutate(heuristic = (AUC*1.1 + per_admin_in)/2.1) %>%
@@ -78,20 +79,25 @@ cr_ch_list <- split(cr_ch_grid, rownames(cr_ch_grid))
 cl <- makeCluster(detectCores() - 1)
 invisible(clusterEvalQ(cl, library("dplyr")))
 invisible(clusterEvalQ(cl, library("cutpointr")))
-clusterExport(cl, c("logit_df", "cr_ch_model"))
+clusterExport(cl, c("logit_df", "cr_ch_binary_model"))
 cr_ch_dump <- pblapply(
   cr_ch_list, function(df) {
-    data.frame(df, cr_ch_model(c(df$lower, df$upper), c(8, 16)))
+    data.frame(df, cr_ch_binary_model(c(df$lower, df$upper), c(8, 16), 1))
   },
   cl = cl
 )
 stopCluster(cl)
 
-cr_ch_plot <- bind_rows(cr_ch_dump) %>%
-  select(centre, width, AUC, n_admissions, per_admin_in) %>% 
-  mutate(AUC = if_else(AUC == 0, NA_real_, AUC)) %>% 
-  mutate(heuristic = (AUC*1.1 + per_admin_in)/2.1)
+AUCwt = 1
 
+cr_ch_plot <- bind_rows(cr_ch_dump) %>%
+  select(centre, width, AUC, n_admissions, per_admin_in) %>%
+  mutate(AUC = if_else(AUC == 0, NA_real_, AUC)) %>%
+  mutate(heuristic = (AUC*AUCwt + per_admin_in^0.5)/(AUCwt+1)) %>%
+  arrange(centre)
+  # arrange(desc(heuristic))
+
+head(cr_ch_plot, 50)
 
 ggplot(cr_ch_plot, aes(centre, width)) +
   # geom_raster(aes(fill = AUC)) +
@@ -106,9 +112,20 @@ ggplot(cr_ch_plot, aes(centre, width)) +
   scale_y_continuous(expand = c(0, 0)) +
   scale_fill_viridis_c(name = "AUC")
 
+ggplot(cr_ch_plot, aes(centre, width)) +
+  geom_contour_fill(aes(z = AUC), bins = 24, alpha = 1, na.fill = TRUE) +
+  geom_contour(aes(z = n_admissions), colour = "white", binwidth = 20) +
+  geom_text_contour(aes(z = n_admissions), colour = "white") +
+  scale_x_continuous(
+    breaks = seq(0, 20, by = 1),
+    limits = c(5, 7),
+    expand = c(0, 0)
+  ) +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_fill_viridis_c(name = "AUC")
 
 ggplot(cr_ch_plot, aes(centre, width)) +
-  geom_contour_fill(aes(z = heuristic), alpha = 0.8, na.fill = TRUE) + 
+  geom_contour_fill(aes(z = heuristic), alpha = 0.8, na.fill = TRUE) +
   # geom_contour(aes(z = n_admissions), colour = "white", binwidth = 20) +
   # geom_text_contour(aes(z = n_admissions), colour = "white") +
   geom_contour(aes(z = AUC, colour = after_stat(level)), bins = 16) +
@@ -120,7 +137,7 @@ ggplot(cr_ch_plot, aes(centre, width)) +
   scale_y_continuous(expand = c(0, 0)) +
   scale_fill_viridis_c(name = "Heuristic", option = "C")
 
-head(cr_ch_plot %>% arrange(desc(heuristic)), 20)
+
 
 
 

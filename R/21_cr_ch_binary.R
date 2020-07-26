@@ -3,7 +3,7 @@ logit_df <- admission_ts %>%
   select(
     `UR number`:Admission, Pt_Study_nos, Event,
     Age, APACHE_II, APACHE_III, Baseline_Cr, PCs_cardio, Vasopressor:Chronic_liver_disease,
-    AKI_ICU,
+    AKI_ICU, DateTime_Pathology_Result,
     del_t_ch:cr_i
   ) %>%
   mutate(
@@ -21,8 +21,11 @@ logit_df <- admission_ts %>%
     del_t_ch_hr  = as.numeric(del_t_ch, "hours"),
     del_t_aki_hr = as.numeric(del_t_aki, "hours"))
 
+# nrow(logit_df %>% filter(del_t_aki_hr > 0 | is.na(del_t_aki_hr)))
+# nrow(logit_df %>% filter(del_t_aki_hr > 0 | is.na(del_t_aki_hr)) %>%  select(AdmissionID, DateTime_Pathology_Result) %>% unique(.))
+
 # ---- cr_ch_function ----
-cr_ch_model <- function(vec_del_t_ch_hr, vec_del_t_aki_hr, binary_mapping = 1, plot = FALSE, model = FALSE) {
+cr_ch_binary_model <- function(vec_del_t_ch_hr, vec_del_t_aki_hr, binary_mapping, plot = FALSE, model = FALSE) {
   vec_del_t_ch_hr  = sort(vec_del_t_ch_hr)
   vec_del_t_aki_hr = sort(vec_del_t_aki_hr)
   logit_ts <- logit_df %>%
@@ -104,7 +107,7 @@ generate_example <- function(crch_centre, t_interval_width, min_hr_until_aki, ma
   lower_crch = crch_centre - t_interval_width/2
   upper_crch = crch_centre + t_interval_width/2
 
-  result <- cr_ch_model(
+  result <- cr_ch_binary_model(
     c(lower_crch, upper_crch),
     c(min_hr_until_aki, max_hr_until_aki),
     binary_mapping = binary_mapping,
