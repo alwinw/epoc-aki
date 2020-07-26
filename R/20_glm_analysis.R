@@ -30,6 +30,7 @@ analysis_wrapper <- function(
   baseline_predictors = c("Age"),
   del_t_ch_hr_range  = NULL,
   del_t_aki_hr_range = NULL,
+  # add cr_ch predictors, as string?
   add_gradient_predictor = NULL,
   plot_cutpoint = FALSE,
   heuristic_only = FALSE,
@@ -135,4 +136,3 @@ analysis_wrapper <- function(
 #     baseline_predictors = "Age"
 #   )
 # )
-
