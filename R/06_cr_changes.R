@@ -19,7 +19,7 @@ generate_cr_ch <- function(
       del_t_ch  = as.duration(NA_real_),
       del_t_aki = as.duration(NA_real_),
       del_cr    = NA_real_,
-      cr_i      = NA_real_
+      cr      = NA_real_
     ))
   }
   # Consider filtering out ones post AKI here?
@@ -39,7 +39,7 @@ generate_cr_ch <- function(
     del_t_ch  = as.duration(Ti$Pathology_Result_DTTM - Ti_1$Pathology_Result_DTTM),
     del_t_aki = del_t_aki,
     del_cr    = Ti$Creatinine_level - Ti_1$Creatinine_level,
-    cr_i      = Ti$Creatinine_level
+    cr      = Ti$Creatinine_level
   ))
 }
 
@@ -75,20 +75,20 @@ cr_ch_ts_all <- admission_data %>%
 
 neither_ts <- cr_ch_ts_all %>%
   filter(is.na(AKI_ICU)) %>%
-  filter(!is.na(cr_i)) %>%  # Only one measurement in ICU
+  filter(!is.na(cr)) %>%  # Only one measurement in ICU
   group_by(AdmissionID) %>%
   mutate(
     # No need to check for olig definition of AKI, else would have had "oliguria episode"
-    Baseline_Cr = min(cr_i),
-    AKI_ICU = if_else(cr_i > Baseline_Cr*1.5, 1, 0),  # FIXME NEED TO PROGRAM IN THE RISE CASE TOO
+    Baseline_Cr = min(cr),
+    AKI_ICU = if_else(cr > Baseline_Cr*1.5, 1, 0),  # FIXME NEED TO PROGRAM IN THE RISE CASE TOO
     AKI_stage = case_when(                            # TODO Add other variables too!
-      cr_i > Baseline_Cr*3   ~ 3,
-      cr_i > Baseline_Cr*2   ~ 2,
-      cr_i > Baseline_Cr*1.5 ~ 1,
+      cr > Baseline_Cr*3   ~ 3,
+      cr > Baseline_Cr*2   ~ 2,
+      cr > Baseline_Cr*1.5 ~ 1,
       TRUE ~ 0),
-    Max_Cr_ICU = max(cr_i),
+    Max_Cr_ICU = max(cr),
   ) %>%
-  arrange(AdmissionID, desc(cr_i)) %>%
+  arrange(AdmissionID, desc(cr)) %>%
   mutate(
     Max_Cr_DateTime = first(DateTime_Pathology_Result)
   ) %>%
@@ -195,3 +195,5 @@ print(heatmap_plot)
 
 ggsave("cr_ch_heatmap.png", heatmap_plot, path = paste0(rel_path, "/doc/images/"),
        width = 12, height = 8, scale = 0.8)
+
+rm(heatmap_all, heatmap_count, heatmap_ts, heatmap_plot)

@@ -1,4 +1,5 @@
 # Graphical summaries
+# Example: https://www.guru99.com/r-generalized-linear-model.html
 
 epoc_aki_admissions <- epoc_aki %>%
   group_by(AdmissionID) %>%
