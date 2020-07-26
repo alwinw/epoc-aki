@@ -22,7 +22,7 @@ logit_df <- admission_ts %>%
     del_t_aki_hr = as.numeric(del_t_aki, "hours"))
 
 # ---- cr_ch_function ----
-cr_ch_cont_model <- function(vec_del_t_ch_hr, vec_del_t_aki_hr, plot = FALSE, model = FALSE) {
+cr_ch_model <- function(vec_del_t_ch_hr, vec_del_t_aki_hr, binary_mapping = 1, plot = FALSE, model = FALSE) {
   vec_del_t_ch_hr  = sort(vec_del_t_ch_hr)
   vec_del_t_aki_hr = sort(vec_del_t_aki_hr)
   logit_ts <- logit_df %>%
@@ -82,6 +82,7 @@ cr_ch_cont_model <- function(vec_del_t_ch_hr, vec_del_t_aki_hr, plot = FALSE, mo
     sensitivity      = logit_cut$sensitivity[[1]],
     specificity      = logit_cut$specificity[[1]],
     optimal_cutpoint = logit_cut$optimal_cutpoint,
+    # wilcox           = wilcox.test(model~AKI_ICU, logit_ts),
     per_admin_in     = per_admin_in,
     n_admissions     = length(unique(logit_ts$AdmissionID)),
     n_admissions_pos = length(unique(logit_ts$AdmissionID[logit_ts$AKI_ICU == 1])),
@@ -92,15 +93,15 @@ cr_ch_cont_model <- function(vec_del_t_ch_hr, vec_del_t_aki_hr, plot = FALSE, mo
     n_event_neg      = sum(logit_ts$AKI_ICU == 0)
   )
   if (model) {
-    return(list(model = logit_model, cutpoint = logit_cut, output = output))
+    return(list(model = logit_model, cutpoint = logit_cut, output = output, data = logit_ts))
   } else {
     return(output)
   }
 }
 
-# ---- generate_example_cont_fun ----
+# ---- generate_example_fun ----
 generate_example <- function(crch_centre, t_interval_width, min_hr_until_aki, max_hr_until_aki) {
-  result <- cr_ch_cont_model(
+  result <- cr_ch_model(
     c(crch_centre - t_interval_width/2, crch_centre + t_interval_width/2),
     c(min_hr_until_aki, max_hr_until_aki),
     model = TRUE
@@ -187,20 +188,22 @@ generate_example <- function(crch_centre, t_interval_width, min_hr_until_aki, ma
   return(result)
 }
 
-# ---- example_cont_1 ----
-example_cont_1 <- generate_example(
+# ---- example_1 ----
+example_1 <- generate_example(
   crch_centre = 4,
   t_interval_width = 3,
   min_hr_until_aki = 8,
   max_hr_until_aki = 48)
-kable(publish(example_cont_1$model, print=FALSE)$regressionTable)
-plot(example_cont_1$cutpoint)
+kable(publish(example_1$model, print=FALSE)$regressionTable)
+plot(example_1$cutpoint)
 
-# ---- example_cont_2 ----
-example_cont_2 <- generate_example(
+# ---- example_2 ----
+example_2 <- generate_example(
   crch_centre = 6.5,
   t_interval_width = 1,
   min_hr_until_aki = 8,
   max_hr_until_aki = 16)
-kable(publish(example_cont_2$model, print=FALSE)$regressionTable)
-plot(example_cont_2$cutpoint)
+kable(publish(example_2$model, print=FALSE)$regressionTable)
+plot(example_2$cutpoint)
+summary(example_2$cutpoint)
+# wilcox.test(example_2$data$model, example_2$data$AKI_ICU)
