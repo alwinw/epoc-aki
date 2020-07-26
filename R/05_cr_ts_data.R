@@ -94,4 +94,4 @@ ggplot(bio_chem_blood_gas, aes(x = Delta_t, y = Delta_cr, colour = Pathology_typ
   theme(legend.position="bottom") +
   guides(colour = guide_legend(ncol = 1))
 
-rm(blood_gas_adjust)
+rm(bio_chem_blood_gas, blood_gas_adjust)

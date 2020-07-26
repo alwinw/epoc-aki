@@ -1,5 +1,5 @@
 # ---- baseline_model ----
-baseline_df <- admission_data %>%
+baseline_df <- admission_data %>%  # FIXME this should come from the admissions_ts with Baseline_Cr, AKI_ICU fix applied
   filter(Excl_criteria_ok == 1) %>%
   select(
     `UR number`:Admission, Pt_Study_nos, Event,

@@ -6,7 +6,6 @@ readxl
 parallel
 pbapply
 cutpointr
-ggridges
 metR
 fuzzyjoin
 janitor

@@ -131,7 +131,7 @@ rm(dttm_col, data_set_joint, raw_data_set, raw_data_set_cols, find_cols)
 # ---- epis_overview ----
 data_set %>%
   group_by(Epis_cr_change, Epis_olig) %>%
-  summarise(Episodes = n()) %>%
+  summarise(Episodes = n(), .groups = "drop") %>%
   pivot_longer(
     starts_with("Epis_"),
     names_to = "Epis",
@@ -145,7 +145,7 @@ data_set %>%
   group_by(Epis_cr_change, Epis_olig, Pt_Study_no) %>%
   top_n(1, Epis_no) %>%
   group_by(Epis_cr_change, Epis_olig, Epis_no) %>%
-  summarise(Episodes = n()) %>%
+  summarise(Episodes = n(), .groups = "drop") %>%
   pivot_longer(
     c(Epis_cr_change, Epis_olig),
     names_to = "Epis",

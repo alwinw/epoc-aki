@@ -261,14 +261,15 @@ rm(screening_log_thin, apd_extract, apache_replace)
 screening_log %>%
   summarise(
     Admissions = n(),
-    `Unique Patients` = n_distinct(`UR number`, na.rm = TRUE)
+    `Unique Patients` = n_distinct(`UR number`, na.rm = TRUE),
+    .groups = "drop"
   ) %>%
   kable(., caption = "Total Admissions", booktabs = TRUE)
 
 screening_log %>%
   group_by(Excl_criteria_ok) %>%
   # Due to multiple admissions, 1 UR could have ok on one admission and not on another
-  summarise(Admissions = n()) %>%
+  summarise(Admissions = n(), .groups = "drop") %>%
   arrange(desc(Excl_criteria_ok)) %>%
   adorn_percentages("all") %>%
   adorn_pct_formatting() %>%
@@ -283,8 +284,7 @@ screening_log %>%
     Epis_olig = "N")
   ) %>%
   group_by(Epis_cr_change, Epis_olig) %>%
-  summarise(Admissions = n()) %>%
-  ungroup() %>%
+  summarise(Admissions = n(), .groups = "drop") %>%
   pivot_wider(names_from = Epis_olig, values_from = Admissions) %>%
   adorn_totals(c("row", "col")) %>%
   adorn_percentages("all") %>%
@@ -303,10 +303,7 @@ screening_log %>%
       is.na(Total_no_olig_epis), " 0 olig epis", sprintf("%2d olig epis", Total_no_olig_epis)),
   ) %>%
   group_by(Total_no_cr_epis, Total_no_olig_epis) %>%
-  summarise(
-    Admissions = n(),
-  ) %>%
-  ungroup() %>%
+  summarise(Admissions = n(), .groups = "drop") %>%
   pivot_wider(names_from = Total_no_olig_epis, values_from = Admissions) %>%
   adorn_totals(c("row", "col")) %>%
   rename(Epis = Total_no_cr_epis) %>%
@@ -320,20 +317,13 @@ screening_log %>%
   group_by(Excl_reason) %>%
   summarise(
     Admissions = sum(Excluded == "Y", na.rm = TRUE),
-    `Unique Patients` = n_distinct((`UR number`[Excluded == "Y"]), na.rm = TRUE)) %>%
+    `Unique Patients` = n_distinct((`UR number`[Excluded == "Y"]), na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
   arrange(-Admissions) %>%
   adorn_totals("row") %>%
-  kable(., caption = "Excluded Admissions", booktabs = TRUE)
+  kable(., caption = "Excluded Admissions (multi per admission possible)", booktabs = TRUE)
 
-# FIXME Consider saving these and referring to them later
 unique_comorbidities = unique(gsub(",", "", unlist(strsplit(paste0(screening_log$Comorbidities, collapse = ", "), ", "))))
-temp <- grep("T2DM|T1DM|IDDM|insulin", unique_comorbidities, value = TRUE)
-temp <- grep("AF|pAF", unique_comorbidities, value = TRUE)
-temp <- grep("IHD|CABG|CAD|CAGS|NSTEMI", unique_comorbidities, value = TRUE)
-temp <- grep("\\bHF\\b|hypertrophy|CCF|cardiomyopathy|heart failure|LVH", unique_comorbidities, value = TRUE)
-temp <- grep("^(?=.*\\bHT\\b)(?!.*portal)(?!.*pulm)", unique_comorbidities, value = TRUE, perl = TRUE)
-temp <- grep("PVD|arteritis|pop bypass|id steno|stents", unique_comorbidities, value = TRUE)
-temp <- grep(paste0(
-  "chronic liver disease|portal HT|varice|ETOH|",
-  "HCC|NASH|CLD|ESLD|awaiting OLTx|SMV|ascites|SBP|HCC|cirrho|",
-  "Hepatosplenomegaly|Cirrho|hepatic encephalopathy"), unique_comorbidities, value = TRUE)
+
+rm(unique_comorbidities)

@@ -26,3 +26,5 @@ load_library(
   file.path(rel_path, "doc/bib/R-references.bib")
 )
 theme_set(theme_bw())
+
+rm(load_library)
