@@ -129,8 +129,10 @@ analysis_wrapper <- function(
   }
 }
 
+# profvis(
+#   analysis_wrapper(
+#     outcome_var = "AKI_ICU",
+#     baseline_predictors = "Age"
+#   )
+# )
 
-analysis_wrapper(
-  outcome_var = "AKI_ICU",
-  baseline_predictors = "Age"
-)
