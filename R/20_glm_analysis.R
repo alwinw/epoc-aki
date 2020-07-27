@@ -98,8 +98,9 @@ analysis_wrapper <- function(
   # Cutponts
   analysis_data$predict = predict(logit_model, type = "response")
   logit_cut <- cutpointr(
-    x = analysis_data$predict,
-    class = analysis_data[[outcome_var]],
+    analysis_data,
+    predict,
+    {{outcome_var}},  # vignette("programming", "dplyr")
     use_midpoints = TRUE,
     direction = ">=", pos_class = 1, neg_class = 0,
     method = maximize_metric, metric = youden)
