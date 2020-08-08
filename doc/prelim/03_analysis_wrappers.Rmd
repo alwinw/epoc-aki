@@ -1,0 +1,19 @@
+# Analysis Wrappers
+
+```{r 20_glm_analysis, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "20_glm_analysis.R"))
+```
+
+```{r analysis_ts}
+```
+
+
+## GLM Analysis
+
+```{r glm_analysis_wrapper, echo=TRUE}
+```
+
+## Example Generation
+
+```{r generate_example_cont_fun, echo=TRUE}
+```
