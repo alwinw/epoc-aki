@@ -1,6 +1,6 @@
 # Creatinine Time Series
 
-```{r 05_cr_ts_data.R, include=FALSE, cache=FALSE}
+```{r 05_cr_ts_data, include=FALSE, cache=FALSE}
 knitr::read_chunk(file.path(rel_path, "R", "05_cr_ts_data.R"))
 ```
 
@@ -26,7 +26,7 @@ all cases.
 
 ## Compute all Creatinine Changes
 
-```{r 06_cr_changes.R, include=FALSE, cache=FALSE}
+```{r 06_cr_changes, include=FALSE, cache=FALSE}
 knitr::read_chunk(file.path(rel_path, "R", "06_cr_changes.R"))
 ```
 
