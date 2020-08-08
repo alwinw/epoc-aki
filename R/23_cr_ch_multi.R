@@ -29,14 +29,15 @@ generate_example <- function(
 
   result_df <- result$summary %>%
     pivot_longer(
-      ends_with("pos")|ends_with("neg"),
+      ends_with("pos") | ends_with("neg"),
       names_to = c("admission", "heatmap"), values_to = "count",
       names_pattern = "n_?(.*)_(.*)"
     ) %>%
     pivot_wider(names_from = admission, values_from = count) %>%
     mutate(heatmap = heatmap_factors[if_else(heatmap == "neg",1,2)])
 
-  if (!is.null(add_gradient_predictor)) {
+  if (!is.null(add_gradient_predictor) & FALSE) {
+    # Consider readding this at some stage
     binary_count <- result$data %>%
       mutate(heatmap = heatmap_factors[if_else(is.na(del_t_aki_hr),1,2)]) %>%
       group_by(heatmap, cr_gradient) %>%
@@ -71,11 +72,10 @@ generate_example <- function(
     ) +
     geom_abline(slope = 1, intercept = 0, colour = "white", linetype = "dotted") +
     annotate("text", x = 10, y = 11, label = "1\u03BCmol/L/h", colour = "white", vjust = -0.3) +
-  # if (!is.null(add_gradient_predictor)) {
-    # heatmap_plot <- heatmap_plot +
-      geom_path(aes(x = x, y = y), data = binary_path, colour = "white") +
-  # }
-    geom_path(aes(x = x, y = y), data = binary_path, colour = "white") +
+    annotate("segment", x = lower_crch, xend = upper_crch,
+             y = lower_crch*add_gradient_predictor, yend = upper_crch*add_gradient_predictor,
+             colour = "white"
+    ) +
     geom_text(
       aes(x = crch_centre, y = 22,
           label = paste0("Included Cr_ch: ", lower_crch, " < \u0394t < ", upper_crch,
@@ -104,107 +104,15 @@ generate_example <- function(
   return(result)
 }
 
-
-
-
-
-
-# ---- generate_example_cont_fun ----
-generate_example <- function(crch_centre, t_interval_width, min_hr_until_aki, max_hr_until_aki) {
-  result <- cr_ch_cont_model(
-    c(crch_centre - t_interval_width/2, crch_centre + t_interval_width/2),
-    c(min_hr_until_aki, max_hr_until_aki),
-    model = TRUE
-  )
-
-  result_df <- result$output %>%
-    pivot_longer(
-      ends_with("pos")|ends_with("neg"),
-      names_to = c("admission", "heatmap"), values_to = "count",
-      names_pattern = "n_?(.*)_(.*)"
-    ) %>%
-    pivot_wider(
-      names_from = admission,
-      values_from = count
-    ) %>%
-    mutate(
-      heatmap = if_else(
-        heatmap == "neg",
-        "No AKI",
-        paste0("T_AKI in  ", min_hr_until_aki, "-", max_hr_until_aki, "hrs after cr_ch"))
-    )
-
-  heatmap_all <- logit_df %>%
-    filter(is.na(del_t_aki_hr) | del_t_aki_hr > min_hr_until_aki & del_t_aki_hr < max_hr_until_aki) %>%
-    mutate(
-      heatmap = case_when(  # TODO change to factor and make easier to use
-        is.na(del_t_aki_hr)          ~ "No AKI",
-        del_t_aki_hr > max_hr_until_aki  ~ paste0("T_AKI in ", max_hr_until_aki, "+hrs after cr_ch"),
-        del_t_aki_hr > min_hr_until_aki ~ paste0("T_AKI in  ", min_hr_until_aki, "-", max_hr_until_aki, "hrs after cr_ch"),
-        TRUE                      ~ NA_character_
-      ),
-    )
-
-  heatmap_count <- heatmap_all %>%
-    group_by(heatmap) %>%
-    summarise(n_cr = n(), n_admission = n_distinct(AdmissionID), .groups = "keep")
-
-  heatmap_ts <- heatmap_all %>%
-    filter(del_t_ch_hr < 13, abs(del_cr) < 50) %>%
-    select(del_t_ch_hr, del_cr, heatmap)
-
-  heatmap_plot <- ggplot(heatmap_ts, aes(x = del_t_ch_hr, y = del_cr)) +
-    geom_density_2d_filled(contour_var = "density") +
-    geom_hline(yintercept = 0, colour = "white", linetype = "dotted") +
-    annotate("tile", x = crch_centre, y = 2.5, width = t_interval_width, height = 55,
-      fill = "white", colour = NA, alpha = 0.1, size = 0.2
-    ) +
-    annotate(
-      "segment",
-      x    = c(crch_centre - t_interval_width/2, crch_centre + t_interval_width/2),
-      xend = c(crch_centre - t_interval_width/2, crch_centre + t_interval_width/2),
-      y = c(-22, -22),
-      yend = c(22, 22),
-      colour = "white"
-    ) +
-    geom_vline(xintercept = crch_centre, colour = "white", linetype = "dotted") +
-    geom_text(
-      aes(x = crch_centre, y = 22,
-          label = paste0("Captured cr_ch: ", crch_centre - t_interval_width/2, " < \u0394t < ", crch_centre + t_interval_width/2,
-                         "\nn(Admissions): ", admissions,
-                         "\nn(Events): ", event)),
-      data = result_df,
-      colour = "white", hjust = 0.5, vjust = -0.1,
-    ) +
-    geom_text(
-      aes(x = 0.2, y = -24,
-          label = paste0("All cr_ch:\nn(Admissions): ", n_admission, "\nn(cr_ch events): ", n_cr)),
-      data = heatmap_count,
-      colour = "white", hjust = 0, vjust = 0
-    ) +
-    facet_wrap(~heatmap, nrow = 1) +
-    scale_x_continuous(breaks = seq(0, 12, by = 2)) +
-    coord_cartesian(xlim = c(0, 12), ylim = c(-25, 30), expand = FALSE) +
-    ggtitle(paste0("Creatinine Changes in time interval ",
-                   crch_centre - t_interval_width/2, " < \u0394t < ", crch_centre + t_interval_width/2,
-                   " yields AUC: ", round(result_df$AUC[1], 4))) +
-    xlab(expression("Duration of small change in Cr epis: "*Delta*"t"["cr_ch"]*" (hours)")) +
-    ylab(expression("Change in Cr during epis: "*Delta*"cr"*" ("*mu*"mol/L)")) +
-    scale_fill_viridis_d("Density") +
-    theme(panel.spacing = unit(0.8, "lines"))
-
-  plot(heatmap_plot)
-
-  return(result)
-}
-
 # ---- example_cont_1 ----
 example_cont_1 <- generate_example(
   crch_centre = 4,
   t_interval_width = 3,
   min_hr_until_aki = 8,
-  max_hr_until_aki = 48)
-kable(publish(example_cont_1$model, print=FALSE)$regressionTable)
+  max_hr_until_aki = 48,
+  add_gradient_predictor = NULL
+  )
+kable(publish(example_cont_1$model, print = FALSE)$regressionTable)
 plot(example_cont_1$cutpoint)
 
 # ---- example_cont_2 ----
