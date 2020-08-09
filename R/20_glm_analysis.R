@@ -42,7 +42,7 @@ analysis_wrapper <- function(
   n_analysis_data = length(unique(analysis_data$AdmissionID))
 
   if (heuristic_only) {
-    null_return = data.frame(AUC = 0, per_admin_in = 0)
+    null_return = data.frame(AUC = 0, per_admin_in = 0, n_admissions = 0)
   } else {
     null_return = data.frame(
       AUC = 0, sensitivity = 0, specificity = 0, optimal_cutpoint = 0,
@@ -112,7 +112,10 @@ analysis_wrapper <- function(
   per_admin_in = length(unique(analysis_data$AdmissionID))/n_analysis_data
 
   if (heuristic_only) {
-    return(data.frame(AUC = logit_cut$AUC, per_admin_in = per_admin_in))
+    return(data.frame(
+      AUC = logit_cut$AUC, per_admin_in = per_admin_in,
+      n_admissions = length(unique(analysis_data$AdmissionID))
+    ))
   }
   summary = data.frame(
     AUC              = logit_cut$AUC,
@@ -128,6 +131,7 @@ analysis_wrapper <- function(
     n_event_pos      = sum(analysis_data$AKI_ICU == 1),
     n_event_neg      = sum(analysis_data$AKI_ICU == 0)
   )
+  # wilcox           = wilcox.test(model~AKI_ICU, logit_ts),
 
   if (!all_data) {
     return(summary)
@@ -155,13 +159,19 @@ generate_example <- function(
   lower_crch = crch_centre - t_interval_width/2
   upper_crch = crch_centre + t_interval_width/2
 
+  if (is.null(add_gradient_predictor)) {
+    cr_predictors = c("del_cr", "cr")
+  } else {
+    cr_predictors = "cr"
+  }
+
   result <- analysis_wrapper(
     outcome_var = "AKI_ICU",
     baseline_predictors = c(
       "Age + APACHE_II + APACHE_III + Baseline_Cr",
       "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
     ),
-    cr_predictors = c("del_cr", "cr"),
+    cr_predictors = cr_predictors,
     del_t_ch_hr_range = c(lower_crch, upper_crch),
     del_t_aki_hr_range = c(min_hr_until_aki, max_hr_until_aki),
     add_gradient_predictor = add_gradient_predictor,

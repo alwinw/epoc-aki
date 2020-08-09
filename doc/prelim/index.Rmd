@@ -37,11 +37,11 @@ read_R <- function(file) readLines(file.path(rel_path, "R", file))
 
 # Overview{-}
 
-## Aim{-}
+**Aim**
 
 New Arterial Blood Gas (ABG) technology provides accurate and validated point-of-care creatinine measurement. Such technology makes it possible to detect small, short-term increases in creatinine levels. We aimed to determine the predictive value of small, short-term creatinine increases for the development of Acute Kidney Injury (AKI) in critically ill patients.
 
-## Methods{-}
+**Methods**
 
 In this prospective cohort study, we assessed all the creatinine values from ABGs and laboratory biochemistry results in critically ill patients. We calculated the small, short-term creatinine increases between creatinine values during the patient’s Intensive Care Unit (ICU) admission until the development of KDIGO-defined AKI or ICU discharge or death, whichever occurred first. We evaluated the predictive value of these creatinine increases over varying time periods for AKI development in multivariable analysis with known risk factors such as age and co-morbidities.
 
@@ -49,11 +49,11 @@ In this prospective cohort study, we assessed all the creatinine values from ABG
 knitr::include_graphics("../images/overview.png")
 ```-->
 
-## Results{-}
+**Results**
 
 To come
 
-## Conclusion{-}
+**Conclusion**
 
 To come
 
@@ -68,6 +68,6 @@ knitr::read_chunk(file.path(rel_path, "R/00_config.R"))
 ```{r environment_setup, opts.label='silent'}
 ```
 
-## Running{-}
+**Running**
 
 The list of `R` packages used is in `requirements.txt`.  This analysis is carried out using `R version 4.0.2 (2020-06-22)` [@R-base] and the package `tidyverse version 1.3.0` was extensively used [@tidyverse2019]. The package `bookdown version 0.20` [@bookdown2016] was used to create this document.

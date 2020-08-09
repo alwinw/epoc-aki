@@ -10,6 +10,7 @@ libs/
 resources/
 *.tex
 *.csv
+*.bib.bak
 
 !data/*.R
 !data/*.md
