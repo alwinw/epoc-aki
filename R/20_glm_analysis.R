@@ -131,6 +131,7 @@ analysis_wrapper <- function(
     n_event_pos      = sum(analysis_data$AKI_ICU == 1),
     n_event_neg      = sum(analysis_data$AKI_ICU == 0)
   )
+  # wilcox           = wilcox.test(model~AKI_ICU, logit_ts),
 
   if (!all_data) {
     return(summary)
