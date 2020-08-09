@@ -158,13 +158,19 @@ generate_example <- function(
   lower_crch = crch_centre - t_interval_width/2
   upper_crch = crch_centre + t_interval_width/2
 
+  if (is.null(add_gradient_predictor)) {
+    cr_predictors = c("del_cr", "cr")
+  } else {
+    cr_predictors = "cr"
+  }
+
   result <- analysis_wrapper(
     outcome_var = "AKI_ICU",
     baseline_predictors = c(
       "Age + APACHE_II + APACHE_III + Baseline_Cr",
       "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
     ),
-    cr_predictors = c("del_cr", "cr"),
+    cr_predictors = cr_predictors,
     del_t_ch_hr_range = c(lower_crch, upper_crch),
     del_t_aki_hr_range = c(min_hr_until_aki, max_hr_until_aki),
     add_gradient_predictor = add_gradient_predictor,
