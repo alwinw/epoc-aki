@@ -9,6 +9,8 @@ example_cont_1 <- generate_example(
 kable(publish(example_cont_1$model, print = FALSE)$regressionTable)
 summary(example_cont_1$cutpoint)
 plot(example_cont_1$cutpoint)
+rm(example_cont_1)
+
 
 # ---- example_cont_2 ----
 example_cont_2 <- generate_example(
@@ -19,6 +21,8 @@ example_cont_2 <- generate_example(
 kable(publish(example_cont_2$model, print = FALSE)$regressionTable)
 summary(example_cont_2$cutpoint)
 plot(example_cont_2$cutpoint)
+rm(example_cont_2)
+
 
 # ---- example_bin_2 ----
 example_bin_2 <- generate_example(
@@ -31,6 +35,8 @@ example_bin_2 <- generate_example(
 kable(publish(example_bin_2$model, print = FALSE)$regressionTable)
 summary(example_bin_2$cutpoint)
 plot(example_bin_2$cutpoint)
+rm(example_bin_2)
+
 
 # ---- range_multi_bin ----
 range_cr_ch_multi_bin = tibble(
@@ -87,3 +93,4 @@ ggplot(range_cr_ch_multi_bin,
   scale_fill_manual(name = "Legend", values = c("orange","blue", "black")) +
   scale_colour_manual(name = "Legend", values = c("orange","blue", "black")) +
   theme(legend.position = "bottom")
+rm(range_cr_ch_multi_bin)

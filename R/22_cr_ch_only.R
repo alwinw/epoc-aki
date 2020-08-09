@@ -12,7 +12,7 @@ cr_ch_prev_study_cont <- analysis_wrapper(
 kable(publish(cr_ch_prev_study_cont$model, print = FALSE, digits = c(2, 3))$regressionTable,
       align = c('l', 'c', 'c', 'c', 'c'))
 summary(cr_ch_prev_study_cont$cutpoint)
-
+rm(cr_ch_prev_study_cont)
 
 # ---- prev_study_bin ----
 cr_ch_prev_study_bin <- analysis_wrapper(
@@ -28,7 +28,7 @@ cr_ch_prev_study_bin <- analysis_wrapper(
 kable(publish(cr_ch_prev_study_bin$model, print = FALSE, digits = c(2, 3))$regressionTable,
       align = c('l', 'c', 'c', 'c', 'c'))
 summary(cr_ch_prev_study_bin$cutpoint)
-
+rm(cr_ch_prev_study_bin)
 
 # ---- range_cr_ch_cont_only ----
 range_cr_ch_only_cont = tibble(
@@ -84,7 +84,7 @@ ggplot(range_cr_ch_only_cont,
   scale_fill_manual(name = "Legend", values = c("orange","blue", "black")) +
   scale_colour_manual(name = "Legend", values = c("orange","blue", "black")) +
   theme(legend.position = "bottom")
-
+rm(range_cr_ch_only_cont)
 
 # ---- range_cr_ch_bin_only ----
 range_cr_ch_only_bin = tibble(
@@ -140,3 +140,4 @@ ggplot(range_cr_ch_only_bin,
   scale_fill_manual(name = "Legend", values = c("orange","blue", "black")) +
   scale_colour_manual(name = "Legend", values = c("orange","blue", "black")) +
   theme(legend.position = "bottom")
+rm(range_cr_ch_only_bin)
