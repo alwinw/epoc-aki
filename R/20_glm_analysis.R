@@ -42,7 +42,7 @@ analysis_wrapper <- function(
   n_analysis_data = length(unique(analysis_data$AdmissionID))
 
   if (heuristic_only) {
-    null_return = data.frame(AUC = 0, per_admin_in = 0)
+    null_return = data.frame(AUC = 0, per_admin_in = 0, n_admissions = 0)
   } else {
     null_return = data.frame(
       AUC = 0, sensitivity = 0, specificity = 0, optimal_cutpoint = 0,
@@ -112,7 +112,10 @@ analysis_wrapper <- function(
   per_admin_in = length(unique(analysis_data$AdmissionID))/n_analysis_data
 
   if (heuristic_only) {
-    return(data.frame(AUC = logit_cut$AUC, per_admin_in = per_admin_in))
+    return(data.frame(
+      AUC = logit_cut$AUC, per_admin_in = per_admin_in,
+      n_admissions = length(unique(analysis_data$AdmissionID))
+    ))
   }
   summary = data.frame(
     AUC              = logit_cut$AUC,
