@@ -64,7 +64,6 @@ Alwin Wang and Lisa Toh
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/alwinw/epoc-aki?style=flat-square)
 ![GitHub last commit](https://img.shields.io/github/last-commit/alwinw/epoc-aki?style=flat-square)
 ![Visits](https://badges.pufler.dev/visits/alwinw/epoc-aki?style=flat-square&label=visits)
-![Hits](https://img.shields.io/jsdelivr/gh/hm/alwinw/epoc-aki?label=hits&style=flat-square)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/alwinw/epoc-aki?style=flat-square)
 
 ## License
