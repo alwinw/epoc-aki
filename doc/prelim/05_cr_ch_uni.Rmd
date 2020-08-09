@@ -1,0 +1,56 @@
+# Cr ch only
+
+Univariable logistic regression to determine the baseline model and AUC value.
+
+```{r 22_cr_ch_only, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "22_cr_ch_only.R"))
+```
+
+## Cr change as Continuous Variable
+
+Here $\Delta\text{Cr}\,(\mu\text{mol/L})$ denotes the change in creatinine during the defined length of 
+the small change in creatinine change episode.
+
+$$
+\begin{align}
+\log(\text{Odds}(\text{AKI}=1)) &= \beta_0 + \beta_1\cdot\Delta\text{Cr}
+\end{align}
+$$
+
+Below is an example of creatinine changes in episodes 3-4 hrs in duration occurring 8-16 hrs before AKI.
+
+```{r prev_study_cont}
+```
+
+Now, run various other episode durations to determine if there is an "optimal" duration.
+
+```{r range_cr_ch_cont_only}
+```
+
+## Cr change Gradient as Binary Variable
+
+Here $\left[\frac{\Delta\text{Cr}}{\Delta\text{t}}\right]_\text{B}$ denotes a binary variable where
+the gradient of the creatinine change is greater than $1\,(\mu\text{mol/L/hr})$ or not.
+
+$$
+\begin{align}
+\log(\text{Odds}(\text{AKI}=1)) &= \beta_0 + \beta_1\cdot\left[\frac{\Delta\text{Cr}}{\Delta\text{t}}\right]_\text{B}
+\end{align}
+$$
+
+Below is an example of creatinine changes in episodes 3-4 hrs in duration occurring 8-16 hrs before AKI.
+
+```{r prev_study_bin}
+```
+
+Now, run various other episode durations to determine if there is an "optimal" duration.
+
+```{r range_cr_ch_bin_only}
+```
+
+Here you can see that while $\left[\frac{\Delta\text{Cr}}{\Delta\text{t}}\right]_\text{B}$ 
+is clinically more intuitive to understand, it has a smaller predicitive power compared to 
+$\Delta\text{Cr}\,(\mu\text{mol/L})$
+
+For both explanatory variables, there is a distinct peak in AUC for episode durations
+[6-7] and [7-8] hrs long.
