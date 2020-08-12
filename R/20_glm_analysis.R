@@ -160,7 +160,7 @@ generate_example <- function(
   upper_crch = crch_centre + t_interval_width/2
 
   if (is.null(add_gradient_predictor)) {
-    cr_predictors = c("del_cr", "cr")
+    cr_predictors = c("cr", "del_cr")
   } else {
     cr_predictors = "cr"
   }
@@ -231,7 +231,7 @@ generate_example <- function(
              colour = "white"
     ) +
     geom_text(
-      aes(x = crch_centre, y = 22,
+      aes(x = crch_centre, y = 21,
           label = paste0("Included Cr_ch: ", lower_crch, " < \u0394t < ", upper_crch,
                          "\nn(Admissions): ", admissions,
                          "\nn(Cr_ch epis): ", event)),
