@@ -20,11 +20,10 @@ $$
 
 Here you can see that two more terms are added into the model.
 
-The first added term $\Delta\text{Cr}$ is the change in creatinine during the defined length of
-the small change in creatinine change episode
+The first added term $\text{Cr}$ is the creatinine level at the end of the defined
+small change in creatinine change episode.
 
-The second added term $\left[\frac{\Delta\text{Cr}}{\Delta\text{t}}\right]_\text{B}$ is a binary variable for whether
-the gradient of the creatinine change is greater than $1\,(\mu\text{mol/L/hr})$ or not.
+The second added term $\Delta\text{Cr}$ is the creatinine change during an event.
 
 ```{r example_cont_1, fig.width=9}
 ```
@@ -46,7 +45,8 @@ $$
 
 Here you can see that two more terms are added into the model.
 
-The first added term $\Delta\text{Cr}$ is the creatinine change during an event.
+The first added term $\text{Cr}$ is the creatinine level at the end of the defined
+small change in creatinine change episode.
 
 The second added term $\left[\frac{\Delta\text{Cr}}{\Delta\text{t}}\right]_\text{B}$ is a binary variable for whether
 the gradient of the creatinine change is greater than $1\,(\mu\text{mol/L/hr})$ or not.
