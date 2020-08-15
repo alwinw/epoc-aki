@@ -9,6 +9,7 @@ cutpointr
 metR
 fuzzyjoin
 janitor
+optimr
 Publish
 knitr
 rmarkdown

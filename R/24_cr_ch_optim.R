@@ -1,10 +1,9 @@
-# ---- cr_ch_multi_plot ----
-
+# ---- cr_ch_multi_plot_df ----
 density = 4
 centre_spacing = 0.15/sqrt(density)
 
 cr_ch_grid = expand.grid(
-    seq(2 + centre_spacing, 12, by = centre_spacing), 
+    seq(2 + centre_spacing, 12, by = centre_spacing),
     seq(0.5, 4, by = centre_spacing/2)
   ) %>%
   rename(centre = Var1, width = Var2) %>%
@@ -38,12 +37,10 @@ cr_ch_dump <- pblapply(
   cl = cl
 )
 stopCluster(cl)
-
-# AUC: (0.6,0.1), (0.7, 0.5), (0.8, 0.9)
-# per: (0.3, 0.1), (0.5, 0.5), (0.7, 0.9)
+rm(cl)
 
 heuristic_calc <- function(AUC, per_admin_in){
-  return((1/2 + 1/2*tanh(11*(AUC - 0.875 + 0.1)) + 
+  return((1/2 + 1/2*tanh(11*(AUC - 0.875 + 0.1)) +
         1/2 + 1/2*tanh(11*(per_admin_in - 0.525 + 0.1)))/2)
 }
 
@@ -52,18 +49,18 @@ cr_ch_plot <- bind_rows(cr_ch_dump) %>%
   mutate(AUC = if_else(AUC == 0, NA_real_, AUC)) %>%
   mutate(heuristic = heuristic_calc(AUC, per_admin_in)) %>%
   arrange(centre)
-  # arrange(desc(heuristic))
 
 cr_ch_plot %>%
   arrange(desc(heuristic)) %>%
   filter(centre > 4) %>%
   head(., 5)
 
+# ---- cr_ch_multi_AUC_n_plot ----
 ggplot(cr_ch_plot, aes(centre, width)) +
-  geom_contour_fill(aes(z = AUC), bins = 24, alpha = 1, na.fill = TRUE) +
+  geom_contour_fill(aes(z = AUC), bins = 32, alpha = 1, na.fill = TRUE) +
   geom_contour(aes(z = n_admissions), colour = "white", binwidth = 20) +
   geom_text_contour(aes(z = n_admissions), colour = "white") +
-  geom_point(shape = 1, fill = NA, colour = "white", alpha = 0.1) +
+  # geom_point(shape = 1, fill = NA, colour = "white", alpha = 0.1) +
   scale_x_continuous(
     breaks = seq(0, 20, by = 1),
     limits = c(min(cr_ch_plot$centre), max(cr_ch_plot$centre)),
@@ -74,8 +71,9 @@ ggplot(cr_ch_plot, aes(centre, width)) +
   ggtitle("AUC (Colour) and Number of Included Admissions (Contour Lines)")
 
 
+# ---- cr_ch_multi_heuristic_plot ----
 ggplot(cr_ch_plot, aes(centre, width)) +
-  geom_contour_fill(aes(z = heuristic), bins = 24, alpha = 1, na.fill = TRUE) +
+  geom_contour_fill(aes(z = heuristic), bins = 32, alpha = 1, na.fill = TRUE) +
   geom_point(shape = 1, fill = NA, colour = "white", alpha = 0.1) +
   scale_x_continuous(
     breaks = seq(0, 20, by = 1),
@@ -87,12 +85,9 @@ ggplot(cr_ch_plot, aes(centre, width)) +
   ggtitle("Heuristic Plot")
 
 
-
-
-
 # ---- optimisation ----
-optim(
-  c(6, 1.5, 8, 10),
+optim_one <- optim(
+  c(6, 2, 8, 10),
   function(x) {
     output = analysis_wrapper(
       outcome_var = "AKI_ICU",
@@ -116,18 +111,26 @@ optim(
 
 set.seed(8)
 optim_in = rbind(
-  c(6, 1.5, 8, 10), 
-  c(5, 1.5, 8, 10),
-  c(6.5, 2.5, 8, 8),
+  c(6,   1.5, 8, 10),
+  c(6.8, 1.8, 8, 10),
+  c(5,   1.5, 8, 10),
+  c(6.5, 2.5, 8, 8 ),
+  c(6.90, 1.96, 8.77, 34.75),
   cbind(
-    runif(10, 5, 8),
-    runif(10, 0.1, 3),
-    runif(10, 8, 10),
-    runif(10, 8, 12)
+    runif(20, 6, 7),
+    runif(20, 1, 3),
+    runif(20, 8, 9),
+    runif(20, 10, 11)
+  ),
+  cbind(
+    runif(20, 6.5, 7.5),
+    runif(20, 1.5, 2.5),
+    runif(20, 8.5, 10.5),
+    runif(20, 30, 45)
   ),
   cbind(
     runif(50, 3, 10),
-    runif(50, 0.1, 3),
+    runif(50, 1, 3),
     runif(50, 8, 12),
     runif(50, 3, 48)
   )
@@ -158,8 +161,14 @@ optim_out <- multistart(
   upper = c(10, 3, 12, 48),
   method = "L-BFGS-B"
 )
-optim_summary <- optim_out %>% 
-  arrange(value) %>% 
+optim_summary <- optim_out %>%
+  arrange(value) %>%
+  mutate(
+    ch_hr_lower = p1 - p2/2,
+    ch_hr_upper = p1 + p2/2,
+    aki_hr_lower = p3,
+    aki_hr_upper = p3 + p4
+  ) %>%
   rowwise() %>%
   do(data.frame(
     .,
@@ -168,12 +177,16 @@ optim_summary <- optim_out %>%
       baseline_predictors = c("Age + APACHE_II + APACHE_III + Baseline_Cr",
                               "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"),
       cr_predictors = "cr",
-      del_t_ch_hr_range = c(.$p1, .$p2),
-      del_t_aki_hr_range = c(.$p3, .$p4),
+      del_t_ch_hr_range = c(.$ch_hr_lower, .$ch_hr_upper),
+      del_t_aki_hr_range = c(.$aki_hr_lower, .$aki_hr_upper),
       add_gradient_predictor = 1,
       heuristic_only = TRUE,
       analysis_data = analysis_df
     )
-  )) %>% 
-  mutate(value = -value) %>% 
-  ungroup()
+  )) %>%
+  ungroup() %>%
+  mutate(value = -value) %>%
+  mutate(
+    heuristic = heuristic_calc(AUC, per_admin_in)
+  ) %>%
+  select(-p1:-p4, -fevals:-convergence)
