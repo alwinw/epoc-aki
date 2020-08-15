@@ -1,0 +1,66 @@
+# Example Multivariable Analysis
+
+
+
+```{r 23_cr_ch_multi, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "23_cr_ch_multi.R"))
+```
+
+## Cr change as Continuous Variable
+
+$$
+\begin{align}
+\log(\text{Odds}(\text{AKI}=1)) &= \beta_0 + \beta_1\cdot\text{Age} + \beta_2\cdot\text{APACHE}_\text{II} + \beta_3\cdot\text{APACHE}_\text{III} \\
+  &\qquad + \beta_4\cdot\text{Cr}_\text{Baseline} + \beta_5\cdot\text{PCs_Cardio} + \beta_6\cdot\text{Vasopressor} \\
+  &\qquad + \beta_7\cdot\text{Diabetes} + \beta_8\cdot\text{AF} + \beta_9\cdot\text{IHD} + \beta_{10}\cdot\text{HF} \\
+  &\qquad + \beta_{11}\cdot\text{HT} + \beta_{12}\cdot\text{PVD} + \beta_{13}\cdot\text{ChronicLiverDisease} \\
+  &\qquad + \boxed{\beta_{14}\cdot\text{Cr} + \beta_{15}\cdot\Delta\text{Cr}}
+\end{align}
+$$
+
+Here you can see that two more terms are added into the model.
+
+The first added term $\text{Cr}$ is the creatinine level at the end of the defined
+small change in creatinine change episode.
+
+The second added term $\Delta\text{Cr}$ is the creatinine change during an event.
+
+```{r example_cont_1, fig.width=9}
+```
+
+```{r example_cont_2, fig.width=9}
+```
+
+## Cr change Gradient as Binary Variable
+
+$$
+\begin{align}
+\log(\text{Odds}(\text{AKI}=1)) &= \beta_0 + \beta_1\cdot\text{Age} + \beta_2\cdot\text{APACHE}_\text{II} + \beta_3\cdot\text{APACHE}_\text{III} \\
+  &\qquad + \beta_4\cdot\text{Cr}_\text{Baseline} + \beta_5\cdot\text{PCs_Cardio} + \beta_6\cdot\text{Vasopressor} \\
+  &\qquad + \beta_7\cdot\text{Diabetes} + \beta_8\cdot\text{AF} + \beta_9\cdot\text{IHD} + \beta_{10}\cdot\text{HF} \\
+  &\qquad + \beta_{11}\cdot\text{HT} + \beta_{12}\cdot\text{PVD} + \beta_{13}\cdot\text{ChronicLiverDisease} \\
+  &\qquad + \boxed{\beta_{14}\cdot\text{Cr} + \beta_{15}\cdot\left[\frac{\Delta\text{Cr}}{\Delta\text{t}}\right]_\text{B}}
+\end{align}
+$$
+
+Here you can see that two more terms are added into the model.
+
+The first added term $\text{Cr}$ is the creatinine level at the end of the defined
+small change in creatinine change episode.
+
+The second added term $\left[\frac{\Delta\text{Cr}}{\Delta\text{t}}\right]_\text{B}$ is a binary variable for whether
+the gradient of the creatinine change is greater than $1\,(\mu\text{mol/L/hr})$ or not.
+
+```{r example_bin_2, fig.width=9}
+```
+
+You can see that the predictive power is similar to that of $\Delta\text{Cr}$.
+
+Running a range of possible episode durations, it is possible to see the AUC and
+number of included admissions.
+
+```{r range_multi_bin}
+```
+
+There is an AUC peak around [6-7] hrs. While it is not as large as the peak around [10-11] hrs,
+the number of included admissions is much higher.
