@@ -1,0 +1,5 @@
+# Cr ch multi optim
+
+```{r 25_cr_ch_multi_optim, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "25_cr_ch_multi_optim.R"))
+```

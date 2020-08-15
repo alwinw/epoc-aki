@@ -1,7 +1,5 @@
 # Example Multivariable Analysis
 
-
-
 ```{r 23_cr_ch_multi, include=FALSE, cache=FALSE}
 knitr::read_chunk(file.path(rel_path, "R", "23_cr_ch_multi.R"))
 ```

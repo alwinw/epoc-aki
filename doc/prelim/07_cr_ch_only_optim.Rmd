@@ -1,0 +1,5 @@
+# Cr ch only optim
+
+```{r 24_cr_ch_only_optim, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "24_cr_ch_only_optim.R"))
+```
