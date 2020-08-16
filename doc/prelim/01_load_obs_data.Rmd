@@ -1,5 +1,12 @@
 # Observation Data
 
+```{r echo=FALSE}
+knitr::opts_chunk$set(
+    echo = FALSE, message = FALSE, cache = TRUE,
+    collapse = TRUE, comment = "#>", tidy = TRUE
+)
+```
+
 Load the data from the previous study [@toh2019]
 
 ```{r 01_load_data, code=read_R("01_load_data.R"), opts.label='silent'}

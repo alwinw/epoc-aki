@@ -1,5 +1,12 @@
 # Known Risk Factors
 
+```{r echo=FALSE}
+knitr::opts_chunk$set(
+    echo = FALSE, message = FALSE, cache = TRUE,
+    collapse = TRUE, comment = "#>", tidy = TRUE
+)
+```
+
 Multivariable logistic regression to determine the baseline model and AUC value.
 
 ```{r 21_base_no_cr_ch, include=FALSE, cache=FALSE}

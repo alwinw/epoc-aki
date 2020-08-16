@@ -93,11 +93,11 @@ cat(paste(
   paste(xlsx_data$excluded_Pt_Study_no, collapse = ", "), "\n"
 ))
 
-knitr::kable(
+kable(
   creatinine_errors[, c(13, 2:4, 12, 14)], caption = 'Creatinine Potential Errors',
   booktabs = TRUE
 )
-knitr::kable(
+kable(
   oliguria_errors[, c(13, 2:4, 12, 14)], caption = 'Oliguria Potential Errors',
   booktabs = TRUE
 )

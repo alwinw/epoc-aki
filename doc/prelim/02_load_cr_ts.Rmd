@@ -1,5 +1,12 @@
 # Creatinine Time Series
 
+```{r echo=FALSE}
+knitr::opts_chunk$set(
+    echo = FALSE, message = FALSE, cache = TRUE,
+    collapse = TRUE, comment = "#>", tidy = TRUE
+)
+```
+
 ```{r 05_cr_ts_data, include=FALSE, cache=FALSE}
 knitr::read_chunk(file.path(rel_path, "R", "05_cr_ts_data.R"))
 ```

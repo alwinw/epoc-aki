@@ -1,5 +1,12 @@
 # Cr ch only
 
+```{r echo=FALSE}
+knitr::opts_chunk$set(
+    echo = FALSE, message = FALSE, cache = TRUE,
+    collapse = TRUE, comment = "#>", tidy = TRUE
+)
+```
+
 Univariable logistic regression to determine the baseline model and AUC value.
 
 ```{r 22_cr_ch_only, include=FALSE, cache=FALSE}
@@ -8,7 +15,7 @@ knitr::read_chunk(file.path(rel_path, "R", "22_cr_ch_only.R"))
 
 ## Cr change as Continuous Variable
 
-Here $\Delta\text{Cr}\,(\mu\text{mol/L})$ denotes the change in creatinine during the defined length of 
+Here $\Delta\text{Cr}\,(\mu\text{mol/L})$ denotes the change in creatinine during the defined length of
 the small change in creatinine change episode.
 
 $$
@@ -48,8 +55,8 @@ Now, run various other episode durations to determine if there is an "optimal" d
 ```{r range_cr_ch_bin_only}
 ```
 
-Here you can see that while $\left[\frac{\Delta\text{Cr}}{\Delta\text{t}}\right]_\text{B}$ 
-is clinically more intuitive to understand, it has a smaller predicitive power compared to 
+Here you can see that while $\left[\frac{\Delta\text{Cr}}{\Delta\text{t}}\right]_\text{B}$
+is clinically more intuitive to understand, it has a smaller predicitive power compared to
 $\Delta\text{Cr}\,(\mu\text{mol/L})$
 
 For both explanatory variables, there is a distinct peak in AUC for episode durations

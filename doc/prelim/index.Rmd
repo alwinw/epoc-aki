@@ -20,7 +20,8 @@ knitr::opts_chunk$set(
   message = FALSE,
   cache = TRUE,
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  tidy = TRUE
 )
 
 knitr::opts_template$set(silent = list(

@@ -1,0 +1,47 @@
+# Optimisation
+
+```{r echo=FALSE}
+knitr::opts_chunk$set(
+    echo = FALSE, message = FALSE, cache = TRUE,
+    collapse = TRUE, comment = "#>", tidy = TRUE
+)
+```
+
+## Cr ch only Optim
+
+```{r 24_cr_ch_only_optim, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "24_cr_ch_only_optim.R"))
+```
+
+```{r cr_ch_only_plot_df}
+```
+
+```{r cr_ch_only_AUC_n_plot, warning = FALSE, fig.width=8}
+```
+
+```{r cr_ch_only_optimisation, warning = FALSE, results = 'hide'}
+```
+
+```{r cr_ch_only_optim_summary}
+```
+
+## Cr ch multi Optim
+
+```{r 25_cr_ch_multi_optim, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "25_cr_ch_multi_optim.R"))
+```
+
+```{r cr_ch_multi_plot_df}
+```
+
+```{r cr_ch_multi_AUC_n_plot, fig.width=8}
+```
+
+```{r cr_ch_multi_heuristic_plot, fig.width=8}
+```
+
+```{r cr_ch_multi_optimisation, warning = FALSE, results = 'hide'}
+```
+
+```{r cr_ch_multi_optim_summary}
+```

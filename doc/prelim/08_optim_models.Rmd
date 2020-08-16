@@ -1,0 +1,89 @@
+# Models from Optim
+
+```{r 26_optim_models, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "26_optim_models.R"))
+```
+
+## Cr ch only Models
+
+### Model 1
+
+```{r only_model_1}
+```
+
+### Model 2
+
+```{r only_model_2}
+```
+
+### Model 3
+
+```{r only_model_3}
+```
+
+## Cr ch multi Models
+
+### Model 1
+
+```{r multi_model_1a}
+```
+
+### Model 1 (Reduced)
+
+```{r multi_model_1b}
+```
+
+### Model 2
+
+```{r multi_model_2a}
+```
+
+### Model 2 (Reduced)
+
+```{r multi_model_2b}
+```
+
+### Model 3 (Reduced)
+
+```{r multi_model_3}
+```
+
+### Model 4 (Reduced)
+
+```{r multi_model_4}
+```
+
+### Model 5 (Reduced)
+
+```{r multi_model_5}
+```
+
+### Model 6 (Reduced)
+
+```{r multi_model_6}
+```
+
+### Model 7 (Reduced)
+
+```{r multi_model_7}
+```
+
+### Model 8 (Reduced)
+
+```{r multi_model_8}
+```
+
+### Model 9 (Reduced)
+
+```{r multi_model_9}
+```
+
+### Model 10 (Reduced)
+
+```{r multi_model_10}
+```
+
+### Model 11 (Reduced)
+
+```{r multi_model_11}
+```
