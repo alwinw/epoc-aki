@@ -147,6 +147,18 @@ analysis_wrapper <- function(
 #   )
 # )
 
+summarise_cutpoint <- function(model) {
+  model$summary %>%
+    select(-ends_with("pos"), -ends_with("neg"), -optimal_cutpoint) %>%
+    mutate(per_admin_in = sprintf("%.0f%%", per_admin_in*100)) %>%
+    mutate_if(is.double, function(x) sprintf("%.4f", x)) %>%
+    mutate_if(is.integer, as.character) %>%
+    t(.) %>%
+    data.frame(.) %>%
+    rownames_to_column() %>%
+    set_names(c("Model Attribute", "Value"))
+}
+
 
 # ---- generate_example_cont_fun ----
 generate_example <- function(

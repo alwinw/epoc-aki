@@ -33,6 +33,11 @@ all cases.
 
 ## Compute all Creatinine Changes
 
+In total there were 8,817 ABG and Bio Chem Cr measurements which corresponds to 251,652 Cr change episodes.
+
+Of these creatinine change episodes, 43,404 were in admissions that did not have AKI and 28,095 change episodes were before onset of AKI.
+There were 180,153 Cr change episodes after the onset of AKI and these were discarded.
+
 ```{r 06_cr_changes, include=FALSE, cache=FALSE}
 knitr::read_chunk(file.path(rel_path, "R", "06_cr_changes.R"))
 ```
@@ -50,7 +55,13 @@ knitr::read_chunk(file.path(rel_path, "R", "06_cr_changes.R"))
 
 ## Exploration
 
-Each of the possible creatinine change events is calculated and plotted below. It shows that for admissions with no AKI, the creatinine change is approximately symmetric. <!-- Add some additional words -->
+Each of the possible creatinine change events is calculated and plotted below.
+
+It shows that for admissions with no AKI, the creatinine change is approximately symmetric.
+
+In admissions with AKI, the distribution of $\Delta\text{Cr}$ is positively skewed. This indicates that $\Delta\text{Cr}$ is a good predictor of AKI.
+
+<!-- Add some additional words -->
 
 ```{r heatmap_plot, fig.width=8}
 ```
