@@ -7,7 +7,7 @@ example_cont_1 <- generate_example(
   add_gradient_predictor = NULL
   )
 kable(publish(example_cont_1$model, print = FALSE)$regressionTable)
-summary(example_cont_1$cutpoint)
+kable(summarise_cutpoint(example_cont_1), align = c('l', 'r'))
 plot(example_cont_1$cutpoint)
 rm(example_cont_1)
 
@@ -19,7 +19,7 @@ example_cont_2 <- generate_example(
   min_hr_until_aki = 8,
   max_hr_until_aki = 16)
 kable(publish(example_cont_2$model, print = FALSE)$regressionTable)
-summary(example_cont_2$cutpoint)
+kable(summarise_cutpoint(example_cont_2), align = c('l', 'r'))
 plot(example_cont_2$cutpoint)
 rm(example_cont_2)
 
@@ -33,7 +33,7 @@ example_bin_2 <- generate_example(
   add_gradient_predictor = 1
 )
 kable(publish(example_bin_2$model, print = FALSE)$regressionTable)
-summary(example_bin_2$cutpoint)
+kable(summarise_cutpoint(example_bin_2), align = c('l', 'r'))
 plot(example_bin_2$cutpoint)
 rm(example_bin_2)
 
