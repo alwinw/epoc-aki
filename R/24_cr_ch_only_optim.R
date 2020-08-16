@@ -161,3 +161,6 @@ optim_cr_ch_only <- optim_out %>%
 
 rm(cr_ch_dump, optim_one, optim_in, optim_out)
 rm(heuristic_calc)
+
+# ---- cr_ch_only_optim_summary ----
+kable(head(optim_cr_ch_only, 30))
