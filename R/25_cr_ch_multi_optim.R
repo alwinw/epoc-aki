@@ -197,4 +197,8 @@ rm(cr_ch_dump, optim_one, optim_in, optim_out)
 rm(heuristic_calc)
 
 # ---- cr_ch_multi_optim_summary ----
-kable(head(optim_cr_ch_multi, 30))
+optim_cr_ch_multi %>%
+  mutate_if(is.double, function(x) sprintf("%.4f", x)) %>%
+  mutate_if(is.integer, as.character) %>%
+  head(., 40) %>%
+  kable(.)
