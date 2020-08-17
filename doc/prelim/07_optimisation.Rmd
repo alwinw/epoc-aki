@@ -1,5 +1,14 @@
 # Optimisation
 
+## Optim Parameters
+
+Duration of the small change in creatinine episode, e.g. [6, 7],
+as T<sub>i</sub> (`ch_hr_lower`) and T<sub>j</sub> (`cr_hr_upper`).
+
+Time between end of cr ch change episode T<sub>j</sub> and onset of AKI, e.g. [8-18],
+as T<sub>a</sub> (`aki_hr_lower`) and T<sub>b</sub> (`aki_hr_upper`).
+
+
 ```{r echo=FALSE}
 knitr::opts_chunk$set(
     echo = FALSE, message = FALSE, cache = TRUE,
@@ -8,6 +17,15 @@ knitr::opts_chunk$set(
 ```
 
 ## Cr ch only Optim
+
+Here $\left[\frac{\Delta\text{Cr}}{\Delta\text{t}}\right]_\text{B}$ denotes a binary variable where
+the gradient of the creatinine change is greater than $1\,(\mu\text{mol/L/hr})$ or not.
+
+$$
+\begin{align}
+\log(\text{Odds}(\text{AKI}=1)) &= \beta_0 + \beta_1\cdot\left[\frac{\Delta\text{Cr}}{\Delta\text{t}}\right]_\text{B}
+\end{align}
+$$
 
 ```{r 24_cr_ch_only_optim, include=FALSE, cache=FALSE}
 knitr::read_chunk(file.path(rel_path, "R", "24_cr_ch_only_optim.R"))
@@ -19,6 +37,11 @@ knitr::read_chunk(file.path(rel_path, "R", "24_cr_ch_only_optim.R"))
 ```{r cr_ch_only_AUC_n_plot, warning = FALSE, fig.width=8}
 ```
 
+Example: For 6 - 7 hrs, this would be:
+
+ - `centre`: $\frac{T_j - T_i}{2} = 6.5 \,\text{hrs}$
+ - `width`: $T_j - T_i = 1.0 \,\text{hr}$
+
 ```{r cr_ch_only_optimisation, warning = FALSE, results = 'hide'}
 ```
 
@@ -26,6 +49,16 @@ knitr::read_chunk(file.path(rel_path, "R", "24_cr_ch_only_optim.R"))
 ```
 
 ## Cr ch multi Optim
+
+$$
+\begin{align}
+\log(\text{Odds}(\text{AKI}=1)) &= \beta_0 + \beta_1\cdot\text{Age} + \beta_2\cdot\text{APACHE}_\text{II} + \beta_3\cdot\text{APACHE}_\text{III} \\
+  &\qquad + \beta_4\cdot\text{Cr}_\text{Baseline} + \beta_5\cdot\text{PCs_Cardio} + \beta_6\cdot\text{Vasopressor} \\
+  &\qquad + \beta_7\cdot\text{Diabetes} + \beta_8\cdot\text{AF} + \beta_9\cdot\text{IHD} + \beta_{10}\cdot\text{HF} \\
+  &\qquad + \beta_{11}\cdot\text{HT} + \beta_{12}\cdot\text{PVD} + \beta_{13}\cdot\text{ChronicLiverDisease} \\
+  &\qquad + \boxed{\beta_{14}\cdot\text{Cr} + \beta_{15}\cdot\left[\frac{\Delta\text{Cr}}{\Delta\text{t}}\right]_\text{B}}
+\end{align}
+$$
 
 ```{r 25_cr_ch_multi_optim, include=FALSE, cache=FALSE}
 knitr::read_chunk(file.path(rel_path, "R", "25_cr_ch_multi_optim.R"))
@@ -39,6 +72,11 @@ knitr::read_chunk(file.path(rel_path, "R", "25_cr_ch_multi_optim.R"))
 
 ```{r cr_ch_multi_heuristic_plot, fig.width=8}
 ```
+
+Example: For 6 - 7 hrs, this would be:
+
+ - `centre`: $\frac{T_j - T_i}{2} = 6.5 \,\text{hrs}$
+ - `width`: $T_j - T_i = 1.0 \,\text{hr}$
 
 ```{r cr_ch_multi_optimisation, warning = FALSE, results = 'hide'}
 ```

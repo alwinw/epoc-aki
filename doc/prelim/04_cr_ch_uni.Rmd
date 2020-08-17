@@ -56,7 +56,7 @@ Below is an example of creatinine changes in episodes 3-4 hrs in duration occurr
 ```{r prev_study_bin}
 ```
 
-### Best Manually Chosen Model
+### Best AUC for AKI in 8-16hrs
 
 Now, run various other episode durations to determine if there is an "optimal" duration.
 
