@@ -35,7 +35,7 @@ kable(summarise_cutpoint(base_all_model), align = c('l', 'r'))
 # summary(base_all_model$cutpoint)
 plot(base_all_model$cutpoint)
 # plot_metric(base_all_model$cutpoint, conf_lvl = 0.9)
-rm(base_all_model)
+
 
 # ---- base_significant_only ----
 # Consider using model selection criteria e.g. AIC

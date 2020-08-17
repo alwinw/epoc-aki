@@ -35,7 +35,6 @@ example_bin_2 <- generate_example(
 kable(publish(example_bin_2$model, print = FALSE)$regressionTable)
 kable(summarise_cutpoint(example_bin_2), align = c('l', 'r'))
 plot(example_bin_2$cutpoint)
-rm(example_bin_2)
 
 
 # ---- range_multi_bin ----

@@ -136,12 +136,24 @@ analysis_wrapper <- function(
   if (!all_data) {
     return(summary)
   } else {
+    ch_hr_lower = NA
+    ch_hr_upper = NA
+    aki_hr_lower = NA
+    aki_hr_upper = NA
+    if (!is.null(del_t_ch_hr_range)) {
+      ch_hr_lower = del_t_ch_hr_range[1]
+      ch_hr_upper = del_t_ch_hr_range[2]
+    }
+    if (!is.null(del_t_aki_hr_range)) {
+      aki_hr_lower = del_t_aki_hr_range[1]
+      aki_hr_upper = del_t_aki_hr_range[2]
+    }
     params = data.frame(
       glm_model = glm_model,
-      ch_hr_lower = del_t_ch_hr_range[1],
-      ch_hr_upper = del_t_ch_hr_range[2],
-      aki_hr_lower = del_t_aki_hr_range[1],
-      aki_hr_upper = del_t_aki_hr_range[2]
+      ch_hr_lower = ch_hr_lower,
+      ch_hr_upper = ch_hr_upper,
+      aki_hr_lower = aki_hr_lower,
+      aki_hr_upper = aki_hr_upper
     )
     return(list(
       model = logit_model,
