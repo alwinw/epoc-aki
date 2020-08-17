@@ -136,7 +136,20 @@ analysis_wrapper <- function(
   if (!all_data) {
     return(summary)
   } else {
-    return(list(model = logit_model, cutpoint = logit_cut, summary = summary, data = analysis_data))
+    params = data.frame(
+      glm_model = glm_model,
+      ch_hr_lower = del_t_ch_hr_range[1],
+      ch_hr_upper = del_t_ch_hr_range[2],
+      aki_hr_lower = del_t_aki_hr_range[1],
+      aki_hr_upper = del_t_aki_hr_range[2]
+    )
+    return(list(
+      model = logit_model,
+      cutpoint = logit_cut,
+      summary = summary,
+      data = analysis_data,
+      params = params
+    ))
   }
 }
 
