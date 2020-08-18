@@ -11,8 +11,9 @@ cr_ch_prev_study_cont <- analysis_wrapper(
 )
 kable(publish(cr_ch_prev_study_cont$model, print = FALSE, digits = c(2, 3))$regressionTable,
       align = c('l', 'c', 'c', 'c', 'c'))
-summary(cr_ch_prev_study_cont$cutpoint)
+kable(summarise_cutpoint(cr_ch_prev_study_cont), align = c('l', 'r'))
 rm(cr_ch_prev_study_cont)
+
 
 # ---- prev_study_bin ----
 cr_ch_prev_study_bin <- analysis_wrapper(
@@ -27,8 +28,8 @@ cr_ch_prev_study_bin <- analysis_wrapper(
 )
 kable(publish(cr_ch_prev_study_bin$model, print = FALSE, digits = c(2, 3))$regressionTable,
       align = c('l', 'c', 'c', 'c', 'c'))
-summary(cr_ch_prev_study_bin$cutpoint)
-rm(cr_ch_prev_study_bin)
+kable(summarise_cutpoint(cr_ch_prev_study_bin), align = c('l', 'r'))
+
 
 # ---- range_cr_ch_cont_only ----
 range_cr_ch_only_cont = tibble(

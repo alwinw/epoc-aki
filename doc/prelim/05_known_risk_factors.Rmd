@@ -37,6 +37,19 @@ $$
 \end{align}
 $$
 
+Note that Vasopressor indicates whether or not it was admitted at `T-0` or `T-4` in the original data collection.
+
+```{r vasopressor, echo=TRUE, eval=FALSE, tidy=FALSE}
+Vasopressor = case_when(
+  `T-4_Norad` > 0       ~ 1,
+  `T-4_Metaraminol` > 0 ~ 1,
+  T0_Norad > 0          ~ 1,
+  T0_Metaraminol > 0    ~ 1,
+  grepl("Vasopressors", Mx_other) ~ 1,
+  TRUE ~ NA_real_
+)
+```
+
 ```{r base_with_comorbidities}
 ```
 

@@ -11,9 +11,9 @@ base_min_model <- analysis_wrapper(
 )
 kable(publish(base_min_model$model, print = FALSE, digits = c(2, 3))$regressionTable,
       align = c('l', 'c', 'c', 'c', 'c'))
-plot(regressionTable(base_min_model$model))
-summary(base_min_model$cutpoint)
-
+kable(summarise_cutpoint(base_min_model), align = c('l', 'r'))
+# plot(regressionTable(base_min_model$model))
+# summary(base_min_model$cutpoint)
 plot(base_min_model$cutpoint)
 # plot_metric(base_sig_model$cutpoint, conf_lvl = 0.9)
 rm(base_min_model)
@@ -30,12 +30,12 @@ base_all_model <- analysis_wrapper(
 )
 kable(publish(base_all_model$model, print = FALSE, digits = c(2, 3))$regressionTable,
       align = c('l', 'c', 'c', 'c', 'c'))
-plot(regressionTable(base_all_model$model))
-summary(base_all_model$cutpoint)
-
+kable(summarise_cutpoint(base_all_model), align = c('l', 'r'))
+# plot(regressionTable(base_all_model$model))
+# summary(base_all_model$cutpoint)
 plot(base_all_model$cutpoint)
 # plot_metric(base_all_model$cutpoint, conf_lvl = 0.9)
-rm(base_all_model)
+
 
 # ---- base_significant_only ----
 # Consider using model selection criteria e.g. AIC
@@ -47,9 +47,9 @@ base_sig_model <- analysis_wrapper(
 )
 kable(publish(base_sig_model$model, print = FALSE, digits = c(2, 3))$regressionTable,
       align = c('l', 'c', 'c', 'c', 'c'))
-plot(regressionTable(base_sig_model$model))
-summary(base_sig_model$cutpoint)
-
+kable(summarise_cutpoint(base_sig_model), align = c('l', 'r'))
+# plot(regressionTable(base_sig_model$model))
+# summary(base_sig_model$cutpoint)
 plot(base_sig_model$cutpoint)
 # plot_metric(base_sig_model$cutpoint, conf_lvl = 0.9)
 rm(base_sig_model)

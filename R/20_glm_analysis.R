@@ -136,7 +136,32 @@ analysis_wrapper <- function(
   if (!all_data) {
     return(summary)
   } else {
-    return(list(model = logit_model, cutpoint = logit_cut, summary = summary, data = analysis_data))
+    ch_hr_lower = NA
+    ch_hr_upper = NA
+    aki_hr_lower = NA
+    aki_hr_upper = NA
+    if (!is.null(del_t_ch_hr_range)) {
+      ch_hr_lower = del_t_ch_hr_range[1]
+      ch_hr_upper = del_t_ch_hr_range[2]
+    }
+    if (!is.null(del_t_aki_hr_range)) {
+      aki_hr_lower = del_t_aki_hr_range[1]
+      aki_hr_upper = del_t_aki_hr_range[2]
+    }
+    params = data.frame(
+      glm_model = glm_model,
+      ch_hr_lower = ch_hr_lower,
+      ch_hr_upper = ch_hr_upper,
+      aki_hr_lower = aki_hr_lower,
+      aki_hr_upper = aki_hr_upper
+    )
+    return(list(
+      model = logit_model,
+      cutpoint = logit_cut,
+      summary = summary,
+      data = analysis_data,
+      params = params
+    ))
   }
 }
 
@@ -146,6 +171,18 @@ analysis_wrapper <- function(
 #     baseline_predictors = "Age"
 #   )
 # )
+
+summarise_cutpoint <- function(model) {
+  model$summary %>%
+    select(-ends_with("pos"), -ends_with("neg"), -optimal_cutpoint) %>%
+    mutate(per_admin_in = sprintf("%.0f%%", per_admin_in*100)) %>%
+    mutate_if(is.double, function(x) sprintf("%.4f", x)) %>%
+    mutate_if(is.integer, as.character) %>%
+    t(.) %>%
+    data.frame(.) %>%
+    rownames_to_column() %>%
+    set_names(c("Model Attribute", "Value"))
+}
 
 
 # ---- generate_example_cont_fun ----

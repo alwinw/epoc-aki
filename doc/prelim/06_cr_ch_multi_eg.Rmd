@@ -30,8 +30,12 @@ small change in creatinine change episode.
 
 The second added term $\Delta\text{Cr}$ is the creatinine change during an event.
 
+### Example 1
+
 ```{r example_cont_1, fig.width=9}
 ```
+
+### Example 2
 
 ```{r example_cont_2, fig.width=9}
 ```
@@ -56,10 +60,14 @@ small change in creatinine change episode.
 The second added term $\left[\frac{\Delta\text{Cr}}{\Delta\text{t}}\right]_\text{B}$ is a binary variable for whether
 the gradient of the creatinine change is greater than $1\,(\mu\text{mol/L/hr})$ or not.
 
+### Example
+
 ```{r example_bin_2, fig.width=9}
 ```
 
 You can see that the predictive power is similar to that of $\Delta\text{Cr}$.
+
+### Range
 
 Running a range of possible episode durations, it is possible to see the AUC and
 number of included admissions.

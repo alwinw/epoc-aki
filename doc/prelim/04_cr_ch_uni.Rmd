@@ -24,10 +24,14 @@ $$
 \end{align}
 $$
 
+### Previous Study
+
 Below is an example of creatinine changes in episodes 3-4 hrs in duration occurring 8-16 hrs before AKI.
 
 ```{r prev_study_cont}
 ```
+
+### Best AUC for AKI in 8-16hrs
 
 Now, run various other episode durations to determine if there is an "optimal" duration.
 
@@ -45,10 +49,14 @@ $$
 \end{align}
 $$
 
+### Previous Study
+
 Below is an example of creatinine changes in episodes 3-4 hrs in duration occurring 8-16 hrs before AKI.
 
 ```{r prev_study_bin}
 ```
+
+### Best AUC for AKI in 8-16hrs
 
 Now, run various other episode durations to determine if there is an "optimal" duration.
 

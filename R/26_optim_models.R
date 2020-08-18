@@ -12,13 +12,7 @@ only_model_1 <- analysis_wrapper(
 )
 kable(publish(only_model_1$model, print = FALSE, digits = c(2, 3))$regressionTable,
       align = c('l', 'c', 'c', 'c', 'c'))
-only_model_1$summary %>%
-  mutate_if(is.double, function(x) sprintf("%.4f", x)) %>%
-  mutate_if(is.integer, as.character) %>%
-  t(.) %>%
-  data.frame(.) %>%
-  kable(., align = c('r'))
-rm(only_model_1)
+kable(summarise_cutpoint(only_model_1), align = c('l', 'r'))
 
 
 # ---- only_model_2 ----
@@ -35,12 +29,7 @@ only_model_2 <- analysis_wrapper(
 )
 kable(publish(only_model_2$model, print = FALSE, digits = c(2, 3))$regressionTable,
       align = c('l', 'c', 'c', 'c', 'c'))
-only_model_2$summary %>%
-  mutate_if(is.double, function(x) sprintf("%.4f", x)) %>%
-  mutate_if(is.integer, as.character) %>%
-  t(.) %>%
-  data.frame(.) %>%
-  kable(., align = c('r'))
+kable(summarise_cutpoint(only_model_2), align = c('l', 'r'))
 rm(only_model_2)
 
 
@@ -58,12 +47,7 @@ only_model_3 <- analysis_wrapper(
 )
 kable(publish(only_model_3$model, print = FALSE, digits = c(2, 3))$regressionTable,
       align = c('l', 'c', 'c', 'c', 'c'))
-only_model_3$summary %>%
-  mutate_if(is.double, function(x) sprintf("%.4f", x)) %>%
-  mutate_if(is.integer, as.character) %>%
-  t(.) %>%
-  data.frame(.) %>%
-  kable(., align = c('r'))
+kable(summarise_cutpoint(only_model_3), align = c('l', 'r'))
 rm(only_model_3)
 
 
@@ -84,12 +68,7 @@ multi_model_1a <- analysis_wrapper(
 )
 kable(publish(multi_model_1a$model, print = FALSE, digits = c(2, 3))$regressionTable,
       align = c('l', 'c', 'c', 'c', 'c'))
-multi_model_1a$summary %>%
-  mutate_if(is.double, function(x) sprintf("%.4f", x)) %>%
-  mutate_if(is.integer, as.character) %>%
-  t(.) %>%
-  data.frame(.) %>%
-  kable(., align = c('r'))
+kable(summarise_cutpoint(multi_model_1a), align = c('l', 'r'))
 rm(multi_model_1a)
 
 
@@ -110,13 +89,7 @@ multi_model_1b <- analysis_wrapper(
 )
 kable(publish(multi_model_1b$model, print = FALSE, digits = c(2, 3))$regressionTable,
       align = c('l', 'c', 'c', 'c', 'c'))
-multi_model_1b$summary %>%
-  mutate_if(is.double, function(x) sprintf("%.4f", x)) %>%
-  mutate_if(is.integer, as.character) %>%
-  t(.) %>%
-  data.frame(.) %>%
-  kable(., align = c('r'))
-rm(multi_model_1b)
+kable(summarise_cutpoint(multi_model_1b), align = c('l', 'r'))
 
 
 # ---- multi_model_2a ----
@@ -136,12 +109,7 @@ multi_model_2a <- analysis_wrapper(
 )
 kable(publish(multi_model_2a$model, print = FALSE, digits = c(2, 3))$regressionTable,
       align = c('l', 'c', 'c', 'c', 'c'))
-multi_model_2a$summary %>%
-  mutate_if(is.double, function(x) sprintf("%.4f", x)) %>%
-  mutate_if(is.integer, as.character) %>%
-  t(.) %>%
-  data.frame(.) %>%
-  kable(., align = c('r'))
+kable(summarise_cutpoint(multi_model_2a), align = c('l', 'r'))
 rm(multi_model_2a)
 
 
@@ -161,13 +129,7 @@ multi_model_2b <- analysis_wrapper(
 )
 kable(publish(multi_model_2b$model, print = FALSE, digits = c(2, 3))$regressionTable,
       align = c('l', 'c', 'c', 'c', 'c'))
-multi_model_2b$summary %>%
-  mutate_if(is.double, function(x) sprintf("%.4f", x)) %>%
-  mutate_if(is.integer, as.character) %>%
-  t(.) %>%
-  data.frame(.) %>%
-  kable(., align = c('r'))
-rm(multi_model_2b)
+kable(summarise_cutpoint(multi_model_2b), align = c('l', 'r'))
 
 
 # ---- multi_model_3 ----
@@ -187,13 +149,7 @@ multi_model_3 <- analysis_wrapper(
 )
 kable(publish(multi_model_3$model, print = FALSE, digits = c(2, 3))$regressionTable,
       align = c('l', 'c', 'c', 'c', 'c'))
-multi_model_3$summary %>%
-  mutate_if(is.double, function(x) sprintf("%.4f", x)) %>%
-  mutate_if(is.integer, as.character) %>%
-  t(.) %>%
-  data.frame(.) %>%
-  kable(., align = c('r'))
-rm(multi_model_3)
+kable(summarise_cutpoint(multi_model_3), align = c('l', 'r'))
 
 
 # ---- multi_model_4 ----
@@ -213,13 +169,7 @@ multi_model_4 <- analysis_wrapper(
 )
 kable(publish(multi_model_4$model, print = FALSE, digits = c(2, 3))$regressionTable,
       align = c('l', 'c', 'c', 'c', 'c'))
-multi_model_4$summary %>%
-  mutate_if(is.double, function(x) sprintf("%.4f", x)) %>%
-  mutate_if(is.integer, as.character) %>%
-  t(.) %>%
-  data.frame(.) %>%
-  kable(., align = c('r'))
-rm(multi_model_4)
+kable(summarise_cutpoint(multi_model_4), align = c('l', 'r'))
 
 
 # ---- multi_model_5 ----
@@ -239,13 +189,7 @@ multi_model_5 <- analysis_wrapper(
 )
 kable(publish(multi_model_5$model, print = FALSE, digits = c(2, 3))$regressionTable,
       align = c('l', 'c', 'c', 'c', 'c'))
-multi_model_5$summary %>%
-  mutate_if(is.double, function(x) sprintf("%.4f", x)) %>%
-  mutate_if(is.integer, as.character) %>%
-  t(.) %>%
-  data.frame(.) %>%
-  kable(., align = c('r'))
-rm(multi_model_5)
+kable(summarise_cutpoint(multi_model_5), align = c('l', 'r'))
 
 
 # ---- multi_model_6 ----
@@ -265,13 +209,7 @@ multi_model_6 <- analysis_wrapper(
 )
 kable(publish(multi_model_6$model, print = FALSE, digits = c(2, 3))$regressionTable,
       align = c('l', 'c', 'c', 'c', 'c'))
-multi_model_6$summary %>%
-  mutate_if(is.double, function(x) sprintf("%.4f", x)) %>%
-  mutate_if(is.integer, as.character) %>%
-  t(.) %>%
-  data.frame(.) %>%
-  kable(., align = c('r'))
-rm(multi_model_6)
+kable(summarise_cutpoint(multi_model_6), align = c('l', 'r'))
 
 
 # ---- multi_model_7 ----
@@ -290,13 +228,7 @@ multi_model_7 <- analysis_wrapper(
 )
 kable(publish(multi_model_7$model, print = FALSE, digits = c(2, 3))$regressionTable,
       align = c('l', 'c', 'c', 'c', 'c'))
-multi_model_7$summary %>%
-  mutate_if(is.double, function(x) sprintf("%.4f", x)) %>%
-  mutate_if(is.integer, as.character) %>%
-  t(.) %>%
-  data.frame(.) %>%
-  kable(., align = c('r'))
-rm(multi_model_7)
+kable(summarise_cutpoint(multi_model_7), align = c('l', 'r'))
 
 
 # ---- multi_model_8 ----
@@ -316,13 +248,7 @@ multi_model_8 <- analysis_wrapper(
 )
 kable(publish(multi_model_8$model, print = FALSE, digits = c(2, 3))$regressionTable,
       align = c('l', 'c', 'c', 'c', 'c'))
-multi_model_8$summary %>%
-  mutate_if(is.double, function(x) sprintf("%.4f", x)) %>%
-  mutate_if(is.integer, as.character) %>%
-  t(.) %>%
-  data.frame(.) %>%
-  kable(., align = c('r'))
-rm(multi_model_8)
+kable(summarise_cutpoint(multi_model_8), align = c('l', 'r'))
 
 
 # ---- multi_model_9 ----
@@ -342,14 +268,7 @@ multi_model_9 <- analysis_wrapper(
 )
 kable(publish(multi_model_9$model, print = FALSE, digits = c(2, 3))$regressionTable,
       align = c('l', 'c', 'c', 'c', 'c'))
-multi_model_9$summary %>%
-  mutate_if(is.double, function(x) sprintf("%.4f", x)) %>%
-  mutate_if(is.integer, as.character) %>%
-  t(.) %>%
-  data.frame(.) %>%
-  kable(., align = c('r'))
-rm(multi_model_9)
-
+kable(summarise_cutpoint(multi_model_9), align = c('l', 'r'))
 
 # ---- multi_model_10 ----
 cat("del_t_ch_hr_range = c(5.83, 8.0)\ndel_t_aki_hr_range = c(8.75, 49.66)")
@@ -367,13 +286,7 @@ multi_model_10 <- analysis_wrapper(
 )
 kable(publish(multi_model_10$model, print = FALSE, digits = c(2, 3))$regressionTable,
       align = c('l', 'c', 'c', 'c', 'c'))
-multi_model_10$summary %>%
-  mutate_if(is.double, function(x) sprintf("%.4f", x)) %>%
-  mutate_if(is.integer, as.character) %>%
-  t(.) %>%
-  data.frame(.) %>%
-  kable(., align = c('r'))
-rm(multi_model_10)
+kable(summarise_cutpoint(multi_model_10), align = c('l', 'r'))
 
 
 # ---- multi_model_11 ----
@@ -392,13 +305,7 @@ multi_model_11 <- analysis_wrapper(
 )
 kable(publish(multi_model_11$model, print = FALSE, digits = c(2, 3))$regressionTable,
       align = c('l', 'c', 'c', 'c', 'c'))
-multi_model_11$summary %>%
-  mutate_if(is.double, function(x) sprintf("%.4f", x)) %>%
-  mutate_if(is.integer, as.character) %>%
-  t(.) %>%
-  data.frame(.) %>%
-  kable(., align = c('r'))
-rm(multi_model_11)
+kable(summarise_cutpoint(multi_model_11), align = c('l', 'r'))
 
 # "Age + APACHE_II + APACHE_III + Baseline_Cr",
 # "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"

@@ -38,6 +38,13 @@ read_R <- function(file) readLines(file.path(rel_path, "R", file))
 
 # Overview{-}
 
+```{r copy_overview, opts.label='silent'}
+dir.create("images/", showWarnings = FALSE)
+file.copy("../images/overview.png", "images/")
+```
+
+![Overview of epoc-aki](images/overview.png)
+
 **Aim**
 
 New Arterial Blood Gas (ABG) technology provides accurate and validated point-of-care creatinine measurement. Such technology makes it possible to detect small, short-term increases in creatinine levels. We aimed to determine the predictive value of small, short-term creatinine increases for the development of Acute Kidney Injury (AKI) in critically ill patients.

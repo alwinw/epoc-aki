@@ -1,0 +1,8 @@
+# Model Summary
+
+```{r 27_model_summary, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "27_model_summary.R"))
+```
+
+```{r model_summary}
+```

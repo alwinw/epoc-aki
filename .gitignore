@@ -11,6 +11,7 @@ resources/
 *.tex
 *.csv
 *.bib.bak
+prelim_doc.RData
 
 !data/*.R
 !data/*.md
