@@ -1,0 +1,76 @@
+---
+title: "The predictive value of small short-term creatinine increases detected by arterial blood gases in a clinical context for critically ill patients"
+author: "Lisa Toh, Alwin Wang"
+date: "`r Sys.Date()`"
+output: html_document
+bibliography:
+  - "../bib/references.bib"
+  - "../bib/R-references.bib"
+biblio-style: apalike
+link-citations: yes
+---
+
+```{r setup, echo=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  cache = TRUE,
+  collapse = TRUE,
+  comment = "#>",
+  tidy = TRUE
+)
+
+knitr::opts_template$set(silent = list(
+  warning = FALSE,
+  results = 'hide')
+)
+
+
+rel_path = "../.."
+read_R <- function(file) readLines(file.path(rel_path, "R", file))
+```
+
+# Abstract
+
+## Aim
+
+New Arterial Blood Gas (ABG) technology provides accurate and validated
+point-of-care creatinine measurement. Such technology makes it possible to
+detect small, short-term increases in creatinine levels. These changes alone
+however lack clinical context. We aimed to improve the predictive value of
+small, short-term creatinine increases for the development of Acute Kidney
+Injury (AKI) in critically ill patients by incorporating clinically available
+information.
+
+## Methods
+
+In this prospective cohort study, we assessed all the creatinine values from
+ABGs and laboratory biochemistry results in critically ill patients. We
+calculated the small, short-term creatinine increases between creatinine values
+during the patient’s Intensive Care Unit (ICU) admission until the development
+of KDIGO-defined AKI or ICU discharge or death, whichever occurred first. We
+evaluated the predictive value of these creatinine increases over varying time
+periods for AKI development in multivariable analysis with known risk factors,
+co-morbidities and other clinically available data.
+
+## Results
+
+**TO BE FIXED UP**
+
+We screened a convenience sample of 830 patients and excluded 443 (53.4%)
+patients [AKI on admission (208; 47%), weekend admission (91; 21%) and other
+pre-defined exclusion criteria (144; 32%)]. The 387 (46.6%) eligible patients
+had 3,974 creatinine measurements on ABGs and biochemistry results, which
+generated 71,499 creatinine change episodes, excluding creatinine measurements
+after AKI development. In multivariable modelling, creatinine increases of
+≥1 µmol/L/h over 6 to 7 hours had an odds ratio of 3.14 (95% CI 1.82 – 5.43) for
+the development of AKI in 8 to 16 hours after the creatinine increase. The
+multivariable model with these creatinine increases had an 81.5% sensitivity,
+74.2% specificity and 0.85 area under the curve for AKI development in 8 to 16
+hours.
+
+## Conclusion
+
+In combination with known risk factors, frequent creatinine assessment to detect
+small, short-term creatinine increases provides a novel and rapid method of
+predicting AKI in critically ill patients.
