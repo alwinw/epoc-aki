@@ -1,0 +1,250 @@
+---
+title: "The predictive value of small short-term creatinine increases detected by arterial blood gases in a clinical context for critically ill patients"
+author: "Lisa Toh, Alwin Wang"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    number_sections: true
+bibliography:
+  - "../bib/references.bib"
+  - "../bib/R-references.bib"
+biblio-style: apalike
+link-citations: yes
+---
+
+```{r setup, echo=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  cache = TRUE,
+  collapse = TRUE,
+  comment = "#>",
+  tidy = TRUE
+)
+
+knitr::opts_template$set(silent = list(
+  warning = FALSE,
+  results = 'hide')
+)
+
+
+rel_path = "../.."
+read_R <- function(file) readLines(file.path(rel_path, "R", file))
+```
+
+```{r 00_config, include=FALSE, cache=FALSE}
+# Cannot source this directly or it will override rel_path
+knitr::read_chunk(file.path(rel_path, "R/00_config.R"))
+```
+
+```{r, load_library_function, opts.label='silent'}
+```
+
+```{r environment_setup, opts.label='silent'}
+```
+
+# Abstract {-}
+
+## Aim {-}
+
+New Arterial Blood Gas (ABG) technology provides accurate and validated
+point-of-care creatinine measurement. Such technology makes it possible to
+detect small, short-term increases in creatinine levels. These changes alone
+however lack clinical context. We aimed to improve the predictive value of
+small, short-term creatinine increases for the development of Acute Kidney
+Injury (AKI) in critically ill patients by incorporating clinically available
+information.
+
+## Methods {-}
+
+In this prospective cohort study, we assessed all the creatinine values from
+ABGs and laboratory biochemistry results in critically ill patients. We
+calculated the small, short-term creatinine increases between creatinine values
+during the patient’s Intensive Care Unit (ICU) admission until the development
+of KDIGO-defined AKI or ICU discharge or death, whichever occurred first. We
+evaluated the predictive value of these creatinine increases over varying time
+periods for AKI development in multivariable analysis with known risk factors,
+co-morbidities and other clinically available data.
+
+## Results {-}
+
+**TO BE FIXED UP**
+
+We screened a convenience sample of 830 patients and excluded 443 (53.4%)
+patients [AKI on admission (208; 47%), weekend admission (91; 21%) and other
+pre-defined exclusion criteria (144; 32%)]. The 387 (46.6%) eligible patients
+had 3,974 creatinine measurements on ABGs and biochemistry results, which
+generated 71,499 creatinine change episodes, excluding creatinine measurements
+after AKI development. In multivariable modelling, creatinine increases of
+≥1 µmol/L/h over 6 to 7 hours had an odds ratio of 3.14 (95% CI 1.82 – 5.43) for
+the development of AKI in 8 to 16 hours after the creatinine increase. The
+multivariable model with these creatinine increases had an 81.5% sensitivity,
+74.2% specificity and 0.85 area under the curve for AKI development in 8 to 16
+hours.
+
+## Conclusion {-}
+
+In combination with known risk factors, frequent creatinine assessment to detect
+small, short-term creatinine increases provides a novel and rapid method of
+predicting AKI in critically ill patients.
+
+# Introduction
+
+[1/2 Page Approx]
+
+* Acute kidney injury (AKI) is common in critically-ill patients
+admitted to the intensive care unit (ICU), and is associated
+with high morbidity and mortality in the critically ill
+population. Its pathogenesis is still poorly understood,
+with limited ability to predict its occurrence. Failure to
+improve outcomes of patients with AKI may be linked to
+delays in its detection.
+
+* Creatinine changes alone lack context. In order to improve predictability of
+Cr from ABG likely obtaining readily clinically available info will improve the
+ability of serum cr to predict subsequent AKI.
+
+* Assessment of small short term cr changes have limited predictive value
+
+```{r copy_cr_ch_heatmap, opts.label='silent'}
+dir.create("images/", showWarnings = FALSE)
+file.copy("../images/cr_ch_heatmap.png", "images/")
+```
+
+![Distribution of Cr ch epis for patients with and without AKI](images/cr_ch_heatmap.png)
+
+* Aim to develop a model that uses short term changes in serum cr and clinical
+info to improve predictive values
+
+* High performing model can be developed when taking clinical characteristics as
+well as short term cr changes for acute kidney injury
+
+# Methods
+
+[1/2 Page Approx]
+
+## Design and Setting
+
+* This single-centre prospective observational study received ethics
+approval with a waiver for consent from the Austin Health and Monash
+University Human Research Ethics Committees.
+
+## Study Cohort
+
+* We screened all patients admitted to a tertiary referral centre ICU
+between 5 February and 16 July 2018 for enrolment. Exclusion criteria
+were age b 18 years, AKI (as per Kidney Disease: Improving Global Outcomes
+[KDIGO] definition) on ICU admission, end-stage kidney disease,
+kidney transplant, weekend admission, end-of-life care and no urinary
+catheter nor arterial line in situ.
+
+* In total there were 8,817 ABG and Bio Chem Cr measurements which corresponds
+to 251,652 Cr change episodes. Of these creatinine change episodes, 43,404 were
+in admissions that did not have AKI and 28,095 change episodes were before onset
+of AKI. There were 180,153 Cr change episodes after the onset of AKI and these
+were discarded.
+
+```{r copy_flow_chart, opts.label='silent'}
+dir.create("images/", showWarnings = FALSE)
+file.copy("../images/screening-flow-chart.svg", "images/")
+```
+
+![Screening flow chart](images/screening-flow-chart.svg)
+
+## Variables and Definitions
+
+* AKI Outcome: Patients who developed an episode of creatinine increase were
+monitored for AKI until ICU discharge. AKI was defined and classified by both
+the urinary output and creatinine KDIGO criteria
+
+* Creatinine definition
+
+* Co-morbidities
+
+## Statistical Analysis
+
+* Analysed the data using R software 4.0.2 and packages tidyverse version 1.3.0,
+cutpointr version 1.0.32 and optimr version 2019-12.16.
+
+* To assess predictive performance, we computed the area
+under the receiver operating characteristic (AUROC) curve
+for the detection of the primary outcome. AUROC quality
+was defined as follows: excellent (0.9–1.0), very good (0.8
+to < 0.9), good (0.7 to < 0.8), fair (0.6 to < 0.7), poor (0.5
+to < 0.6), and invaluable (< 0.5).
+
+* Used Youden's index to derive optimal cut-points to calculate diagnostic
+characteristics with 95% CIs.
+
+<!-- R Analysis: Load Data -->
+```{r 01_load_data, code=read_R("01_load_data.R"), opts.label='silent'}
+```
+
+```{r 02_screening_log, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "02_screening_log.R"))
+```
+
+```{r join_demo_screen_log_sheets_function}
+```
+
+```{r screen_log_all}
+```
+
+```{r screen_log_apache}
+```
+
+```{r 03_data_set, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "03_data_set.R"))
+```
+
+```{r find_cols_function}
+```
+
+```{r merge_data_sets_outcomes}
+```
+
+```{r merge_data_sets}
+```
+
+```{r 04_merge_all, code=read_R("04_merge_obs.R"), opts.label='silent'}
+```
+
+```{r 05_cr_ts_data, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "05_cr_ts_data.R"))
+```
+
+```{r combine_blood_gas_bio_chem}
+```
+
+```{r 06_cr_changes, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "06_cr_changes.R"))
+```
+
+```{r generate_cr_ch_function}
+```
+
+```{r generate_cr_changes}
+```
+
+# Results
+
+## Baseline characteristics
+<!-- R Analysis: Demographics -->
+
+<!-- Should have columns for each of the models -->
+
+<!-- R Analysis: Analysis -->
+```{r 20_glm_analysis, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "20_glm_analysis.R"))
+```
+
+```{r analysis_ts}
+```
+
+```{r glm_analysis_wrapper}
+```
+
+```{r generate_example_cont_fun}
+```
+
+

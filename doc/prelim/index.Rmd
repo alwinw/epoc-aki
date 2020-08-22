@@ -65,7 +65,7 @@ To come
 
 To come
 
-```{r 01_config, include=FALSE, cache=FALSE}
+```{r 00_config, include=FALSE, cache=FALSE}
 # Cannot source this directly or it will override rel_path
 knitr::read_chunk(file.path(rel_path, "R/00_config.R"))
 ```
