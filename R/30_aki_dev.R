@@ -33,6 +33,7 @@ aki_dev_wrapper <- function(
   del_t_aki_hr_range = NULL,
   add_gradient_predictor = NULL,
   stepwise = FALSE,
+  k = "mBIC",
   plot_cutpoint = FALSE,
   heuristic_only = FALSE,
   all_data = FALSE,
@@ -80,7 +81,14 @@ aki_dev_wrapper <- function(
       analysis_data, all_predict, {{outcome_var}}, use_midpoints = TRUE,
       direction = ">=", pos_class = 1, neg_class = 0,
       method = maximize_metric, metric = youden)
-    logit_model <- step(logit_model, trace = 0, k = log(n_admissions), direction = "backward") # Modified BIC
+    if (k == "AIC") {
+      k = 2
+    } else if (k == "BIC") {
+      k = log(nrow(analysis_data))
+    } else {
+      k = log(n_admissions)
+    }
+    logit_model <- step(logit_model, trace = 0, k = k, direction = "backward") # Modified BIC
     glm_model = gsub("\\s+", " ", paste0(format(formula(logit_model)), collapse = ""))
   }
 
@@ -162,3 +170,17 @@ aki_dev_wrapper <- function(
 
 
 # ---- time_aki_wrapper ----
+
+
+# ---- summarise_cutpoint_function ----
+summarise_cutpoint <- function(model) {
+  model$summary %>%
+    select(-ends_with("pos"), -ends_with("neg"), -optimal_cutpoint) %>%
+    mutate(per_admin_in = sprintf("%.0f%%", per_admin_in*100)) %>%
+    mutate_if(is.double, function(x) sprintf("%.4f", x)) %>%
+    mutate_if(is.integer, as.character) %>%
+    t(.) %>%
+    data.frame(.) %>%
+    rownames_to_column() %>%
+    set_names(c("Model Attribute", "Value"))
+}

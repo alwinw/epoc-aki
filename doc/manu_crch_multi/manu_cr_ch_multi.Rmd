@@ -234,17 +234,77 @@ knitr::read_chunk(file.path(rel_path, "R", "06_cr_changes.R"))
 <!-- Should have columns for each of the models -->
 
 <!-- R Analysis: Analysis -->
-```{r 20_glm_analysis, include=FALSE, cache=FALSE}
-knitr::read_chunk(file.path(rel_path, "R", "20_glm_analysis.R"))
+```{r 30_aki_dev, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "30_aki_dev.R"))
 ```
 
 ```{r analysis_ts}
 ```
 
-```{r glm_analysis_wrapper}
+```{r aki_dev_wrapper}
 ```
 
-```{r generate_example_cont_fun}
+```{r summarise_cutpoint_function}
 ```
 
+## Optimal univariable Cr ch model
+
+```{r optim_cr_ch_only}
+only_model <- aki_dev_wrapper(
+  outcome_var = "AKI_ICU",
+  baseline_predictors = "",
+  cr_predictors = NULL,
+  del_t_ch_hr_range = c(5.33, 7.25),
+  del_t_aki_hr_range = c(8, 12.66),
+  add_gradient_predictor = 1,
+  all_data = TRUE,
+  analysis_data = analysis_df
+)
+kable(only_model$params)
+kable(publish(only_model$model, print = FALSE, digits = c(2, 3))$regressionTable,
+      align = c('l', 'c', 'c', 'c', 'c'))
+kable(summarise_cutpoint(only_model), align = c('l', 'r'))
+```
+
+## Known risk factors
+
+```{r known_risk_factors}
+baseline_df <- analysis_df %>%
+  select(-DateTime_Pathology_Result:-del_t_aki_hr) %>%
+  unique(.)
+
+base_model <- aki_dev_wrapper(
+  outcome_var = "AKI_ICU",
+  baseline_predictors = c(
+    "Age + APACHE_II + APACHE_III + Baseline_Cr",
+    "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
+  ),
+  all_data = TRUE,
+  analysis_data = baseline_df
+)
+kable(base_model$params)
+kable(publish(base_model$model, print = FALSE, digits = c(2, 3))$regressionTable,
+      align = c('l', 'c', 'c', 'c', 'c'))
+kable(summarise_cutpoint(base_model), align = c('l', 'r'))
+```
+
+```{r known_risk_factors_reduced, include = FALSE}
+base_model_r <- aki_dev_wrapper(
+  outcome_var = "AKI_ICU",
+  baseline_predictors = c(
+    "Age + APACHE_II + APACHE_III + Baseline_Cr",
+    "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
+  ),
+  stepwise = TRUE,
+  k = "AIC",
+  all_data = TRUE,
+  analysis_data = baseline_df
+)
+kable(base_model_r$params)
+kable(publish(base_model_r$model, print = FALSE, digits = c(2, 3))$regressionTable,
+      align = c('l', 'c', 'c', 'c', 'c'))
+kable(summarise_cutpoint(base_model_r), align = c('l', 'r'))
+```
+
+## Top Performing AUROC Model
 
