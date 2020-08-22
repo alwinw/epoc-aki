@@ -141,16 +141,16 @@ cr_ch_ts %>%
   mutate(
     t_AKI = if_else(is.na(del_t_aki) | del_t_aki > 0, "Before", "After")
   ) %>%
-  select(AdmissionID, AKI_ICU, t_AKI) %>% 
-  group_by(AdmissionID) %>% 
-  unique(.) %>% 
-  group_by(AKI_ICU, t_AKI) %>% 
+  select(AdmissionID, AKI_ICU, t_AKI) %>%
+  group_by(AdmissionID) %>%
+  unique(.) %>%
+  group_by(AKI_ICU, t_AKI) %>%
   summarise(
     admissions = n(),
     .groups = "drop"
-  ) %>% 
-  pivot_wider(names_from = t_AKI, values_from = admissions) %>% 
-  adorn_totals(c("col")) %>% 
+  ) %>%
+  pivot_wider(names_from = t_AKI, values_from = admissions) %>%
+  adorn_totals(c("col")) %>%
   kable(., caption = "Admission breakdown")
 
 # ---- summary_plots ----
