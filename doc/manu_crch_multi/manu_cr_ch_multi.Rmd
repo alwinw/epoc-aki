@@ -2,7 +2,9 @@
 title: "The predictive value of small short-term creatinine increases detected by arterial blood gases in a clinical context for critically ill patients"
 author: "Lisa Toh, Alwin Wang"
 date: "`r Sys.Date()`"
-output: html_document
+output:
+  html_document:
+    number_sections: true
 bibliography:
   - "../bib/references.bib"
   - "../bib/R-references.bib"
@@ -74,3 +76,64 @@ hours.
 In combination with known risk factors, frequent creatinine assessment to detect
 small, short-term creatinine increases provides a novel and rapid method of
 predicting AKI in critically ill patients.
+
+# Introduction
+
+[1/2 Page Approx]
+
+* Acute kidney injury (AKI) is common in critically-ill patients
+admitted to the intensive care unit (ICU), and is associated
+with high morbidity and mortality in the critically ill
+population. Its pathogenesis is still poorly understood,
+with limited ability to predict its occurrence. Failure to
+improve outcomes of patients with AKI may be linked to
+delays in its detection.
+
+* Creatinine changes alone lack context. In order to improve predictability of
+Cr from ABG likely obtaining readily clinically available info will improve the
+ability of serum cr to predict subsequent AKI.
+
+* Assessment of small short term cr changes have limited predictive value
+
+[Cr ch epis exploration]
+
+* Aim to develop a model that uses short term changes in serum cr and clinical
+info to improve predictive values
+
+* High performing model can be developed when taking clinical characteristics as
+well as short term cr changes for acute kidney injury
+
+# Methods
+
+[1/2 Page Approx]
+
+## Design and Setting
+
+* This single-centre prospective observational study received ethics
+approval with a waiver for consent from the Austin Health and Monash
+University Human Research Ethics Committees.
+
+## Study Cohort
+
+* We screened all patients admitted to a tertiary referral centre ICU
+between 5 February and 16 July 2018 for enrolment. Exclusion criteria
+were age b 18 years, AKI (as per Kidney Disease: Improving Global Outcomes
+[KDIGO] definition) on ICU admission, end-stage kidney disease,
+kidney transplant, weekend admission, end-of-life care and no urinary
+catheter nor arterial line in situ.
+
+* In total there were 8,817 ABG and Bio Chem Cr measurements which corresponds
+to 251,652 Cr change episodes. Of these creatinine change episodes, 43,404 were
+in admissions that did not have AKI and 28,095 change episodes were before onset
+of AKI. There were 180,153 Cr change episodes after the onset of AKI and these
+were discarded.
+
+[study flow chart]
+
+## Variables and Definitions
+
+* Patients who developed an episode of creatinine increase were monitored
+for AKI until ICU discharge. AKIwas defined and classified by both
+the urinary output and creatinine KDIGO criteria
+
+* Co-morbidities
