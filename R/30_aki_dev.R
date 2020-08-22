@@ -81,6 +81,7 @@ aki_dev_wrapper <- function(
       direction = ">=", pos_class = 1, neg_class = 0,
       method = maximize_metric, metric = youden)
     logit_model <- step(logit_model, trace = 0, k = log(n_admissions), direction = "backward") # Modified BIC
+    glm_model = gsub("\\s+", " ", paste0(format(formula(logit_model)), collapse = ""))
   }
 
   analysis_data$predict = predict(logit_model, type = "response")
@@ -105,15 +106,14 @@ aki_dev_wrapper <- function(
     sensitivity      = logit_cut$sensitivity[[1]],
     specificity      = logit_cut$specificity[[1]],
     optimal_cutpoint = logit_cut$optimal_cutpoint,
-    per_admin_in     = per_admin_in,
+    per_admin_in     = n_admissions/n_analysis_data,
     n_admissions     = n_admissions,
     n_admissions_pos = length(unique(analysis_data$AdmissionID[analysis_data$AKI_ICU == 1])),
     n_admissions_neg = length(unique(analysis_data$AdmissionID[analysis_data$AKI_ICU == 0])),
     n_UR             = length(unique(analysis_data$`UR number`)),
     n                = nrow(analysis_data),
     n_event_pos      = sum(analysis_data$AKI_ICU == 1),
-    n_event_neg      = sum(analysis_data$AKI_ICU == 0),
-    model            = glm_model
+    n_event_neg      = sum(analysis_data$AKI_ICU == 0)
   )
   if (stepwise) summary$AUC_all = logit_cut_all$AUC
 
@@ -144,3 +144,21 @@ aki_dev_wrapper <- function(
     ))
   }
 }
+
+# temp = aki_dev_wrapper(
+#   outcome_var = "AKI_ICU",
+#   baseline_predictors = c(
+#     "Age + APACHE_II + APACHE_III + Baseline_Cr",
+#     "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
+#   ),
+#   cr_predictors = "cr",
+#   del_t_ch_hr_range = c(6.0, 8.33),
+#   del_t_aki_hr_range = c(9.25, 47.33),
+#   add_gradient_predictor = 1,
+#   stepwise = TRUE,
+#   all_data = TRUE,
+#   analysis_data = analysis_df
+# ); summarise_cutpoint(temp); temp$params$glm_model
+
+
+# ---- time_aki_wrapper ----

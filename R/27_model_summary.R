@@ -29,8 +29,8 @@ model_list <- lapply(
   }
 )
 
-bind_rows(model_list) %>% 
-  kable(.) %>% 
+bind_rows(model_list) %>%
+  kable(.) %>%
   kable_styling() %>%
   scroll_box(width = "100%", box_css = "border: 0px;")
 
