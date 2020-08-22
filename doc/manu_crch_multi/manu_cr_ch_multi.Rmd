@@ -43,9 +43,9 @@ knitr::read_chunk(file.path(rel_path, "R/00_config.R"))
 ```{r environment_setup, opts.label='silent'}
 ```
 
-# Abstract
+# Abstract {-}
 
-## Aim
+## Aim {-}
 
 New Arterial Blood Gas (ABG) technology provides accurate and validated
 point-of-care creatinine measurement. Such technology makes it possible to
@@ -55,7 +55,7 @@ small, short-term creatinine increases for the development of Acute Kidney
 Injury (AKI) in critically ill patients by incorporating clinically available
 information.
 
-## Methods
+## Methods {-}
 
 In this prospective cohort study, we assessed all the creatinine values from
 ABGs and laboratory biochemistry results in critically ill patients. We
@@ -66,7 +66,7 @@ evaluated the predictive value of these creatinine increases over varying time
 periods for AKI development in multivariable analysis with known risk factors,
 co-morbidities and other clinically available data.
 
-## Results
+## Results {-}
 
 **TO BE FIXED UP**
 
@@ -82,7 +82,7 @@ multivariable model with these creatinine increases had an 81.5% sensitivity,
 74.2% specificity and 0.85 area under the curve for AKI development in 8 to 16
 hours.
 
-## Conclusion
+## Conclusion {-}
 
 In combination with known risk factors, frequent creatinine assessment to detect
 small, short-term creatinine increases provides a novel and rapid method of
@@ -229,9 +229,11 @@ knitr::read_chunk(file.path(rel_path, "R", "06_cr_changes.R"))
 # Results
 
 ## Baseline characteristics
+<!-- R Analysis: Demographics -->
 
+<!-- Should have columns for each of the models -->
 
-<!-- R Analysis: Analysis Wrapper -->
+<!-- R Analysis: Analysis -->
 ```{r 20_glm_analysis, include=FALSE, cache=FALSE}
 knitr::read_chunk(file.path(rel_path, "R", "20_glm_analysis.R"))
 ```
