@@ -32,6 +32,17 @@ rel_path = "../.."
 read_R <- function(file) readLines(file.path(rel_path, "R", file))
 ```
 
+```{r 00_config, include=FALSE, cache=FALSE}
+# Cannot source this directly or it will override rel_path
+knitr::read_chunk(file.path(rel_path, "R/00_config.R"))
+```
+
+```{r, load_library_function, opts.label='silent'}
+```
+
+```{r environment_setup, opts.label='silent'}
+```
+
 # Abstract
 
 ## Aim
@@ -95,7 +106,12 @@ ability of serum cr to predict subsequent AKI.
 
 * Assessment of small short term cr changes have limited predictive value
 
-[Cr ch epis exploration]
+```{r copy_cr_ch_heatmap, opts.label='silent'}
+dir.create("images/", showWarnings = FALSE)
+file.copy("../images/cr_ch_heatmap.png", "images/")
+```
+
+![Distribution of Cr ch epis for patients with and without AKI](images/cr_ch_heatmap.png)
 
 * Aim to develop a model that uses short term changes in serum cr and clinical
 info to improve predictive values
@@ -128,12 +144,17 @@ in admissions that did not have AKI and 28,095 change episodes were before onset
 of AKI. There were 180,153 Cr change episodes after the onset of AKI and these
 were discarded.
 
-[study flow chart]
+```{r copy_flow_chart, opts.label='silent'}
+dir.create("images/", showWarnings = FALSE)
+file.copy("../images/screening-flow-chart.svg", "images/")
+```
+
+![Screening flow chart](images/screening-flow-chart.svg)
 
 ## Variables and Definitions
 
 * AKI Outcome: Patients who developed an episode of creatinine increase were
-monitored for AKI until ICU discharge. AKIwas defined and classified by both
+monitored for AKI until ICU discharge. AKI was defined and classified by both
 the urinary output and creatinine KDIGO criteria
 
 * Creatinine definition
@@ -155,4 +176,73 @@ to < 0.6), and invaluable (< 0.5).
 * Used Youden's index to derive optimal cut-points to calculate diagnostic
 characteristics with 95% CIs.
 
+<!-- R Analysis: Load Data -->
+```{r 01_load_data, code=read_R("01_load_data.R"), opts.label='silent'}
+```
+
+```{r 02_screening_log, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "02_screening_log.R"))
+```
+
+```{r join_demo_screen_log_sheets_function}
+```
+
+```{r screen_log_all}
+```
+
+```{r screen_log_apache}
+```
+
+```{r 03_data_set, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "03_data_set.R"))
+```
+
+```{r find_cols_function}
+```
+
+```{r merge_data_sets_outcomes}
+```
+
+```{r merge_data_sets}
+```
+
+```{r 04_merge_all, code=read_R("04_merge_obs.R"), opts.label='silent'}
+```
+
+```{r 05_cr_ts_data, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "05_cr_ts_data.R"))
+```
+
+```{r combine_blood_gas_bio_chem}
+```
+
+```{r 06_cr_changes, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "06_cr_changes.R"))
+```
+
+```{r generate_cr_ch_function}
+```
+
+```{r generate_cr_changes}
+```
+
 # Results
+
+## Baseline characteristics
+
+
+<!-- R Analysis: Analysis Wrapper -->
+```{r 20_glm_analysis, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "20_glm_analysis.R"))
+```
+
+```{r analysis_ts}
+```
+
+```{r glm_analysis_wrapper}
+```
+
+```{r generate_example_cont_fun}
+```
+
+
