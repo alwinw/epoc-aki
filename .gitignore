@@ -12,6 +12,7 @@ resources/
 *.csv
 *.bib.bak
 prelim_doc.RData
+main.RData
 
 !data/*.R
 !data/*.md

@@ -5,19 +5,25 @@ aki_optim_wrapper <- function(
   baseline_predictors = "",
   cr_predictors = "",
   add_gradient_predictor = NULL,
+  stepwise = FALSE,
+  k = "AIC",
   lower = c(3, 0.1, 8, 3),
-  upper = c(10, 3, 12, 48)
+  upper = c(10, 3, 12, 48),
+  cluster = FALSE
 ) {
-
   optim_in_list <- asplit(optim_in, 1)
-  cl <- makeCluster(detectCores() - 1)
-  invisible(clusterEvalQ(cl, library("dplyr")))
-  invisible(clusterEvalQ(cl, library("cutpointr")))
-  clusterExport(cl, c(
-    "analysis_df", "aki_dev_wrapper", "heuristic_calc",
-    "outcome_var", "baseline_predictors", "cr_predictors",
-    "add_gradient_predictor", "lower", "upper"),
-  envir=environment())
+  if(cluster) {
+    cl <- makeCluster(detectCores() - 1)
+    invisible(clusterEvalQ(cl, library("dplyr")))
+    invisible(clusterEvalQ(cl, library("cutpointr")))
+    clusterExport(cl, c(
+      "analysis_df", "aki_dev_wrapper", "heuristic_calc",
+      "outcome_var", "baseline_predictors", "cr_predictors",
+      "add_gradient_predictor", "lower", "upper"),
+    envir=environment())
+  } else {
+    cl <- NULL
+  }
 
   optim_out <- pblapply(optim_in_list, function(par) {
     optim_cl <- optim(par, function(x) {
@@ -32,6 +38,8 @@ aki_optim_wrapper <- function(
           del_t_ch_hr_range = c(ch_min, ch_max),
           del_t_aki_hr_range = c(aki_min, aki_max),
           add_gradient_predictor = add_gradient_predictor,
+          stepwise = stepwise,
+          k = k,
           heuristic_only = TRUE,
           analysis_data = analysis_df
         )
@@ -54,7 +62,9 @@ aki_optim_wrapper <- function(
   },
   cl = cl
   )
-  stopCluster(cl)
+  if(cluster) {
+    stopCluster(cl)
+  }
   optim_out_df <- bind_rows(optim_out)
 
   optim_tidy <- optim_out_df %>%
@@ -75,6 +85,8 @@ aki_optim_wrapper <- function(
         del_t_ch_hr_range = c(.$ch_hr_lower, .$ch_hr_upper),
         del_t_aki_hr_range = c(.$aki_hr_lower, .$aki_hr_upper),
         add_gradient_predictor = add_gradient_predictor,
+        stepwise = stepwise,
+        k = k,
         heuristic_only = TRUE,
         analysis_data = analysis_df
       )
