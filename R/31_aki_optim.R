@@ -96,8 +96,8 @@ aki_optim_wrapper <- function(
     mutate(
       heuristic = heuristic_calc(AUC, per_admin_in)
     ) %>%
-    select(-fevals:-convergence)
-    # select(-p1:-p4, -fevals:-convergence, -value)
+    select(p1:p4, AUC:n_admissions,
+           ch_hr_lower:aki_hr_upper, value, heuristic)
 
   optim_summary <- optim_tidy %>%
     mutate_if(is.double, function(x) sprintf("%.4f", x)) %>%
