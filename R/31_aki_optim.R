@@ -81,7 +81,7 @@ aki_optim_wrapper <- function(
       aki_dev_wrapper(
         outcome_var = outcome_var,
         baseline_predictors = baseline_predictors,
-        cr_predictors = baseline_predictors,
+        cr_predictors = cr_predictors,
         del_t_ch_hr_range = c(.$ch_hr_lower, .$ch_hr_upper),
         del_t_aki_hr_range = c(.$aki_hr_lower, .$aki_hr_upper),
         add_gradient_predictor = add_gradient_predictor,
@@ -96,7 +96,8 @@ aki_optim_wrapper <- function(
     mutate(
       heuristic = heuristic_calc(AUC, per_admin_in)
     ) %>%
-    select(-p1:-p4, -fevals:-convergence, -value)
+    select(-fevals:-convergence)
+    # select(-p1:-p4, -fevals:-convergence, -value)
 
   optim_summary <- optim_tidy %>%
     mutate_if(is.double, function(x) sprintf("%.4f", x)) %>%
