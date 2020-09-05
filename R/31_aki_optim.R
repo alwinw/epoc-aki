@@ -12,7 +12,7 @@ aki_optim_wrapper <- function(
   cluster = FALSE
 ) {
   optim_in_list <- asplit(optim_in, 1)
-  if(cluster) {
+  if (cluster) {
     cl <- makeCluster(detectCores() - 1)
     invisible(clusterEvalQ(cl, library("dplyr")))
     invisible(clusterEvalQ(cl, library("cutpointr")))
@@ -20,7 +20,7 @@ aki_optim_wrapper <- function(
       "analysis_df", "aki_dev_wrapper", "heuristic_calc",
       "outcome_var", "baseline_predictors", "cr_predictors",
       "add_gradient_predictor", "lower", "upper"),
-    envir=environment())
+    envir = environment())
   } else {
     cl <- NULL
   }
@@ -62,7 +62,7 @@ aki_optim_wrapper <- function(
   },
   cl = cl
   )
-  if(cluster) {
+  if (cluster) {
     stopCluster(cl)
   }
   optim_out_df <- bind_rows(optim_out)
