@@ -13,7 +13,7 @@ aki_optim_wrapper <- function(
 ) {
   optim_in_list <- asplit(optim_in, 1)
   if (cluster) {
-    cl <- makeCluster(detectCores() - 1)
+    cl <- makeCluster(detectCores())
     invisible(clusterEvalQ(cl, library("dplyr")))
     invisible(clusterEvalQ(cl, library("cutpointr")))
     clusterExport(cl, c(
