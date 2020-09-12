@@ -229,6 +229,10 @@ knitr::read_chunk(file.path(rel_path, "R", "06_cr_changes.R"))
 # Results
 
 ## Baseline characteristics
+
+* Demographics
+* Outcomes
+
 <!-- R Analysis: Demographics -->
 
 <!-- Should have columns for each of the models -->
@@ -247,15 +251,69 @@ knitr::read_chunk(file.path(rel_path, "R", "30_aki_dev.R"))
 ```{r summarise_cutpoint_function}
 ```
 
+```{r 31_aki_optim, include=FALSE, cache=FALSE}
+knitr::read_chunk(file.path(rel_path, "R", "31_aki_optim.R"))
+```
+
+```{r aki_optim_wrapper}
+```
+
 ## Optimal univariable Cr ch model
 
+* Cr ch only model (based on binary variable cr ch gradient > 1 µmol/L/h)
+* Varied duration of cr_ch and time to aki, optimising for AUROC
+* Compared to previous models, this has a better AUROC but is still not great
+
 ```{r optim_cr_ch_only}
+set.seed(8)
+optim_in = rbind(
+  c(6.0, 1.0, 8.0, 10.0), # Baseline
+  c(6.7, 1.2, 8.1,  9.6), # AUC 0.6396
+  cbind(
+    runif(20, 6.0, 7.0),
+    runif(20, 1.5, 2.5),
+    runif(20, 8.0, 8.5),
+    runif(20, 4.0, 5.0)
+  ),
+  c(6.4, 2.0, 8.0, 4.7), # AUC 0.6756
+  c(6.3, 1.9, 8.0, 4.7), # AUC 0.6679
+  c(6.6, 2.5, 8.0, 4.0), # AUC 0.6637
+  c(6.0, 2.1, 8.1, 4.3), # AUC 0.6451
+  cbind(
+    runif(30, 6.0, 7.0),
+    runif(30, 1.5, 2.5),
+    runif(30, 8.0, 8.5),
+    runif(30, 4.0, 5.0)
+  ),
+  cbind(
+    runif(50, 5, 10),
+    runif(50, 1, 3),
+    runif(50, 8, 12),
+    runif(50, 3, 48)
+  )
+)
+heuristic_calc <- function(AUC, per_admin_in){return(AUC)}
+optim_only_model <- aki_optim_wrapper(
+  optim_in,
+  outcome_var = "AKI_ICU",
+  baseline_predictors = "",
+  cr_predictors = "",
+  add_gradient_predictor = 1,
+  lower = c(3, 0.1, 8, 3),
+  upper = c(10, 3, 12, 48)
+)
+kable(head(optim_only_model$optim_summary, 20))
+```
+
+* Below is the model with maximum AUROC
+
+```{r optim_cr_ch_only_model}
 only_model <- aki_dev_wrapper(
   outcome_var = "AKI_ICU",
   baseline_predictors = "",
   cr_predictors = NULL,
-  del_t_ch_hr_range = c(5.33, 7.25),
-  del_t_aki_hr_range = c(8, 12.66),
+  del_t_ch_hr_range = c(5.4, 7.4),
+  del_t_aki_hr_range = c(8, 12.7),
   add_gradient_predictor = 1,
   all_data = TRUE,
   analysis_data = analysis_df
@@ -267,6 +325,10 @@ kable(summarise_cutpoint(only_model), align = c('l', 'r'))
 ```
 
 ## Known risk factors
+
+* Includes all collected risk factors and comorbidities
+* Note that not all of the risk factors are statistically significant
+* The AUROC of this model is ok
 
 ```{r known_risk_factors}
 baseline_df <- analysis_df %>%
@@ -308,3 +370,79 @@ kable(summarise_cutpoint(base_model_r), align = c('l', 'r'))
 
 ## Top Performing AUROC Model
 
+```{r optim_multi}
+# set.seed(8)
+optim_in = rbind(
+  # c(6.56, 0.89, 8.00, 8.00), # 0.8632 | 0.4089
+  # c(6.50, 0.97, 8.45, 8.23), # 0.8500 | 0.4062
+  # c(7.01, 1.19, 8.00, 8.20), # 0.8448 | 0.4245
+  # c(6.61, 1.03, 8.44, 7.39), # 0.8430 | 0.4036
+  # c(6.70, 1.04, 8.57, 7.79), # 0.8416 | 0.4115
+  # c(6.46, 1.13, 8.09, 8.46), # 0.8359 | 0.4349
+  #
+  # cbind(
+  #   runif(50, 6.2, 7.0),
+  #   runif(50, 0.8, 1.8),
+  #   runif(50, 8.0, 8.8),
+  #   runif(50, 7.0, 8.8)
+  # )
+  # c(6.90, 1.96, 8.77, 34.75),
+  # cbind(
+  #   runif(50, 6.5, 7.5),
+  #   runif(50, 1.5, 2.5),
+  #   runif(50, 8.5, 10.5),
+  #   runif(50, 30, 45)
+  # )
+
+
+  # c(6.90, 1.96, 8.77, 34.75) # Great AKI time length
+  # cbind(
+  #   runif(20, 6, 7),
+  #   runif(20, 1, 3),
+  #   runif(20, 8, 9),
+  #   runif(20, 10, 11)
+  # ),
+  # cbind(
+  #   runif(20, 6.5, 7.5),
+  #   runif(20, 1.5, 2.5),
+  #   runif(20, 8.5, 10.5),
+  #   runif(20, 30, 45)
+  # ),
+  # cbind(
+  #   runif(50, 3, 10),
+  #   runif(50, 1, 3),
+  #   runif(50, 8, 12),
+  #   runif(50, 3, 48)
+  # )
+  cbind(
+    runif(10000, 3, 10),
+    runif(10000, 1, 3),
+    runif(10000, 8, 12),
+    runif(10000, 3, 48)
+  )
+)
+heuristic_calc <- function(AUC, per_admin_in){
+  return((1/2 + 1/2*tanh(11*(AUC - 0.90 + 0.1)) +
+            1/2 + 1/2*tanh(11*(per_admin_in - 0.40 + 0.1)))/2)
+}
+optim_multi_model <- aki_optim_wrapper(
+  optim_in,
+  outcome_var = "AKI_ICU",
+  baseline_predictors = c(
+    "Age + APACHE_II + APACHE_III + Baseline_Cr",
+    "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
+  ),
+  cr_predictors = "cr",
+  add_gradient_predictor = 1,
+  stepwise = FALSE,
+  k = "mBIC",
+  lower = c(3, 0.1, 8, 3),
+  upper = c(10, 3, 12, 48),
+  cluster = TRUE
+)
+kable(head(optim_multi_model$optim_summary, 20))
+write.csv(
+  optim_multi_model$optim_summary,
+  paste0("optim_multi ", format(Sys.time(), "%Y-%m-%d %H-%M-%S"), ".csv"),
+  row.names = FALSE)
+```
