@@ -289,7 +289,10 @@ generate_example <- function(
     xlab(expression("Duration of small change in Cr epis: "*Delta*"t"["cr_ch"]*" (hours)")) +
     ylab(expression("Change in Cr during epis: "*Delta*"cr"*" ("*mu*"mol/L)")) +
     scale_fill_viridis_c("n(Cr_ch epis)\nDensity", option = "D") +
-    theme(panel.spacing = unit(0.8, "lines"))
+    theme(panel.spacing = unit(0.8, "lines")) +
+    theme(plot.background = element_rect(fill = "transparent", colour = NA),
+          legend.background = element_rect(fill = "transparent", colour = NA),
+          strip.background = element_rect(fill = "white"))
   print(heatmap_plot)
 
   return(result)
