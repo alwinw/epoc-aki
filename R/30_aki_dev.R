@@ -164,9 +164,10 @@ aki_dev_wrapper <- function(
 #   del_t_aki_hr_range = c(9.25, 47.33),
 #   add_gradient_predictor = 1,
 #   stepwise = TRUE,
+#   k = "BIC",
 #   all_data = TRUE,
 #   analysis_data = analysis_df
-# ); summarise_cutpoint(temp); temp$params$glm_model
+# ); summarise_cutpoint(temp); temp$params$glm_model; publish(temp$model, print = FALSE)$regressionTable
 
 
 # ---- time_aki_wrapper ----

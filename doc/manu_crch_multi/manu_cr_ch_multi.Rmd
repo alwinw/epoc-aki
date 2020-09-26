@@ -267,29 +267,33 @@ knitr::read_chunk(file.path(rel_path, "R", "31_aki_optim.R"))
 ```{r optim_cr_ch_only}
 set.seed(8)
 optim_in = rbind(
-  c(6.0, 1.0, 8.0, 10.0), # Baseline
-  c(6.7, 1.2, 8.1,  9.6), # AUC 0.6396
+  c(6.87, 1.40, 9.61, 3.06),  # AUC 0.7592 | 0.40, 152
   cbind(
-    runif(20, 6.0, 7.0),
-    runif(20, 1.5, 2.5),
-    runif(20, 8.0, 8.5),
-    runif(20, 4.0, 5.0)
+    rnorm(10, 6.87, 0.5),
+    rnorm(10, 1.40, 0.5),
+    rnorm(10, 9.61, 0.5),
+    rnorm(10, 3.06, 0.5)
   ),
-  c(6.4, 2.0, 8.0, 4.7), # AUC 0.6756
-  c(6.3, 1.9, 8.0, 4.7), # AUC 0.6679
-  c(6.6, 2.5, 8.0, 4.0), # AUC 0.6637
-  c(6.0, 2.1, 8.1, 4.3), # AUC 0.6451
+  c(7.43, 1.15, 10.30, 3.50), # AUC 0.7269 | 0.36, 138
   cbind(
-    runif(30, 6.0, 7.0),
-    runif(30, 1.5, 2.5),
-    runif(30, 8.0, 8.5),
-    runif(30, 4.0, 5.0)
+    rnorm(10,  7.43, 0.5),
+    rnorm(10,  1.15, 0.5),
+    rnorm(10, 10.30, 0.5),
+    rnorm(10,  3.50, 0.5)
   ),
+  c(6.97, 1.10, 9.63, 5.12), # AUC 0.7243 | 0.37, 142
   cbind(
-    runif(50, 5, 10),
-    runif(50, 1, 3),
-    runif(50, 8, 12),
-    runif(50, 3, 48)
+    rnorm(10,  6.97, 0.5),
+    rnorm(10,  1.10, 0.5),
+    rnorm(10,  9.63, 0.5),
+    rnorm(10,  5.12, 0.5)
+  ),
+  c(7.28, 1.26, 11.80, 3.41), # AUC 0.7065 | 0.37, 143
+  cbind(
+    rnorm(10,  7.28, 0.5),
+    rnorm(10,  1.26, 0.5),
+    rnorm(10, 11.80, 0.5),
+    rnorm(10,  3.41, 0.5)
   )
 )
 heuristic_calc <- function(AUC, per_admin_in){return(AUC)}
@@ -312,8 +316,8 @@ only_model <- aki_dev_wrapper(
   outcome_var = "AKI_ICU",
   baseline_predictors = "",
   cr_predictors = NULL,
-  del_t_ch_hr_range = c(5.4, 7.4),
-  del_t_aki_hr_range = c(8, 12.7),
+  del_t_ch_hr_range = c(6.17, 7.57),
+  del_t_aki_hr_range = c(9.61, 12.67),
   add_gradient_predictor = 1,
   all_data = TRUE,
   analysis_data = analysis_df
@@ -371,55 +375,26 @@ kable(summarise_cutpoint(base_model_r), align = c('l', 'r'))
 ## Top Performing AUROC Model
 
 ```{r optim_multi}
-# set.seed(8)
+set.seed(8)
+# Consider showing data as clusters e.g. p1, p2, p3, p4?
 optim_in = rbind(
-  # c(6.56, 0.89, 8.00, 8.00), # 0.8632 | 0.4089
-  # c(6.50, 0.97, 8.45, 8.23), # 0.8500 | 0.4062
-  # c(7.01, 1.19, 8.00, 8.20), # 0.8448 | 0.4245
-  # c(6.61, 1.03, 8.44, 7.39), # 0.8430 | 0.4036
-  # c(6.70, 1.04, 8.57, 7.79), # 0.8416 | 0.4115
-  # c(6.46, 1.13, 8.09, 8.46), # 0.8359 | 0.4349
-  #
+  c(9.90, 2.14, 11.79, 3.03), # AUC 0.8994 | 0.39, 150 Clinically not relevant
+  c(6.84, 1.15,  8.08, 3.55), # AUC 0.8856 | 0.40, 153
+  c(7.20, 1.34,  8.03, 4.48), # AUC 0.8664 | 0.42, 161
+  c(7.27, 1.07, 11.70, 3.88), # AUC 0.8977 | 0.37, 143 Exceptional!
   # cbind(
-  #   runif(50, 6.2, 7.0),
-  #   runif(50, 0.8, 1.8),
-  #   runif(50, 8.0, 8.8),
-  #   runif(50, 7.0, 8.8)
-  # )
-  # c(6.90, 1.96, 8.77, 34.75),
-  # cbind(
-  #   runif(50, 6.5, 7.5),
-  #   runif(50, 1.5, 2.5),
-  #   runif(50, 8.5, 10.5),
-  #   runif(50, 30, 45)
-  # )
-
-
-  # c(6.90, 1.96, 8.77, 34.75) # Great AKI time length
-  # cbind(
-  #   runif(20, 6, 7),
-  #   runif(20, 1, 3),
-  #   runif(20, 8, 9),
-  #   runif(20, 10, 11)
+  #   rnorm(10,  7.27, 0.5),
+  #   rnorm(10,  1.07, 0.5),
+  #   rnorm(10, 11.70, 0.5),
+  #   rnorm(10,  3.88, 0.5)
   # ),
-  # cbind(
-  #   runif(20, 6.5, 7.5),
-  #   runif(20, 1.5, 2.5),
-  #   runif(20, 8.5, 10.5),
-  #   runif(20, 30, 45)
-  # ),
-  # cbind(
-  #   runif(50, 3, 10),
-  #   runif(50, 1, 3),
-  #   runif(50, 8, 12),
-  #   runif(50, 3, 48)
-  # )
-  cbind(
-    runif(10000, 3, 10),
-    runif(10000, 1, 3),
-    runif(10000, 8, 12),
-    runif(10000, 3, 48)
-  )
+  c(6.55, 0.95,  8.48, 12.31), # AUC 0.8489 | 0.41, 157 Clinically good
+  c(6.51, 1.04, 11.82, 21.64), # AUC 0.8220 | 0.42, 160 Clinically great
+  c(6.47, 0.56,  9.69, 29.02), # AUC 0.8642 | 0.35, 135 Clinically excellent
+  c(7.77, 0.82, 11.57, 44.67), # AUC 0.8149 | 0.42, 162 Clinically excellent
+  c(7.87, 1.00, 10.58, 46.16), # AUC 0.8172 | 0.47, 179 Clinically excellent
+  c(6.41, 0.71,  9.17, 38.66), # AUC 0.8198 | 0.40, 153 Clinically excellent
+  c(6.51, 0.97, 11.00, 34.25)  # AUC 0.7955 | 0.42, 160 Clinically excellent
 )
 heuristic_calc <- function(AUC, per_admin_in){
   return((1/2 + 1/2*tanh(11*(AUC - 0.90 + 0.1)) +
@@ -441,8 +416,4 @@ optim_multi_model <- aki_optim_wrapper(
   cluster = TRUE
 )
 kable(head(optim_multi_model$optim_summary, 20))
-write.csv(
-  optim_multi_model$optim_summary,
-  paste0("optim_multi ", format(Sys.time(), "%Y-%m-%d %H-%M-%S"), ".csv"),
-  row.names = FALSE)
 ```

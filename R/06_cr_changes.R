@@ -179,7 +179,7 @@ heatmap_all <- cr_ch_ts %>%
       del_t_aki/3600 <  8 ~ "t_AKI in  4-8hrs",
       del_t_aki/3600 < 12 ~ "t_AKI in  8-12hrs",
       del_t_aki/3600 < 16 ~ "t_AKI in 12-16hrs",
-      TRUE                ~ "T_AKI in 16+hrs"
+      TRUE                ~ "t_AKI in 16+hrs"
     ),
   )
 
@@ -209,8 +209,16 @@ heatmap_plot <- ggplot(heatmap_ts, aes(x = del_t_ch/3600, y = del_cr)) +
   ggtitle("Number of Creatinine Change Episodes which Predict AKI in X hours' time") +
   xlab(expression("Duration of short-term Cr change epis: "*Delta*"t"["cr_ch"]*" (hours)")) +
   ylab(expression("Change in Cr during epis: "*Delta*"cr"*" ("*mu*"mol/L)")) +
-  theme(panel.spacing = unit(0.8, "lines"))
+  theme(panel.spacing = unit(0.8, "lines")) +
+  theme(plot.background = element_rect(fill = "transparent", colour = NA),
+        legend.background = element_rect(fill = "transparent", colour = NA),
+        strip.background = element_rect(fill = "white"))
 print(heatmap_plot)
+
+png(bg = "transparent")
+ggsave("cr_ch_heatmap_ppt.png", heatmap_plot, path = paste0(rel_path, "/doc/images/"),
+       type = "cairo-png", bg = "transparent",
+       width = 15, height = 8, scale = 0.8)
 
 ggsave("cr_ch_heatmap.png", heatmap_plot, path = paste0(rel_path, "/doc/images/"),
        width = 12, height = 8, scale = 0.8)
