@@ -2,7 +2,7 @@
 
 Evaluation of the Predictive value of short-term Oliguria and minor Creatinine increases for Acute Kidney Injury in ICU
 
-Austin Health Research Fest 2020: [Virtual Poster Presentation](https://doi.org/10.6084/m9.figshare.13055699.v1)
+Austin Health ResearchFest 2020: [Virtual Poster Presentation](https://doi.org/10.6084/m9.figshare.13055699.v1)
 
 ## Data Overview
 
