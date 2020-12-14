@@ -7,8 +7,8 @@
 
 # ---- cr_ch_only ----
 # set.seed(8)
-n = 10000
-optim_in = rbind(
+n <- 10000
+optim_in <- rbind(
   cbind(
     runif(n, 3, 10),
     runif(n, 1, 3),
@@ -16,7 +16,9 @@ optim_in = rbind(
     runif(n, 3, 48)
   )
 )
-heuristic_calc <- function(AUC, per_admin_in){return(AUC)}
+heuristic_calc <- function(AUC, per_admin_in) {
+  return(AUC)
+}
 optim_only_model <- aki_optim_wrapper(
   optim_in,
   outcome_var = "AKI_ICU",
@@ -30,12 +32,13 @@ kable(head(optim_only_model$optim_summary, 20))
 write.csv(
   optim_only_model$optim_tidy,
   paste0("optim_only ", format(Sys.time(), "%Y-%m-%d %H-%M-%S"), ".csv"),
-  row.names = FALSE)
+  row.names = FALSE
+)
 
 # ---- multi ----
 # set.seed(8)
-n = 10000
-optim_in = rbind(
+n <- 10000
+optim_in <- rbind(
   cbind(
     runif(n, 3, 10),
     runif(n, 1, 3),
@@ -43,11 +46,11 @@ optim_in = rbind(
     runif(n, 3, 48)
   )
 )
-heuristic_calc <- function(AUC, per_admin_in){
+heuristic_calc <- function(AUC, per_admin_in) {
   return((
-    1/2 + 1/2*tanh(10.9861*(AUC - 0.90 + 0.1)) +
-    1/2 + 1/2*tanh(10.9861*(per_admin_in - 0.40 + 0.1))
-    )/2)
+    1 / 2 + 1 / 2 * tanh(10.9861 * (AUC - 0.90 + 0.1)) +
+      1 / 2 + 1 / 2 * tanh(10.9861 * (per_admin_in - 0.40 + 0.1))
+  ) / 2)
 }
 optim_multi_model <- aki_optim_wrapper(
   optim_in,
@@ -68,4 +71,5 @@ kable(head(optim_multi_model$optim_summary, 20))
 write.csv(
   optim_multi_model$optim_tidy,
   paste0("optim_multi ", format(Sys.time(), "%Y-%m-%d %H-%M-%S"), ".csv"),
-  row.names = FALSE)
+  row.names = FALSE
+)

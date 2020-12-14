@@ -1,21 +1,24 @@
 # ---- combine_blood_gas_bio_chem ----
 UR_number_list <- unique(admission_data$`UR number`)
-blood_gas_adjust = 2  # FIXME Estimated!! Would need something that matches the mean AND the variance
+blood_gas_adjust <- 2 # FIXME Estimated!! Would need something that matches the mean AND the variance
 
 blood_gas_ts <- xlsx_data$creat_furo$blood_gas %>%
-  select(`UR number`, TC_ICU_ADMISSION_DTTM, TC_ICU_DISCHARGE_DTTM, Pathology_Result_DTTM,
-         `Blood Gas Creatinine`) %>%
+  select(
+    `UR number`, TC_ICU_ADMISSION_DTTM, TC_ICU_DISCHARGE_DTTM, Pathology_Result_DTTM,
+    `Blood Gas Creatinine`
+  ) %>%
   mutate(Pathology = "Blood Gas", `Bio Chem Creatinine` = NA)
 bio_chem_ts <- xlsx_data$creat_furo$bio_chem %>%
   select(`UR number`, TC_ICU_ADMISSION_DTTM, TC_ICU_DISCHARGE_DTTM, Pathology_Result_DTTM,
-         `Bio Chem Creatinine` = `Creatinine Level`) %>%
+    `Bio Chem Creatinine` = `Creatinine Level`
+  ) %>%
   mutate(Pathology = "Bio Chem", `Blood Gas Creatinine` = NA)
 
 creatinine_ts <- rbind(blood_gas_ts, bio_chem_ts) %>%
   arrange(`UR number`, TC_ICU_ADMISSION_DTTM, Pathology_Result_DTTM) %>%
   filter(
     `UR number` %in% UR_number_list,
-    Pathology_Result_DTTM > as.Date('2018-01-01')
+    Pathology_Result_DTTM > as.Date("2018-01-01")
   ) %>%
   mutate(
     Creatinine_level = if_else(Pathology == "Bio Chem", `Bio Chem Creatinine`, `Blood Gas Creatinine` + blood_gas_adjust)
@@ -27,22 +30,30 @@ creatinine_ts <- rbind(blood_gas_ts, bio_chem_ts) %>%
     tzone = "Australia/Melbourne"
   ) %>%
   group_by(`UR number`) %>%
-  mutate(ICU_Admission = cumsum(TC_ICU_ADMISSION_DTTM != lag(TC_ICU_ADMISSION_DTTM, default = as.POSIXct("1990-01-01")))) %>%  # Arbitrarily chosen
+  mutate(ICU_Admission = cumsum(TC_ICU_ADMISSION_DTTM != lag(TC_ICU_ADMISSION_DTTM, default = as.POSIXct("1990-01-01")))) %>% # Arbitrarily chosen
   arrange(`UR number`, Pathology_Result_DTTM)
 
 rm(blood_gas_ts, bio_chem_ts, UR_number_list)
 
 
 # ---- example_creatinine_plot ----
-UR_number = creatinine_ts %>% arrange(-ICU_Admission) %>% select(`UR number`) %>% unique(.) %>% .[[3,1]]
-Baseline_Cr = admission_data %>% filter(`UR number` == UR_number) %>% select(Baseline_Cr) %>% .[[1,1]]
-example_cr_plot = filter(creatinine_ts, `UR number` == UR_number) %>% mutate(ICU_Admission = paste0("ICU Admission ", ICU_Admission))
+UR_number <- creatinine_ts %>%
+  arrange(-ICU_Admission) %>%
+  select(`UR number`) %>%
+  unique(.) %>%
+  .[[3, 1]]
+Baseline_Cr <- admission_data %>%
+  filter(`UR number` == UR_number) %>%
+  select(Baseline_Cr) %>%
+  .[[1, 1]]
+example_cr_plot <- filter(creatinine_ts, `UR number` == UR_number) %>% mutate(ICU_Admission = paste0("ICU Admission ", ICU_Admission))
 
 ggplot(
   example_cr_plot,
-  aes(x = Pathology_Result_DTTM,
-      y = Creatinine_level,
-      group = ICU_Admission,
+  aes(
+    x = Pathology_Result_DTTM,
+    y = Creatinine_level,
+    group = ICU_Admission,
   )
 ) +
   geom_line(linetype = "dashed", colour = "grey") +
@@ -52,8 +63,10 @@ ggplot(
   geom_label(aes(max(example_cr_plot$Pathology_Result_DTTM), Baseline_Cr * 1.5, label = "AKI Stage 1"), hjust = 1) +
   facet_wrap(vars(ICU_Admission), nrow = 1, scales = "free_x") +
   coord_cartesian(
-    ylim = c(max(min(example_cr_plot$Creatinine_level), Baseline_Cr),
-             min(max(example_cr_plot$Creatinine_level), Baseline_Cr * 3))
+    ylim = c(
+      max(min(example_cr_plot$Creatinine_level), Baseline_Cr),
+      min(max(example_cr_plot$Creatinine_level), Baseline_Cr * 3)
+    )
   )
 
 rm(UR_number, Baseline_Cr, example_cr_plot)
@@ -82,7 +95,8 @@ bio_chem_blood_gas <- creatinine_ts %>%
     `UR number`, ICU_Admission, Pathology_first_DTTM, Delta_t, Pathology_type,
     Pathology_first, Creatinine_first,
     Pathology_last, Creatinine_last,
-    Delta_cr) %>%
+    Delta_cr
+  ) %>%
   filter(abs(Delta_cr) < 30)
 
 ggplot(bio_chem_blood_gas, aes(x = Delta_t, y = Delta_cr, colour = Pathology_type)) +
@@ -91,7 +105,7 @@ ggplot(bio_chem_blood_gas, aes(x = Delta_t, y = Delta_cr, colour = Pathology_typ
   geom_point(alpha = 0.3) +
   geom_smooth(se = FALSE) +
   facet_wrap(vars(Pathology_type), ncol = 1) +
-  theme(legend.position="bottom") +
+  theme(legend.position = "bottom") +
   guides(colour = guide_legend(ncol = 1))
 
 rm(bio_chem_blood_gas, blood_gas_adjust)

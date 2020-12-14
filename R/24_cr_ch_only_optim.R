@@ -1,15 +1,15 @@
 # ---- cr_ch_only_plot_df ----
-density = 4
-centre_spacing = 0.15/sqrt(density)
+density <- 4
+centre_spacing <- 0.15 / sqrt(density)
 
-cr_ch_grid = expand.grid(
-    seq(2 + centre_spacing, 12, by = centre_spacing),
-    seq(0.5, 4, by = centre_spacing/2)
-  ) %>%
+cr_ch_grid <- expand.grid(
+  seq(2 + centre_spacing, 12, by = centre_spacing),
+  seq(0.5, 4, by = centre_spacing / 2)
+) %>%
   rename(centre = Var1, width = Var2) %>%
   mutate(
-    lower = centre - width/2,
-    upper = centre + width/2
+    lower = centre - width / 2,
+    upper = centre + width / 2
   )
 
 cr_ch_list <- split(cr_ch_grid, rownames(cr_ch_grid))
@@ -28,15 +28,14 @@ cr_ch_dump <- pblapply(
       add_gradient_predictor = 1,
       heuristic_only = TRUE,
       analysis_data = analysis_df
-      )
-    )
+    ))
   },
   cl = cl
 )
 stopCluster(cl)
 rm(density, centre_spacing, cr_ch_grid, cr_ch_list, cl)
 
-heuristic_calc <- function(AUC, per_admin_in){
+heuristic_calc <- function(AUC, per_admin_in) {
   return(AUC)
 }
 
@@ -71,11 +70,11 @@ ggplot(cr_ch_plot, aes(centre, width)) +
 optim_one <- optim(
   c(6, 2, 8, 10),
   function(x) {
-    output = analysis_wrapper(
+    output <- analysis_wrapper(
       outcome_var = "AKI_ICU",
       baseline_predictors = "",
       cr_predictors = "",
-      del_t_ch_hr_range = c(x[1] - x[2]/2, x[1] + x[2]),
+      del_t_ch_hr_range = c(x[1] - x[2] / 2, x[1] + x[2]),
       del_t_aki_hr_range = c(x[3], x[3] + x[4]),
       add_gradient_predictor = 1,
       heuristic_only = TRUE,
@@ -89,8 +88,8 @@ optim_one <- optim(
 )
 
 set.seed(8)
-optim_in = rbind(
-  c(6.0, 1.0, 8.0, 10 ), # Baseline
+optim_in <- rbind(
+  c(6.0, 1.0, 8.0, 10), # Baseline
   c(6.0, 2.1, 8.1, 4.3), # AUC 0.6451
   c(6.6, 2.5, 8.0, 4.0), # AUC 0.6637
   c(6.7, 1.2, 8.1, 9.6), # AUC 0.6396
@@ -110,11 +109,11 @@ optim_in = rbind(
 optim_out <- multistart(
   optim_in,
   function(x) {
-    ch_min = x[1] - x[2]/2
-    ch_max = x[1] + x[2]/2
-    aki_min = x[3]
-    aki_max = x[3] + x[4]
-    output = analysis_wrapper(
+    ch_min <- x[1] - x[2] / 2
+    ch_max <- x[1] + x[2] / 2
+    aki_min <- x[3]
+    aki_max <- x[3] + x[4]
+    output <- analysis_wrapper(
       outcome_var = "AKI_ICU",
       baseline_predictors = "",
       cr_predictors = "",
@@ -133,8 +132,8 @@ optim_out <- multistart(
 optim_cr_ch_only <- optim_out %>%
   arrange(value) %>%
   mutate(
-    ch_hr_lower = p1 - p2/2,
-    ch_hr_upper = p1 + p2/2,
+    ch_hr_lower = p1 - p2 / 2,
+    ch_hr_upper = p1 + p2 / 2,
     aki_hr_lower = p3,
     aki_hr_upper = p3 + p4
   ) %>%

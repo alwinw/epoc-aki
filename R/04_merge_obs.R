@@ -1,9 +1,10 @@
 # ---- check-merge-data-fun ----
 check_merge_data <- function(vector1, vector2, error_msg) {
   if (!setequal(vector1, vector2) | (length(vector1) != length(vector2))) {
-    stop(paste("Error", error_msg,
-               "Actual:", length(vector1), "Expected:", length(vector2),
-               "Difference:", paste(setdiff(vector1, vector2), collapse = ", ")
+    stop(paste(
+      "Error", error_msg,
+      "Actual:", length(vector1), "Expected:", length(vector2),
+      "Difference:", paste(setdiff(vector1, vector2), collapse = ", ")
     ))
   }
   return(invisible(NULL))
@@ -26,7 +27,7 @@ screening_data <- screening_log %>%
   filter(!duplicate) %>%
   mutate(
     Epis_cr_change = if_else(grepl("LT[0-9]", Pt_Study_no), "Y", NA_character_),
-    Epis_olig      = if_else(grepl("L[0-9]",  Pt_Study_no), "Y", NA_character_)
+    Epis_olig      = if_else(grepl("L[0-9]", Pt_Study_no), "Y", NA_character_)
   ) %>%
   select(`UR number`:Pt_Study_no, Dates_screened, Event, starts_with("Epis_"))
 
@@ -47,8 +48,10 @@ check_merge_data(
 )
 check_merge_data(
   screening_data$`UR number`,
-  c(filter(screening_log, Event != "Both")$`UR number`,
-    rep(filter(screening_log, Event == "Both")$`UR number`, 2)),
+  c(
+    filter(screening_log, Event != "Both")$`UR number`,
+    rep(filter(screening_log, Event == "Both")$`UR number`, 2)
+  ),
   "Total number of events has changed!"
 )
 
@@ -75,7 +78,7 @@ check_merge_data(
   "Number of neither olig or cr change events different!"
 )
 
-if (nrow(obs_data) != nrow(data_set) + nrow(filter(screening_log, Event == "Neither"))){
+if (nrow(obs_data) != nrow(data_set) + nrow(filter(screening_log, Event == "Neither"))) {
   stop("Number of total events has changed!")
 }
 
@@ -93,7 +96,7 @@ epoc_aki <- obs_data %>%
   group_by(Pt_Study_no) %>%
   mutate(
     Epis_cr_change_no = cumsum(Epis_cr_change == "Y"),
-    Epis_olig_no      = cumsum(Epis_olig      == "Y")
+    Epis_olig_no      = cumsum(Epis_olig == "Y")
   ) %>%
   ungroup() %>%
   rowwise() %>%
@@ -102,14 +105,14 @@ epoc_aki <- obs_data %>%
   group_by(AdmissionID) %>%
   mutate(
     Vasopressor = case_when(
-      `T-4_Norad` > 0       ~ 1,
+      `T-4_Norad` > 0 ~ 1,
       `T-4_Metaraminol` > 0 ~ 1,
-      T0_Norad > 0          ~ 1,
-      T0_Metaraminol > 0    ~ 1,
+      T0_Norad > 0 ~ 1,
+      T0_Metaraminol > 0 ~ 1,
       grepl("Vasopressors", Mx_other) ~ 1,
       TRUE ~ NA_real_
     ),
-    Vasopressor = max(Vasopressor, 0, na.rm =  TRUE),
+    Vasopressor = max(Vasopressor, 0, na.rm = TRUE),
     Pt_Study_nos = paste(unique(na.omit(Pt_Study_no)), collapse = ", ")
   ) %>%
   ungroup() %>%
@@ -120,24 +123,27 @@ epoc_aki <- obs_data %>%
       "ESKD", "No_IDC", "Kidney_transplant", "Admit_weekend", "Child",
       "Rx_limited", "Rx_withdrawn"
     ),
-    function(x) case_when(
-      x == "Y" | x == "y" | x == "1" ~ 1,  # Should really change to a factor of the column name
-      x == "N" | x == "n" | x == "0" ~ 0,
-      is.na(x) ~ NA_real_,
-      TRUE     ~ NaN
-    )
+    function(x) {
+      case_when(
+        x == "Y" | x == "y" | x == "1" ~ 1, # Should really change to a factor of the column name
+        x == "N" | x == "n" | x == "0" ~ 0,
+        is.na(x) ~ NA_real_,
+        TRUE ~ NaN
+      )
+    }
   ) %>%
   mutate(
     Diabetes = grepl("T2DM|T1DM|IDDM|insulin", Comorbidities),
-    AF       = grepl("AF|pAF", Comorbidities),
-    IHD      = grepl("IHD|CABG|CAD|CAGS|NSTEMI", Comorbidities),
-    HF       = grepl("\\bHF\\b|hypertrophy|CCF|cardiomyopathy|heart failure|LVH", Comorbidities),
-    HT       = grepl("^(?=.*\\bHT\\b)(?!.*portal)(?!.*pulm)", Comorbidities, perl = TRUE),
-    PVD      = grepl("PVD|arteritis|pop bypass|id steno|stents", Comorbidities),
+    AF = grepl("AF|pAF", Comorbidities),
+    IHD = grepl("IHD|CABG|CAD|CAGS|NSTEMI", Comorbidities),
+    HF = grepl("\\bHF\\b|hypertrophy|CCF|cardiomyopathy|heart failure|LVH", Comorbidities),
+    HT = grepl("^(?=.*\\bHT\\b)(?!.*portal)(?!.*pulm)", Comorbidities, perl = TRUE),
+    PVD = grepl("PVD|arteritis|pop bypass|id steno|stents", Comorbidities),
     Chronic_liver_disease = grepl(paste0(
       "chronic liver disease|portal HT|varice|ETOH|",
       "HCC|NASH|CLD|ESLD|awaiting OLTx|SMV|ascites|SBP|HCC|cirrho|",
-      "Hepatosplenomegaly|Cirrho|hepatic encephalopathy"), Comorbidities)
+      "Hepatosplenomegaly|Cirrho|hepatic encephalopathy"
+    ), Comorbidities)
   ) %>%
   mutate_at(vars(Diabetes:Chronic_liver_disease), as.double) %>%
   select(
@@ -176,7 +182,7 @@ epoc_aki_check <- epoc_aki %>%
   group_by(AdmissionID)
 
 any(is.nan(epoc_aki$Rx_withdrawn))
-any(is.nan(epoc_aki$`Criteria for stage of AKI`))  # FIXME check original data
+any(is.nan(epoc_aki$`Criteria for stage of AKI`)) # FIXME check original data
 
 epoc_aki_check
 any(is.na(epoc_aki_check$`UR number`))
@@ -210,12 +216,12 @@ admission_data <- epoc_aki %>%
   group_by(AdmissionID) %>%
   # TODO think of a more generic way to solve the duplicates problem
   mutate(
-    Mx_diuretics = max(Mx_diuretics),  # No rm.na
+    Mx_diuretics = max(Mx_diuretics), # No rm.na
     Mx_IVF = max(Mx_IVF),
     Baseline_Cr = min(Baseline_Cr)
   ) %>%
   distinct() %>%
-  top_n(1, if_else(is.na(Max_Cr_ICU), 0, Max_Cr_ICU)) %>%   # TODO replace with slice_max() in the future
+  top_n(1, if_else(is.na(Max_Cr_ICU), 0, Max_Cr_ICU)) %>% # TODO replace with slice_max() in the future
   ungroup()
 
 check_merge_data(

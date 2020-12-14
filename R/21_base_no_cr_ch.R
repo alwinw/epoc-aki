@@ -10,8 +10,9 @@ base_min_model <- analysis_wrapper(
   analysis_data = baseline_df
 )
 kable(publish(base_min_model$model, print = FALSE, digits = c(2, 3))$regressionTable,
-      align = c('l', 'c', 'c', 'c', 'c'))
-kable(summarise_cutpoint(base_min_model), align = c('l', 'r'))
+  align = c("l", "c", "c", "c", "c")
+)
+kable(summarise_cutpoint(base_min_model), align = c("l", "r"))
 # plot(regressionTable(base_min_model$model))
 # summary(base_min_model$cutpoint)
 plot(base_min_model$cutpoint)
@@ -29,8 +30,9 @@ base_all_model <- analysis_wrapper(
   analysis_data = baseline_df
 )
 kable(publish(base_all_model$model, print = FALSE, digits = c(2, 3))$regressionTable,
-      align = c('l', 'c', 'c', 'c', 'c'))
-kable(summarise_cutpoint(base_all_model), align = c('l', 'r'))
+  align = c("l", "c", "c", "c", "c")
+)
+kable(summarise_cutpoint(base_all_model), align = c("l", "r"))
 # plot(regressionTable(base_all_model$model))
 # summary(base_all_model$cutpoint)
 plot(base_all_model$cutpoint)
@@ -46,8 +48,9 @@ base_sig_model <- analysis_wrapper(
   analysis_data = baseline_df
 )
 kable(publish(base_sig_model$model, print = FALSE, digits = c(2, 3))$regressionTable,
-      align = c('l', 'c', 'c', 'c', 'c'))
-kable(summarise_cutpoint(base_sig_model), align = c('l', 'r'))
+  align = c("l", "c", "c", "c", "c")
+)
+kable(summarise_cutpoint(base_sig_model), align = c("l", "r"))
 # plot(regressionTable(base_sig_model$model))
 # summary(base_sig_model$cutpoint)
 plot(base_sig_model$cutpoint)
