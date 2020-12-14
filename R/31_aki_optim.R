@@ -112,3 +112,60 @@ aki_optim_wrapper <- function(
     optim_summary = optim_summary
   ))
 }
+
+
+# ---- aki_grid_wrapper ----
+aki_grid_wrapper <- function(
+  grid_in,
+  outcome_var = "AKI_ICU",
+  baseline_predictors = "",
+  cr_predictors = "",
+  add_gradient_predictor = NULL,
+  stepwise = FALSE,
+  k = "mBIC",
+  cluster = FALSE
+) {
+  grid_list <- asplit(grid_in, 1)
+  if (cluster) {
+    cl <- makeCluster(detectCores())
+    invisible(clusterEvalQ(cl, library("dplyr")))
+    invisible(clusterEvalQ(cl, library("cutpointr")))
+    clusterExport(cl, c(
+      "analysis_df", "aki_dev_wrapper",
+      "outcome_var", "baseline_predictors", "cr_predictors",
+      "add_gradient_predictor"
+    ),
+    envir = environment()
+    )
+  } else {
+    cl <- NULL
+  }
+
+  grid_out <- pblapply(grid_list, function(par) {
+    ch_min <- par[1]  ## NOTE: THIS IS DIFFERENT to aki_optim_wrapper
+    ch_max <- par[1] + par[2] ## NOTE: THIS IS DIFFERENT to aki_optim_wrapper
+    aki_min <- par[3]
+    aki_max <- par[3] + par[4]
+    model = aki_dev_wrapper(
+      outcome_var = outcome_var,
+      baseline_predictors = baseline_predictors,
+      cr_predictors = cr_predictors,
+      del_t_ch_hr_range = c(ch_min, ch_max),
+      del_t_aki_hr_range = c(aki_min, aki_max),
+      add_gradient_predictor = add_gradient_predictor,
+      stepwise = stepwise,
+      k = k,
+      all_data = TRUE,
+      analysis_data = analysis_df
+    )
+    return(cbind(model$summary, model$params))
+  },
+  cl = cl
+  )
+  if (cluster) {
+    stopCluster(cl)
+  }
+  grid_tidy = tibble(bind_rows(grid_out))
+
+  return(grid_tidy)
+}
