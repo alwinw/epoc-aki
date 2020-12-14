@@ -1,9 +1,8 @@
 # ---- generate_cr_ch_function ----
 generate_cr_ch <- function(
-  UR_number, DateTime_ICU_admit, DateTime_ICU_dc,
-  AKI_ICU, DateTime_AKI_Dx)
-  {
-  cr_ts = creatinine_ts %>%
+                           UR_number, DateTime_ICU_admit, DateTime_ICU_dc,
+                           AKI_ICU, DateTime_AKI_Dx) {
+  cr_ts <- creatinine_ts %>%
     ungroup() %>%
     filter(
       `UR number` == UR_number,
@@ -11,35 +10,35 @@ generate_cr_ch <- function(
       Pathology_Result_DTTM < DateTime_ICU_dc
     ) %>%
     select(Pathology_Result_DTTM, Creatinine_level) %>%
-    unique(.)  # To remove any duplicate DTTM entries
+    unique(.) # To remove any duplicate DTTM entries
 
   if (nrow(cr_ts) < 2) {
     return(data.frame(
       DateTime_Pathology_Result = as_datetime(NA_real_),
-      del_t_ch  = as.duration(NA_real_),
+      del_t_ch = as.duration(NA_real_),
       del_t_aki = as.duration(NA_real_),
-      del_cr    = NA_real_,
-      cr      = NA_real_
+      del_cr = NA_real_,
+      cr = NA_real_
     ))
   }
   # Consider filtering out ones post AKI here?
 
   combns <- combn(nrow(cr_ts), 2)
-  Ti_1 = cr_ts[combns[1,],]
-  Ti   = cr_ts[combns[2,],]
+  Ti_1 <- cr_ts[combns[1, ], ]
+  Ti <- cr_ts[combns[2, ], ]
 
-  if(AKI_ICU == 0 | is.na(AKI_ICU)) {
-    del_t_aki = rep(as.duration(NA_real_), nrow(Ti))
+  if (AKI_ICU == 0 | is.na(AKI_ICU)) {
+    del_t_aki <- rep(as.duration(NA_real_), nrow(Ti))
   } else {
-    del_t_aki = as.duration(DateTime_AKI_Dx - Ti$Pathology_Result_DTTM)
+    del_t_aki <- as.duration(DateTime_AKI_Dx - Ti$Pathology_Result_DTTM)
   }
 
   return(data.frame(
     DateTime_Pathology_Result = Ti$Pathology_Result_DTTM,
-    del_t_ch  = as.duration(Ti$Pathology_Result_DTTM - Ti_1$Pathology_Result_DTTM),
+    del_t_ch = as.duration(Ti$Pathology_Result_DTTM - Ti_1$Pathology_Result_DTTM),
     del_t_aki = del_t_aki,
-    del_cr    = Ti$Creatinine_level - Ti_1$Creatinine_level,
-    cr      = Ti$Creatinine_level
+    del_cr = Ti$Creatinine_level - Ti_1$Creatinine_level,
+    cr = Ti$Creatinine_level
   ))
 }
 
@@ -61,8 +60,8 @@ cr_ch_ts_all <- admission_data %>%
   ) %>%
   rowwise() %>%
   do(data.frame(., generate_cr_ch(
-    .$`UR number`, .$DateTime_ICU_admit, .$DateTime_ICU_dc, .$AKI_ICU, .$DateTime_AKI_Dx))
-  ) %>%
+    .$`UR number`, .$DateTime_ICU_admit, .$DateTime_ICU_dc, .$AKI_ICU, .$DateTime_AKI_Dx
+  ))) %>%
   ungroup() %>%
   rename(
     `UR number` = UR.number,
@@ -75,17 +74,18 @@ cr_ch_ts_all <- admission_data %>%
 
 neither_ts <- cr_ch_ts_all %>%
   filter(is.na(AKI_ICU)) %>%
-  filter(!is.na(cr)) %>%  # Only one measurement in ICU
+  filter(!is.na(cr)) %>% # Only one measurement in ICU
   group_by(AdmissionID) %>%
   mutate(
     # No need to check for olig definition of AKI, else would have had "oliguria episode"
     Baseline_Cr = min(cr),
-    AKI_ICU = if_else(cr > Baseline_Cr*1.5, 1, 0),  # FIXME NEED TO PROGRAM IN THE RISE CASE TOO
-    AKI_stage = case_when(                            # TODO Add other variables too!
-      cr > Baseline_Cr*3   ~ 3,
-      cr > Baseline_Cr*2   ~ 2,
-      cr > Baseline_Cr*1.5 ~ 1,
-      TRUE ~ 0),
+    AKI_ICU = if_else(cr > Baseline_Cr * 1.5, 1, 0), # FIXME NEED TO PROGRAM IN THE RISE CASE TOO
+    AKI_stage = case_when( # TODO Add other variables too!
+      cr > Baseline_Cr * 3 ~ 3,
+      cr > Baseline_Cr * 2 ~ 2,
+      cr > Baseline_Cr * 1.5 ~ 1,
+      TRUE ~ 0
+    ),
     Max_Cr_ICU = max(cr),
   ) %>%
   arrange(AdmissionID, desc(cr)) %>%
@@ -99,7 +99,7 @@ neither_ts <- cr_ch_ts_all %>%
   arrange(AdmissionID, DateTime_Pathology_Result) %>%
   mutate(
     # Must be done AFTER arrange() and mutate()
-    AKI_ICU   = max(AKI_ICU, na.rm = TRUE),
+    AKI_ICU = max(AKI_ICU, na.rm = TRUE),
     AKI_stage = max(AKI_stage, na.rm = TRUE),
     AKI_stage = if_else(AKI_stage == 0, NA_real_, AKI_stage),
     del_t_aki = if_else(AKI_ICU == 1, as.duration(DateTime_AKI_Dx - DateTime_Pathology_Result), as.duration(NA_real_))
@@ -174,12 +174,12 @@ heatmap_all <- cr_ch_ts %>%
   filter(is.na(del_t_aki) | del_t_aki > 0) %>%
   mutate(
     heatmap = case_when(
-      is.na(del_t_aki)    ~ " No AKI",
-      del_t_aki/3600 <  4 ~ "t_AKI in  0-4hrs",
-      del_t_aki/3600 <  8 ~ "t_AKI in  4-8hrs",
-      del_t_aki/3600 < 12 ~ "t_AKI in  8-12hrs",
-      del_t_aki/3600 < 16 ~ "t_AKI in 12-16hrs",
-      TRUE                ~ "t_AKI in 16+hrs"
+      is.na(del_t_aki) ~ " No AKI",
+      del_t_aki / 3600 < 4 ~ "t_AKI in  0-4hrs",
+      del_t_aki / 3600 < 8 ~ "t_AKI in  4-8hrs",
+      del_t_aki / 3600 < 12 ~ "t_AKI in  8-12hrs",
+      del_t_aki / 3600 < 16 ~ "t_AKI in 12-16hrs",
+      TRUE ~ "t_AKI in 16+hrs"
     ),
   )
 
@@ -187,8 +187,8 @@ heatmap_count <- heatmap_all %>%
   group_by(heatmap) %>%
   summarise(n_cr = n(), n_admission = n_distinct(AdmissionID), .groups = "keep")
 heatmap_ts <- heatmap_all %>%
-  filter(del_t_ch/3600 < 13, abs(del_cr) < 50)
-heatmap_plot <- ggplot(heatmap_ts, aes(x = del_t_ch/3600, y = del_cr)) +
+  filter(del_t_ch / 3600 < 13, abs(del_cr) < 50)
+heatmap_plot <- ggplot(heatmap_ts, aes(x = del_t_ch / 3600, y = del_cr)) +
   geom_density_2d_filled(
     aes(fill = after_stat(level_mid)),
     contour_var = "density"
@@ -207,20 +207,26 @@ heatmap_plot <- ggplot(heatmap_ts, aes(x = del_t_ch/3600, y = del_cr)) +
     colour = "white", hjust = 0, vjust = 0
   ) +
   ggtitle("Number of Creatinine Change Episodes which Predict AKI in X hours' time") +
-  xlab(expression("Duration of short-term Cr change epis: "*Delta*"t"["cr_ch"]*" (hours)")) +
-  ylab(expression("Change in Cr during epis: "*Delta*"cr"*" ("*mu*"mol/L)")) +
+  xlab(expression("Duration of short-term Cr change epis: " * Delta * "t"["cr_ch"] * " (hours)")) +
+  ylab(expression("Change in Cr during epis: " * Delta * "cr" * " (" * mu * "mol/L)")) +
   theme(panel.spacing = unit(0.8, "lines")) +
-  theme(plot.background = element_rect(fill = "transparent", colour = NA),
-        legend.background = element_rect(fill = "transparent", colour = NA),
-        strip.background = element_rect(fill = "white"))
+  theme(
+    plot.background = element_rect(fill = "transparent", colour = NA),
+    legend.background = element_rect(fill = "transparent", colour = NA),
+    strip.background = element_rect(fill = "white")
+  )
 print(heatmap_plot)
 
 png(bg = "transparent")
-ggsave("cr_ch_heatmap_ppt.png", heatmap_plot, path = paste0(rel_path, "/doc/images/"),
-       type = "cairo-png", bg = "transparent",
-       width = 15, height = 8, scale = 0.8)
+ggsave("cr_ch_heatmap_ppt.png", heatmap_plot,
+  path = paste0(rel_path, "/doc/images/"),
+  type = "cairo-png", bg = "transparent",
+  width = 15, height = 8, scale = 0.8
+)
 
-ggsave("cr_ch_heatmap.png", heatmap_plot, path = paste0(rel_path, "/doc/images/"),
-       width = 12, height = 8, scale = 0.8)
+ggsave("cr_ch_heatmap.png", heatmap_plot,
+  path = paste0(rel_path, "/doc/images/"),
+  width = 12, height = 8, scale = 0.8
+)
 
 rm(heatmap_all, heatmap_count, heatmap_ts, heatmap_plot)

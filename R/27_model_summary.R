@@ -2,7 +2,7 @@
 
 library(kableExtra)
 
-model_summary = list(
+optim_model_summary <- list(
   c("prev study", cr_ch_prev_study_bin),
   c("cr ch only", only_model_1),
   c("baseline all", base_all_model),
@@ -20,18 +20,24 @@ model_summary = list(
   c("multi 11", multi_model_11)
 )
 
-model_list <- lapply(
-  model_summary, function(model) {
-    return(data.frame(Description = model[[1]],
+optim_model_list <- lapply(
+  optim_model_summary, function(model) {
+    return(data.frame(
+      Description = model[[1]],
       model$params,
-      model$summary[c(1:3,6,5,9:10)]
+      model$summary[c(1:3, 6, 5, 9:10)]
     ))
   }
 )
 
-bind_rows(model_list) %>%
+bind_rows(optim_model_list) %>%
   kable(.) %>%
   kable_styling() %>%
   scroll_box(width = "100%", box_css = "border: 0px;")
 
-write.csv(bind_rows(model_list), file = "model_summary.csv", row.names=FALSE)
+write.csv(bind_rows(optim_model_list), file = "model_summary.csv", row.names = FALSE)
+
+rm(cr_ch_prev_study_bin, only_model_1, base_all_model, example_bin_2,
+   multi_model_1b, multi_model_2b, multi_model_3, multi_model_4, 
+   multi_model_5, multi_model_6, multi_model_7, multi_model_8, multi_model_9, 
+   multi_model_10, multi_model_11, optim_model_list)

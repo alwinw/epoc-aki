@@ -61,17 +61,20 @@ oliguria_joint <- full_join(
   by = c("Pt_Study_no", "Epis_cr_change", "Epis_olig")
 )
 
-data_set_joint <- rbind(creatinine_joint,  oliguria_joint)
+data_set_joint <- rbind(creatinine_joint, oliguria_joint)
 
-rm(creatinine_data, creatinine_outcomes, creatinine_joint,
-   oliguria_data, oliguria_outcomes, oliguria_joint)
+rm(
+  creatinine_data, creatinine_outcomes, creatinine_joint,
+  oliguria_data, oliguria_outcomes, oliguria_joint
+)
 
 
 # ---- merge_data_sets ----
-dttm_col = inner_join(
+dttm_col <- inner_join(
   find_cols("date", "DateTime", colnames(data_set_joint)),
   find_cols("time", "DateTime", colnames(data_set_joint)),
-  by = "match") %>%
+  by = "match"
+) %>%
   select(date, time, match)
 
 raw_data_set <- data_set_joint %>%
@@ -93,7 +96,8 @@ raw_data_set <- data_set_joint %>%
     datetime = if_else(
       (is.na(Date) | is.na(Time)),
       NA_character_,
-      paste(format(Date, format = "%Y-%m-%d"), format(Time, format = "%H:%M:%S"))),
+      paste(format(Date, format = "%Y-%m-%d"), format(Time, format = "%H:%M:%S"))
+    ),
     Date = NULL,
     Time = NULL
   ) %>%
@@ -107,7 +111,7 @@ raw_data_set <- data_set_joint %>%
     `T-4_corresp_DateTime` = T0_corresp_DateTime - hours(4),
     T_corresp_check =
       format(T0_corresp_time, format = "%H:%M:%S") == format(T0_corresp_DateTime, format = "%H:%M:%S") &
-      format(`T-4_corresp_DateTime`, format = "%H:%M:%S") == format(`T-4_corresp_DateTime`, format = "%H:%M:%S")
+        format(`T-4_corresp_DateTime`, format = "%H:%M:%S") == format(`T-4_corresp_DateTime`, format = "%H:%M:%S")
   )
 
 # TODO Add time markers
@@ -117,7 +121,7 @@ if (any(!raw_data_set$T_corresp_check)) {
     select(Pt_Study_no, T_corresp_check, starts_with("date"), starts_with("time"), ends_with("time")) %>%
     filter(!T_corresp_check) %>%
     print(.)
-    stop("Found inconsistent times!")
+  stop("Found inconsistent times!")
 }
 
 raw_data_set_cols <- unique(gsub("^time|time$|^date|date$", "DateTime", colnames(data_set_joint), ignore.case = TRUE))

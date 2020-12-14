@@ -1,15 +1,15 @@
 # ---- cr_ch_multi_plot_df ----
-density = 4
-centre_spacing = 0.15/sqrt(density)
+density <- 4
+centre_spacing <- 0.15 / sqrt(density)
 
-cr_ch_grid = expand.grid(
-    seq(2 + centre_spacing, 12, by = centre_spacing),
-    seq(0.5, 4, by = centre_spacing/2)
-  ) %>%
+cr_ch_grid <- expand.grid(
+  seq(2 + centre_spacing, 12, by = centre_spacing),
+  seq(0.5, 4, by = centre_spacing / 2)
+) %>%
   rename(centre = Var1, width = Var2) %>%
   mutate(
-    lower = centre - width/2,
-    upper = centre + width/2
+    lower = centre - width / 2,
+    upper = centre + width / 2
   )
 
 cr_ch_list <- split(cr_ch_grid, rownames(cr_ch_grid))
@@ -22,8 +22,8 @@ cr_ch_dump <- pblapply(
     data.frame(df, analysis_wrapper(
       outcome_var = "AKI_ICU",
       baseline_predictors = c(
-       "Age + APACHE_II + APACHE_III + Baseline_Cr",
-       "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
+        "Age + APACHE_II + APACHE_III + Baseline_Cr",
+        "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
       ),
       cr_predictors = "cr",
       del_t_ch_hr_range = c(df$lower, df$upper),
@@ -31,17 +31,16 @@ cr_ch_dump <- pblapply(
       add_gradient_predictor = 1,
       heuristic_only = TRUE,
       analysis_data = analysis_df
-      )
-    )
+    ))
   },
   cl = cl
 )
 stopCluster(cl)
 rm(density, centre_spacing, cr_ch_grid, cr_ch_list, cl)
 
-heuristic_calc <- function(AUC, per_admin_in){
-  return((1/2 + 1/2*tanh(11*(AUC - 0.875 + 0.1)) +
-        1/2 + 1/2*tanh(11*(per_admin_in - 0.525 + 0.1)))/2)
+heuristic_calc <- function(AUC, per_admin_in) {
+  return((1 / 2 + 1 / 2 * tanh(11 * (AUC - 0.875 + 0.1)) +
+    1 / 2 + 1 / 2 * tanh(11 * (per_admin_in - 0.525 + 0.1))) / 2)
 }
 
 cr_ch_plot <- bind_rows(cr_ch_dump) %>%
@@ -89,14 +88,14 @@ ggplot(cr_ch_plot, aes(centre, width)) +
 optim_one <- optim(
   c(6, 2, 8, 10),
   function(x) {
-    output = analysis_wrapper(
+    output <- analysis_wrapper(
       outcome_var = "AKI_ICU",
       baseline_predictors = c(
         "Age + APACHE_II + APACHE_III + Baseline_Cr",
         "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
       ),
       cr_predictors = "cr",
-      del_t_ch_hr_range = c(x[1] - x[2]/2, x[1] + x[2]),
+      del_t_ch_hr_range = c(x[1] - x[2] / 2, x[1] + x[2]),
       del_t_aki_hr_range = c(x[3], x[3] + x[4]),
       add_gradient_predictor = 1,
       heuristic_only = TRUE,
@@ -110,11 +109,11 @@ optim_one <- optim(
 )
 
 set.seed(8)
-optim_in = rbind(
-  c(6,   1.5, 8, 10),
+optim_in <- rbind(
+  c(6, 1.5, 8, 10),
   c(6.8, 1.8, 8, 10),
-  c(5,   1.5, 8, 10),
-  c(6.5, 2.5, 8, 8 ),
+  c(5, 1.5, 8, 10),
+  c(6.5, 2.5, 8, 8),
   c(6.90, 1.96, 8.77, 34.75), # Great AKI time length
   cbind(
     runif(20, 6, 7),
@@ -138,11 +137,11 @@ optim_in = rbind(
 optim_out <- multistart(
   optim_in,
   function(x) {
-    ch_min = x[1] - x[2]/2
-    ch_max = x[1] + x[2]/2
-    aki_min = x[3]
-    aki_max = x[3] + x[4]
-    output = analysis_wrapper(
+    ch_min <- x[1] - x[2] / 2
+    ch_max <- x[1] + x[2] / 2
+    aki_min <- x[3]
+    aki_max <- x[3] + x[4]
+    output <- analysis_wrapper(
       outcome_var = "AKI_ICU",
       baseline_predictors = c(
         "Age + APACHE_II + APACHE_III + Baseline_Cr",
@@ -164,8 +163,8 @@ optim_out <- multistart(
 optim_cr_ch_multi <- optim_out %>%
   arrange(value) %>%
   mutate(
-    ch_hr_lower = p1 - p2/2,
-    ch_hr_upper = p1 + p2/2,
+    ch_hr_lower = p1 - p2 / 2,
+    ch_hr_upper = p1 + p2 / 2,
     aki_hr_lower = p3,
     aki_hr_upper = p3 + p4
   ) %>%
