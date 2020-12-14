@@ -1,15 +1,16 @@
 # ---- aki_optim_wrapper ----
 aki_optim_wrapper <- function(
-                              optim_in,
-                              outcome_var = "AKI_ICU",
-                              baseline_predictors = "",
-                              cr_predictors = "",
-                              add_gradient_predictor = NULL,
-                              stepwise = FALSE,
-                              k = "AIC",
-                              lower = c(3, 0.1, 8, 3),
-                              upper = c(10, 3, 12, 48),
-                              cluster = FALSE) {
+  optim_in,
+  outcome_var = "AKI_ICU",
+  baseline_predictors = "",
+  cr_predictors = "",
+  add_gradient_predictor = NULL,
+  stepwise = FALSE,
+  k = "AIC",
+  lower = c(3, 0.1, 8, 3),
+  upper = c(10, 3, 12, 48),
+  cluster = FALSE
+) {
   optim_in_list <- asplit(optim_in, 1)
   if (cluster) {
     cl <- makeCluster(detectCores())
