@@ -3,7 +3,7 @@ analysis_df <- cr_ch_ts %>%
   select(
     `UR number`:Admission, Pt_Study_nos, Event,
     Age:Chronic_liver_disease,
-    AKI_ICU, DateTime_Pathology_Result,
+    AKI_ICU, AKI_stage, DateTime_Pathology_Result,
     del_t_ch:cr
   ) %>%
   mutate(
@@ -21,6 +21,7 @@ analysis_df <- cr_ch_ts %>%
     del_t_ch_hr = as.numeric(del_t_ch, "hours"),
     del_t_aki_hr = as.numeric(del_t_aki, "hours")
   ) %>%
+  mutate(AKI_2or3 = if_else(AKI_stage >= 2, 1, 0, 0)) %>%
   select(-del_t_ch, -del_t_aki)
 
 
