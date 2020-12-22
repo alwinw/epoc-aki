@@ -2,7 +2,7 @@
 analysis_df <- cr_ch_ts %>%
   select(
     `UR number`:Admission, Pt_Study_nos, Event,
-    Age, APACHE_II, APACHE_III, Baseline_Cr, PCs_cardio, Vasopressor:Chronic_liver_disease,
+    Age:Chronic_liver_disease,
     AKI_ICU, DateTime_Pathology_Result,
     del_t_ch:cr
   ) %>%
