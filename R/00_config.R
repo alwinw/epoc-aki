@@ -2,7 +2,6 @@ rel_path <- "."
 
 # ---- load_library_function ----
 load_library <- function(req_file = "requirements.txt", bib_file = NULL) {
-  # Load and install necessary packages from text file
   packages <- readLines(req_file)
   new.packages <-
     packages[!(packages %in% installed.packages()[, "Package"])]
@@ -10,15 +9,11 @@ load_library <- function(req_file = "requirements.txt", bib_file = NULL) {
   if (length(new.packages)) {
     install.packages(new.packages)
   }
-
   lapply(packages, library, character.only = TRUE)
-
-  # update.packages()
 
   if (!is.null(bib_file)) {
     knitr::write_bib(unique(c(.packages(), packages)), file = bib_file)
   }
-
   return(NULL)
 }
 
@@ -28,5 +23,6 @@ load_library(
   file.path(rel_path, "doc/bib/R-references.bib")
 )
 theme_set(theme_bw())
+options(knitr.table.format = "pipe")
 
 rm(load_library)

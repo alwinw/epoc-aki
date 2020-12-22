@@ -49,6 +49,8 @@ epoc_aki_admissions %>%
 
 # Pyramid plot for male/female
 
+baseline_df = admission_data
+
 
 baseline_roc_list <- pROC::roc(AKI_ICU ~ Age + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio +
   Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease, data = baseline_df)

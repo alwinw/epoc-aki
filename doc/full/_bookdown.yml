@@ -1,7 +1,0 @@
-book_filename: "epoc-aki"
-language:
-  ui:
-    chapter_name: "Section "
-rmd_files: ["index.Rmd", "00_merge.Rmd"]
-output_dir: "_book_output"
-delete_merged_file: true
