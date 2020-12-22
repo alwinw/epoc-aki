@@ -1,6 +1,6 @@
 # ---- combine_blood_gas_bio_chem ----
 UR_number_list <- unique(admission_data$`UR number`)
-blood_gas_adjust <- 2 # FIXME Estimated!! Would need something that matches the mean AND the variance
+blood_gas_adjust <- 0 # 2 # FIXME Estimated!! Would need something that matches the mean AND the variance
 
 blood_gas_ts <- xlsx_data$creat_furo$blood_gas %>%
   select(
@@ -24,6 +24,7 @@ creatinine_ts <- rbind(blood_gas_ts, bio_chem_ts) %>%
     Creatinine_level = if_else(Pathology == "Bio Chem", `Bio Chem Creatinine`, `Blood Gas Creatinine` + blood_gas_adjust)
   ) %>%
   filter(!is.na(Creatinine_level)) %>%
+  filter(Pathology == "Blood Gas") %>%
   mutate_at(
     vars(ends_with("DTTM")),
     force_tz,
