@@ -53,7 +53,8 @@ cr_ch_ts_all <- admission_data %>%
   ) %>%
   select(
     `UR number`:Admission, Pt_Study_nos, Event, Excl_criteria_ok,
-    Age, APACHE_II, APACHE_III, Baseline_Cr, PCs_cardio, Vasopressor:Chronic_liver_disease,
+    Age, Male, APACHE_II, APACHE_III, Mecvenadm,
+    Baseline_Cr, PCs_cardio, Vasopressor:Chronic_liver_disease,
     AKI_ICU, AKI_stage,
     DateTime_ICU_admit, DateTime_ICU_dc,
     Baseline_Cr:Cr_defined_AKI_stage

@@ -7,7 +7,7 @@
 
 # ---- cr_ch_only ----
 # set.seed(8)
-n <- 10000
+n <- 100
 optim_in <- rbind(
   cbind(
     runif(n, 3, 10),
@@ -21,12 +21,13 @@ heuristic_calc <- function(AUC, per_admin_in) {
 }
 optim_only_model <- aki_optim_wrapper(
   optim_in,
-  outcome_var = "AKI_ICU",
+  outcome_var = "AKI_2or3",
   baseline_predictors = "",
   cr_predictors = "",
   add_gradient_predictor = 1,
   lower = c(3, 0.1, 8, 3),
-  upper = c(10, 3, 12, 48)
+  upper = c(10, 3, 12, 48),
+  cluster = TRUE
 )
 kable(head(optim_only_model$optim_summary, 20))
 write.csv(
@@ -37,7 +38,7 @@ write.csv(
 
 # ---- multi ----
 # set.seed(8)
-n <- 10000
+n <- 100
 optim_in <- rbind(
   cbind(
     runif(n, 3, 10),
@@ -54,9 +55,9 @@ heuristic_calc <- function(AUC, per_admin_in) {
 }
 optim_multi_model <- aki_optim_wrapper(
   optim_in,
-  outcome_var = "AKI_ICU",
+  outcome_var = "AKI_2or3",
   baseline_predictors = c(
-    "Age + APACHE_II + APACHE_III + Baseline_Cr",
+    "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
     "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
   ),
   cr_predictors = "cr",
@@ -73,3 +74,24 @@ write.csv(
   paste0("optim_multi ", format(Sys.time(), "%Y-%m-%d %H-%M-%S"), ".csv"),
   row.names = FALSE
 )
+
+
+# ---- example_model_1 ----
+cat("del_t_ch_hr_range = c(4.55, 7.18)\ndel_t_aki_hr_range = c(9.39, 12.72)")
+scatter_example <- analysis_wrapper(
+  outcome_var = "AKI_2or3",
+  baseline_predictors = c(
+    "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
+    "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
+  ),
+  cr_predictors = "cr",
+  del_t_ch_hr_range = c(4.55, 7.18),
+  del_t_aki_hr_range = c(9.39, 12.72),
+  add_gradient_predictor = 1,
+  all_data = TRUE,
+  analysis_data = analysis_df
+)
+kable(publish(scatter_example$model, print = FALSE, digits = c(2, 3))$regressionTable,
+      align = c("l", "c", "c", "c", "c")
+)
+kable(summarise_cutpoint(scatter_example), align = c("l", "r"))
