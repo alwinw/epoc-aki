@@ -78,7 +78,7 @@ write.csv(
 
 # ---- example_model_1 ----
 cat("del_t_ch_hr_range = c(4.55, 7.18)\ndel_t_aki_hr_range = c(9.39, 12.72)")
-scatter_example <- analysis_wrapper(
+scatter_example <- aki_dev_wrapper(
   outcome_var = "AKI_2or3",
   baseline_predictors = c(
     "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
@@ -89,6 +89,29 @@ scatter_example <- analysis_wrapper(
   del_t_aki_hr_range = c(9.39, 12.72),
   add_gradient_predictor = 1,
   all_data = TRUE,
+  analysis_data = analysis_df
+)
+kable(publish(scatter_example$model, print = FALSE, digits = c(2, 3))$regressionTable,
+      align = c("l", "c", "c", "c", "c")
+)
+kable(summarise_cutpoint(scatter_example), align = c("l", "r"))
+
+
+# ---- example_model_2 ----
+cat("del_t_ch_hr_range = c(4.55, 7.18)\ndel_t_aki_hr_range = c(9.39, 12.72)")
+scatter_example <- aki_dev_wrapper(
+  outcome_var = "AKI_2or3",
+  baseline_predictors = c(
+    "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
+    "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
+  ),
+  cr_predictors = "cr",
+  del_t_ch_hr_range = c(4.55, 7.18),
+  del_t_aki_hr_range = c(9.39, 12.72),
+  add_gradient_predictor = 1,
+  all_data = TRUE,
+  stepwise = TRUE,
+  k = "mBIC",
   analysis_data = analysis_df
 )
 kable(publish(scatter_example$model, print = FALSE, digits = c(2, 3))$regressionTable,
