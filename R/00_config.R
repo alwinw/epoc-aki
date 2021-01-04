@@ -1,4 +1,5 @@
 rel_path <- "."
+save_plots <- FALSE
 
 # ---- load_library_function ----
 load_library <- function(req_file = "requirements.txt", bib_file = NULL) {

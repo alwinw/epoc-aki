@@ -13,6 +13,7 @@ resources/
 *.bib.bak
 prelim_doc.RData
 main.RData
+Rplot*.png
 
 !data/*.R
 !data/*.md
