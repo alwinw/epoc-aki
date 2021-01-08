@@ -92,7 +92,7 @@ scatter_example <- aki_dev_wrapper(
   analysis_data = analysis_df
 )
 kable(publish(scatter_example$model, print = FALSE, digits = c(2, 3))$regressionTable,
-      align = c("l", "c", "c", "c", "c")
+  align = c("l", "c", "c", "c", "c")
 )
 kable(summarise_cutpoint(scatter_example), align = c("l", "r"))
 
@@ -115,6 +115,6 @@ scatter_example <- aki_dev_wrapper(
   analysis_data = analysis_df
 )
 kable(publish(scatter_example$model, print = FALSE, digits = c(2, 3))$regressionTable,
-      align = c("l", "c", "c", "c", "c")
+  align = c("l", "c", "c", "c", "c")
 )
 kable(summarise_cutpoint(scatter_example), align = c("l", "r"))

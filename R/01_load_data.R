@@ -36,8 +36,8 @@ xlsx_data$creatinine <- list(
 )
 xlsx_data$screen_out <- list(
   no_creatinine = read_excel(xlsx_paths$demographics, "no cr change", .name_repair = empty_col_as_comment),
-  no_oliguria   = read_excel(xlsx_paths$demographics, "no oliguria", .name_repair = empty_col_as_comment),
-  neither_cr_ol  = read_excel(xlsx_paths$demographics, "neither cr nor olig", .name_repair = empty_col_as_comment)
+  no_oliguria = read_excel(xlsx_paths$demographics, "no oliguria", .name_repair = empty_col_as_comment),
+  neither_cr_ol = read_excel(xlsx_paths$demographics, "neither cr nor olig", .name_repair = empty_col_as_comment)
 )
 xlsx_data$apd_extract <- list(
   apd_extract = read_excel(xlsx_paths$apd_extract, "Admissions")

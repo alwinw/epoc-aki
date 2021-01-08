@@ -226,7 +226,7 @@ if (save_plots) {
     type = "cairo-png", bg = "transparent",
     width = 15, height = 8, scale = 0.8
   )
-  
+
   ggsave("cr_ch_heatmap.png", heatmap_plot,
     path = paste0(rel_path, "/doc/images/"),
     width = 12, height = 8, scale = 0.8

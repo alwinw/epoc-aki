@@ -27,19 +27,18 @@ analysis_df <- cr_ch_ts %>%
 
 # ---- aki_dev_wrapper ----
 aki_dev_wrapper <- function(
-  outcome_var = "AKI_ICU",
-  baseline_predictors = c("Age"),
-  cr_predictors = NULL,
-  del_t_ch_hr_range = NULL,
-  del_t_aki_hr_range = NULL,
-  add_gradient_predictor = NULL,
-  stepwise = FALSE,
-  k = "mBIC",
-  plot_cutpoint = FALSE,
-  heuristic_only = FALSE,
-  all_data = FALSE,
-  analysis_data = analysis_df
-) {
+                            outcome_var = "AKI_ICU",
+                            baseline_predictors = c("Age"),
+                            cr_predictors = NULL,
+                            del_t_ch_hr_range = NULL,
+                            del_t_aki_hr_range = NULL,
+                            add_gradient_predictor = NULL,
+                            stepwise = FALSE,
+                            k = "mBIC",
+                            plot_cutpoint = FALSE,
+                            heuristic_only = FALSE,
+                            all_data = FALSE,
+                            analysis_data = analysis_df) {
   # Defaults
   glm_model <- paste(outcome_var, "~", paste(baseline_predictors, collapse = " + "))
   n_analysis_data <- length(unique(analysis_data$AdmissionID))
