@@ -219,15 +219,18 @@ heatmap_plot <- ggplot(heatmap_ts, aes(x = del_t_ch / 3600, y = del_cr)) +
 print(heatmap_plot)
 
 png(bg = "transparent")
-ggsave("cr_ch_heatmap_ppt.png", heatmap_plot,
-  path = paste0(rel_path, "/doc/images/"),
-  type = "cairo-png", bg = "transparent",
-  width = 15, height = 8, scale = 0.8
-)
 
-ggsave("cr_ch_heatmap.png", heatmap_plot,
-  path = paste0(rel_path, "/doc/images/"),
-  width = 12, height = 8, scale = 0.8
-)
+if (save_plots) {
+  ggsave("cr_ch_heatmap_ppt.png", heatmap_plot,
+    path = paste0(rel_path, "/doc/images/"),
+    type = "cairo-png", bg = "transparent",
+    width = 15, height = 8, scale = 0.8
+  )
+  
+  ggsave("cr_ch_heatmap.png", heatmap_plot,
+    path = paste0(rel_path, "/doc/images/"),
+    width = 12, height = 8, scale = 0.8
+  )
+}
 
 rm(heatmap_all, heatmap_count, heatmap_ts, heatmap_plot)

@@ -1,5 +1,4 @@
 # ---- excel_date_to_character_function ----
-
 excel_date_to_character <- function(vector) {
   suppressWarnings(ifelse(grepl("/", vector), vector,
     as.character(as.Date(as.numeric(vector), origin = "1899-12-30"), format = "%d/%m/%y")
