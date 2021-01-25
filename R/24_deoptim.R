@@ -14,6 +14,105 @@
 # test_optim$optim$bestmem
 # plot(test_optim)
 
+# ---- wrapper functions ----
+heuristic_wrapper <- function(
+                              x,
+                              penalty_fn = function(x) x$penalty,
+                              return_fn = function(x) x,
+                              ...) {
+  tryCatch(
+    {
+      summary <- aki_dev_wrapper(
+        del_t_ch_hr_range = c(x[1] - x[2] / 2, x[1] + x[2] / 2),
+        del_t_aki_hr_range = c(x[3], x[3] + x[4]),
+        ...
+      )
+      summary$penalty <- penalty_fn(summary)
+      return(return_fn(summary))
+    },
+    error = function(e) {
+      warning(e)
+      summary <- data.frame(penalty = Inf)
+      return(return_fn(summary))
+    }
+  )
+}
+# heuristic_wrapper(
+#   c(6, 1, 9, 40),
+#   penalty_fn = function(summary) 1 - summary$AUC,
+#   return_fn = function(summary) summary$penalty
+# )
+
+deoptim_wrapper <- function(lower, upper, itermax, ..., return_fn, fnMap) {
+  result = DEoptim(
+    heuristic_wrapper,
+    lower = lower,
+    upper = upper,
+    control = DEoptim.control(
+      itermax = itermax #,
+      # parallelType = 1
+    ),
+    ...,
+    return_fn = return_fn,
+    fnMap = fnMap
+  )
+  return(heuristic_wrapper(result$optim$bestmem, ...))
+}
+
+
+# ---- cr_ch_only ----
+set.seed(8)
+
+cr_ch_optim = deoptim_wrapper(
+  lower = c(4, 0.5, 24, 1),
+  upper = c(6, 3, 48, 48),
+  itermax = 1,
+  outcome_var = "AKI_2or3",
+  baseline_predictors = "",
+  cr_predictors = "",
+  add_gradient_predictor = 1,
+  penalty_fn = function(summary) 1 - summary$AUC,
+  return_fn = function(summary) summary$penalty,
+  fnMap = function(x) round(x, 1)
+)
+
+
+cr_ch_optim <- DEoptim(
+  heuristic_wrapper,
+  lower = c(4, 0.5, 24, 1),
+  upper = c(6, 3, 48, 48),
+  control = DEoptim.control(
+    itermax = 10#,
+    # parallelType = 1
+  ),
+  outcome_var = "AKI_2or3",
+  baseline_predictors = "",
+  cr_predictors = "",
+  add_gradient_predictor = 1,
+  penalty_fn = function(summary) 1 - summary$AUC,
+  return_fn = function(summary) summary$penalty,
+  fnMap = function(x) round(x, 1)
+)
+
+heuristic_wrapper(cr_ch_optim$optim$bestmem, 
+                  penalty_fn = function(summary) 1 - summary$AUC,
+                  outcome_var = "AKI_2or3",
+                  baseline_predictors = "",
+                  cr_predictors = "",
+                  add_gradient_predictor = 1)
+
+
+
+
+
+
+
+
+
+
+
+
+
 heuristic_calc <- function(AUC, per_admin_in) -AUC
 
 # Move calc to here so reusable later

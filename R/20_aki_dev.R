@@ -1,4 +1,5 @@
 # ---- analysis_ts ----
+# consider having col for ABG vs BioChem here and apply a filter
 analysis_df <- cr_ch_ts %>%
   select(
     `UR number`:Admission, Pt_Study_nos, Event,
@@ -137,30 +138,32 @@ aki_dev_wrapper <- function(
     n_UR = length(unique(analysis_data$`UR number`)),
     n = nrow(analysis_data),
     n_event_pos = sum(analysis_data$AKI_ICU == 1),
-    n_event_neg = sum(analysis_data$AKI_ICU == 0)
+    n_event_neg = sum(analysis_data$AKI_ICU == 0),
+    glm_model = glm_model,
+    # Does not handle case where no ranges applied
+    ch_hr_lower = del_t_ch_hr_range[1],
+    ch_hr_upper = del_t_ch_hr_range[2],
+    aki_hr_lower = del_t_aki_hr_range[1],
+    aki_hr_upper = del_t_aki_hr_range[2]
   )
   if (stepwise) summary$AUC_all <- logit_cut_all$AUC
 
   if (!all_data) {
     return(summary)
   } else {
-    ch_hr_lower <- NA
-    ch_hr_upper <- NA
-    aki_hr_lower <- NA
-    aki_hr_upper <- NA
-    if (!is.null(del_t_ch_hr_range)) {
-      ch_hr_lower <- del_t_ch_hr_range[1]
-      ch_hr_upper <- del_t_ch_hr_range[2]
-    }
-    if (!is.null(del_t_aki_hr_range)) {
-      aki_hr_lower <- del_t_aki_hr_range[1]
-      aki_hr_upper <- del_t_aki_hr_range[2]
-    }
     params <- data.frame(
       glm_model = glm_model,
-      ch_hr_lower = ch_hr_lower, ch_hr_upper = ch_hr_upper,
-      aki_hr_lower = aki_hr_lower, aki_hr_upper = aki_hr_upper
+      ch_hr_lower = NA, ch_hr_upper = NA,
+      aki_hr_lower = NA, aki_hr_upper = NA
     )
+    if (!is.null(del_t_ch_hr_range)) {
+      params$ch_hr_lower <- del_t_ch_hr_range[1]
+      params$ch_hr_upper <- del_t_ch_hr_range[2]
+    }
+    if (!is.null(del_t_aki_hr_range)) {
+      params$aki_hr_lower <- del_t_aki_hr_range[1]
+      params$aki_hr_upper <- del_t_aki_hr_range[2]
+    }
     return(list(
       model = logit_model,
       cutpoint = logit_cut,
@@ -171,7 +174,7 @@ aki_dev_wrapper <- function(
   }
 }
 
-# temp = aki_dev_wrapper(
+# temp <- aki_dev_wrapper(
 #   outcome_var = "AKI_ICU",
 #   baseline_predictors = c(
 #     "Age + APACHE_II + APACHE_III + Baseline_Cr",
@@ -185,7 +188,10 @@ aki_dev_wrapper <- function(
 #   k = "BIC",
 #   all_data = TRUE,
 #   analysis_data = analysis_df
-# ); summarise_cutpoint(temp); temp$params$glm_model; publish(temp$model, print = FALSE)$regressionTable
+# )
+# summarise_cutpoint(temp)
+# temp$params$glm_model
+# publish(temp$model, print = FALSE)$regressionTable
 
 
 # ---- time_aki_wrapper ----
