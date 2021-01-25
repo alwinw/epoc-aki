@@ -50,7 +50,11 @@ aki_dev_wrapper <- function(
       warning(paste0("Lower del_t_ch should be > 0, not '", del_t_ch_hr_range[1], "'"))
       return(NULL)
     }
-    analysis_data <- filter(analysis_data, del_t_ch_hr >= del_t_ch_hr_range[1], del_t_ch_hr <= del_t_ch_hr_range[2])
+    analysis_data <- filter(
+      analysis_data,
+      del_t_ch_hr >= del_t_ch_hr_range[1],
+      del_t_ch_hr <= del_t_ch_hr_range[2]
+    )
   }
   if (!is.null(del_t_aki_hr_range)) {
     del_t_aki_hr_range <- sort(del_t_aki_hr_range)
@@ -58,7 +62,12 @@ aki_dev_wrapper <- function(
       warning(paste0("Lower del_t_aki should be > 0, not '", del_t_aki_hr_range[1], "'"))
       return(NULL)
     }
-    analysis_data <- filter(analysis_data, is.na(del_t_aki_hr) | del_t_aki_hr >= del_t_aki_hr_range[1] & del_t_aki_hr <= del_t_aki_hr_range[2])
+    analysis_data <- filter(
+      analysis_data,
+      is.na(del_t_aki_hr) |
+        del_t_aki_hr >= del_t_aki_hr_range[1] &
+          del_t_aki_hr <= del_t_aki_hr_range[2]
+    )
   }
   if (nrow(analysis_data) == 0) {
     warning(paste0("No rows in analysis_data found"))
@@ -180,6 +189,8 @@ aki_dev_wrapper <- function(
 
 
 # ---- time_aki_wrapper ----
+# analysis to determine model for the time to AKI development,
+# rather than AKI development as a binary outcome
 
 
 # ---- summarise_cutpoint_function ----

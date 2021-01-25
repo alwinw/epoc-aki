@@ -10,6 +10,7 @@ metR
 fuzzyjoin
 janitor
 optimr
+DEoptim
 Publish
 knitr
 rmarkdown

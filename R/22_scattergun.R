@@ -1,19 +1,26 @@
-# =1/2 + 1/2*TANH(10.9861*($E2 - 0.8))
-# =1/2 + 1/2*TANH(10.9861*($F2 - 0.3))
-# =1/2 + 1/2*TANH(-1.0986*($I2 - 8))
-# =1/2 + 1/2*TANH(0.0549*($K2 - 28))
-#
-# s/d * atanh(0.8)
+# ---- goals ----
+# cr_ch (upper):
+# ("hrs", "goodness")
+# (0, 0), (2, 4), (4, 10), (6, 10), (7, 9), (10, 2)
+# t_aki (upper):
+# ("hrs", "goodness")
+# (12, 4), (24, 10), (48, 10), (72, 4)
+# Clinical ease
+# No APACHE II/III as may be unavailable when pt is admitted to ICU
+# Autoamted alarm ease
+# No baseline_cr or co-morbidities
+
+# https://en.wikipedia.org/wiki/Metaheuristic
 
 # ---- cr_ch_only ----
 # set.seed(8)
 n <- 100
 optim_in <- rbind(
   cbind(
-    runif(n, 3, 10),
+    runif(n, 3, 9),
     runif(n, 1, 3),
     runif(n, 8, 12),
-    runif(n, 3, 48)
+    runif(n, 4, 48)
   )
 )
 heuristic_calc <- function(AUC, per_admin_in) {
