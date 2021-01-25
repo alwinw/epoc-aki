@@ -43,8 +43,13 @@ aki_dev_wrapper <- function(
   # Defaults
   glm_model <- paste(outcome_var, "~", paste(baseline_predictors, collapse = " + "))
   n_analysis_data <- length(unique(analysis_data$AdmissionID))
-
+  ch_hr_lower = NA
+  ch_hr_upper = NA
+  aki_hr_lower = NA
+  aki_hr_upper = NA
+  
   # Apply any filters
+  # what if I just let del_t_ch_hr_range = c(-Inf, Inf) !?
   if (!is.null(del_t_ch_hr_range)) {
     del_t_ch_hr_range <- sort(del_t_ch_hr_range)
     if (del_t_ch_hr_range[1] < 0) {
@@ -56,6 +61,8 @@ aki_dev_wrapper <- function(
       del_t_ch_hr >= del_t_ch_hr_range[1],
       del_t_ch_hr <= del_t_ch_hr_range[2]
     )
+    ch_hr_lower = del_t_ch_hr_range[1]
+    ch_hr_upper = del_t_ch_hr_range[2]
   }
   if (!is.null(del_t_aki_hr_range)) {
     del_t_aki_hr_range <- sort(del_t_aki_hr_range)
@@ -69,11 +76,14 @@ aki_dev_wrapper <- function(
         del_t_aki_hr >= del_t_aki_hr_range[1] &
           del_t_aki_hr <= del_t_aki_hr_range[2]
     )
+    aki_hr_lower = del_t_aki_hr_range[1]
+    aki_hr_upper = del_t_aki_hr_range[2]
   }
   if (nrow(analysis_data) == 0) {
     warning(paste0("No rows in analysis_data found"))
     return(NULL)
   }
+  n_admissions <- length(unique(analysis_data$AdmissionID))
 
   # Add cr variables
   if (!is.null(cr_predictors)) {
@@ -83,10 +93,30 @@ aki_dev_wrapper <- function(
     analysis_data <- mutate(analysis_data, cr_gradient = if_else(del_cr >= add_gradient_predictor * del_t_ch_hr, 1, 0))
     glm_model <- paste(glm_model, "+ cr_gradient")
   }
+  glm_model <- gsub("~(\\s+\\+){1,}", "~", glm_model)
+  
+  # Create output summary
+  summary <- data.frame(
+    AUC = 0,
+    sensitivity = 0,
+    specificity = 0,
+    optimal_cutpoint = 0,
+    per_admin_in = n_admissions / n_analysis_data,
+    n_admissions = n_admissions,
+    n_admissions_pos = 0,
+    n_admissions_neg = 0,
+    n_UR = length(unique(analysis_data$`UR number`)),
+    n = nrow(analysis_data),
+    n_event_pos = sum(analysis_data$AKI_ICU == 1),
+    n_event_neg = sum(analysis_data$AKI_ICU == 0),
+    glm_model = glm_model,
+    ch_hr_lower = ch_hr_lower,
+    ch_hr_upper = ch_hr_upper,
+    aki_hr_lower = aki_hr_lower,
+    aki_hr_upper = aki_hr_upper
+  )
 
   # Run glm
-  n_admissions <- length(unique(analysis_data$AdmissionID))
-  glm_model <- gsub("~  \\+", "~", glm_model)
   logit_model <- glm(formula = glm_model, family = "binomial", data = analysis_data)
   if (stepwise) {
     analysis_data$all_predict <- predict(logit_model, type = "response")
