@@ -108,11 +108,20 @@ aki_dev_wrapper <- function(
   }
 
   analysis_data$predict <- predict(logit_model, type = "response")
-  logit_cut <- cutpointr(
-    analysis_data, predict, {{ outcome_var }},
-    use_midpoints = TRUE,
-    direction = ">=", pos_class = 1, neg_class = 0,
-    method = maximize_metric, metric = youden
+  logit_cut = tryCatch(
+    {
+      cutpointr(
+        analysis_data, predict, {{ outcome_var }},
+        use_midpoints = TRUE,
+        direction = ">=", pos_class = 1, neg_class = 0,
+        method = maximize_metric, metric = youden
+      )
+    },
+    error = function(e) {
+      # print(e)
+      # warning(e)
+      list(AUC = 0, sensitivity = list(0), specificity = list(0))
+    }
   )
   if (plot_cutpoint) {
     print(plot(logit_cut))
