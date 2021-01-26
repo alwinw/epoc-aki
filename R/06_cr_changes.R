@@ -137,7 +137,7 @@ rm(cr_ch_ts_all, neither_ts, insufficient_cr, generate_cr_ch)
 cr_ch_ts %>%
   filter(abs(del_cr) < 50) %>%
   mutate(
-    t_AKI = if_else(is.na(del_t_aki) | del_t_aki > 0, "Before", "After")
+    t_AKI = if_else(is.na(del_t_aki_hr) | del_t_aki_hr > 0, "Before", "After")
   ) %>%
   select(AdmissionID, AKI_ICU, DateTime_Pathology_Result, t_AKI) %>%
   # unique(.) %>%
@@ -155,7 +155,7 @@ cr_ch_ts %>%
 cr_ch_ts %>%
   filter(abs(del_cr) < 50) %>%
   mutate(
-    t_AKI = if_else(is.na(del_t_aki) | del_t_aki > 0, "Before", "After")
+    t_AKI = if_else(is.na(del_t_aki_hr) | del_t_aki_hr > 0, "Before", "After")
   ) %>%
   select(AdmissionID, AKI_ICU, t_AKI) %>%
   group_by(AdmissionID) %>%
@@ -170,7 +170,7 @@ cr_ch_ts %>%
   kable(., caption = "Admission breakdown")
 
 # ---- summary_plots ----
-# ggplot(cr_ch_ts, aes(x = del_t_ch/3600)) +
+# ggplot(cr_ch_ts, aes(x = del_t_ch_hr)) +
 #   geom_histogram(bins = 100, fill = "cyan", colour = "blue") +
 #   xlim(0, 48)
 # # Add another plot based on admissions?
@@ -179,7 +179,7 @@ cr_ch_ts %>%
 #   geom_histogram(bins = 50, fill = "cyan", colour = "blue") +
 #   xlim(0, 100)
 #
-# ggplot(cr_ch_ts, aes(x = del_t_ch/3600, y = del_cr)) +
+# ggplot(cr_ch_ts, aes(x = del_t_ch_hr, y = del_cr)) +
 #   geom_hex(bins = 100) +
 #   xlim(0, 48) + ylim(-100, 100) +
 #   coord_cartesian(expand = FALSE) +
@@ -187,14 +187,14 @@ cr_ch_ts %>%
 
 # ---- heatmap_plot ----
 heatmap_all <- cr_ch_ts %>%
-  filter(is.na(del_t_aki) | del_t_aki > 0) %>%
+  filter(is.na(del_t_aki_hr) | del_t_aki_hr > 0) %>%
   mutate(
     heatmap = case_when(
-      is.na(del_t_aki) ~ " No AKI",
-      del_t_aki / 3600 < 4 ~ "t_AKI in  0-4hrs",
-      del_t_aki / 3600 < 8 ~ "t_AKI in  4-8hrs",
-      del_t_aki / 3600 < 12 ~ "t_AKI in  8-12hrs",
-      del_t_aki / 3600 < 16 ~ "t_AKI in 12-16hrs",
+      is.na(del_t_aki_hr) ~ " No AKI",
+      del_t_aki_hr < 4 ~ "t_AKI in  0-4hrs",
+      del_t_aki_hr < 8 ~ "t_AKI in  4-8hrs",
+      del_t_aki_hr < 12 ~ "t_AKI in  8-12hrs",
+      del_t_aki_hr < 16 ~ "t_AKI in 12-16hrs",
       TRUE ~ "t_AKI in 16+hrs"
     ),
   )
@@ -203,8 +203,8 @@ heatmap_count <- heatmap_all %>%
   group_by(heatmap) %>%
   summarise(n_cr = n(), n_admission = n_distinct(AdmissionID), .groups = "keep")
 heatmap_ts <- heatmap_all %>%
-  filter(del_t_ch / 3600 < 13, abs(del_cr) < 50)
-heatmap_plot <- ggplot(heatmap_ts, aes(x = del_t_ch / 3600, y = del_cr)) +
+  filter(del_t_ch_hr < 13, abs(del_cr) < 50)
+heatmap_plot <- ggplot(heatmap_ts, aes(x = del_t_ch_hr, y = del_cr)) +
   geom_density_2d_filled(
     aes(fill = after_stat(level_mid)),
     contour_var = "density"
