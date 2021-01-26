@@ -16,13 +16,7 @@ analysis_df <- cr_ch_ts %>%
     APACHE_II = if_else(is.na(APACHE_II), median(APACHE_II, na.rm = TRUE), APACHE_II),
     APACHE_III = if_else(is.na(APACHE_III), median(APACHE_III, na.rm = TRUE), APACHE_III)
   ) %>% # FIXME Replace with REAL data
-  ungroup() %>%
-  mutate(
-    del_t_ch_hr = as.numeric(del_t_ch, "hours"),
-    del_t_aki_hr = as.numeric(del_t_aki, "hours")
-  ) %>%
-  mutate(AKI_2or3 = if_else(AKI_stage >= 2, 1, 0, 0)) %>%
-  select(-del_t_ch, -del_t_aki)
+  ungroup()
 
 baseline_df <- analysis_df %>%
   select(-DateTime_Pathology_Result:-del_t_aki_hr) %>%

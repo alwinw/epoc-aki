@@ -81,7 +81,7 @@ neither_ts <- cr_ch_ts_all %>%
     # No need to check for olig definition of AKI, else would have had "oliguria episode"
     Baseline_Cr = min(cr),
     AKI_ICU = if_else(cr > Baseline_Cr * 1.5, 1, 0), # FIXME NEED TO PROGRAM IN THE RISE CASE TOO
-    AKI_stage = case_when( # TODO Add other variables too!
+    AKI_stage = case_when( # TODO Add other gradient definition too!
       cr > Baseline_Cr * 3 ~ 3,
       cr > Baseline_Cr * 2 ~ 2,
       cr > Baseline_Cr * 1.5 ~ 1,
@@ -109,11 +109,21 @@ neither_ts <- cr_ch_ts_all %>%
 # length(unique(neither_ts$AdmissionID))
 
 cr_ch_ts <- rbind(
-  cr_ch_ts_all %>% filter(!is.na(AKI_ICU)),
-  neither_ts
-)
+  cr_ch_ts_all %>% filter(!is.na(AKI_ICU)), # No issues
+  neither_ts, # Had to check for AKI
+  cr_ch_ts_all %>% filter(is.na(AKI_ICU), is.na(cr)) # Not enough cr changes
+) %>%
+  mutate(
+    del_t_ch_hr = as.numeric(del_t_ch, "hours"),
+    del_t_aki_hr = as.numeric(del_t_aki, "hours")
+  ) %>%
+  mutate(AKI_2or3 = if_else(AKI_stage >= 2, 1, 0, 0)) %>%
+  select(-del_t_ch, -del_t_aki)
 
-# TODO Add checks on number of rows, etc
+if (nrow(cr_ch_ts) != nrow(cr_ch_ts_all)) {
+  stop("Differring row numbers")
+}
+# TODO Add more checks on number of rows, etc
 
 rm(cr_ch_ts_all, neither_ts, generate_cr_ch)
 
