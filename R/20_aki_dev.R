@@ -25,6 +25,21 @@ analysis_df <- cr_ch_ts %>%
   mutate(AKI_2or3 = if_else(AKI_stage >= 2, 1, 0, 0)) %>%
   select(-del_t_ch, -del_t_aki)
 
+# --- time_to_aki_plot ----
+# analysis_df %>%
+#   filter(AKI_ICU == 1) %>%
+#   group_by(AdmissionID) %>%
+#   summarise(max_t_aki = max(del_t_aki_hr)) %>%
+#   ggplot(., aes(max_t_aki)) +
+#   geom_histogram() +
+#   xlim(0, 30)
+#
+# analysis_df %>%
+#   group_by(AdmissionID) %>%
+#   summarise(min_t_ch = min(del_t_ch_hr), max_t_ch = max(del_t_ch_hr)) %>%
+#   ggplot(., aes(max_t_aki)) +
+#   geom_histogram() +
+#   xlim(0, 30)
 
 # ---- aki_dev_wrapper ----
 aki_dev_wrapper <- function(
@@ -40,9 +55,9 @@ aki_dev_wrapper <- function(
                             all_data = FALSE,
                             analysis_data = analysis_df
                             # Consider adding pos and neg class here
-                            ) {
+) {
   # Defaults
-  glm_model <- paste(outcome_var, "~", paste(c(baseline_predictors, cr_predictors), collapse = " + "))
+  predictors <- c(baseline_predictors, cr_predictors)
   n_analysis_data <- length(unique(analysis_data$AdmissionID))
   n_analysis_data_pos <- length(unique(analysis_data$AdmissionID[analysis_data[outcome_var] == 1])) ## 1 is hard coded...
 
@@ -65,29 +80,26 @@ aki_dev_wrapper <- function(
   summary$aki_hr_lower <- del_t_aki_hr_range[1]
   summary$aki_hr_upper <- del_t_aki_hr_range[2]
   # Check number of rows
-  if (nrow(analysis_data) == 0) {
-    warning(paste0("No rows in analysis_data found"))
+  if (nrow(analysis_data) <= 2) {
+    warning(paste0("Insufficient rows in analysis_data"))
     return(summary)
   }
+  if (nrow(unique(analysis_data[outcome_var])) != 2) {
+    warning("Same outcome in all data")
+    return(summary)
+  }
+
   summary$n_admissions <- length(unique(analysis_data$AdmissionID))
 
   # Create cr_gradient
   if (!is.null(add_gradient_predictor)) {
     analysis_data <- mutate(analysis_data, cr_gradient = if_else(del_cr >= add_gradient_predictor * del_t_ch_hr, 1, 0))
-    glm_model <- paste(glm_model, "+ cr_gradient")
+    predictors <- c(predictors, "cr_gradient")
   }
 
   # Run glm
-  logit_model <- tryCatch(glm(formula = glm_model, family = "binomial", data = analysis_data),
-    error = function(e) {
-      warning("glm for complete model failed")
-      warning(e)
-      e
-    }
-  )
-  if (inherits(logit_model, "error")) {
-    return(summary)
-  }
+  glm_model <- paste(outcome_var, "~", paste(predictors[predictors != ""], collapse = " + "))
+  logit_model <- glm(formula = glm_model, family = "binomial", data = analysis_data)
   # Cutpoint
   analysis_data$predict <- predict(logit_model, type = "response")
   logit_cut <- cutpointr(
@@ -95,6 +107,7 @@ aki_dev_wrapper <- function(
     use_midpoints = TRUE, direction = ">=", pos_class = 1, neg_class = 0,
     method = maximize_metric, metric = youden
   )
+
   # Update summary
   summary$AUC_all <- logit_cut$AUC
 
@@ -107,16 +120,7 @@ aki_dev_wrapper <- function(
     } else {
       k <- log(summary$n_admissions) # Modified BIC
     }
-    logit_model <- tryCatch(step(logit_model, trace = 0, k = k, direction = "backward"), # Modified BIC
-      error = function(e) {
-        warning("Stepwise glm failed")
-        warning(e)
-        e
-      }
-    )
-    if (inherits(logit_model, "error")) {
-      return(summary)
-    } # all zero EXCEPT AUC_all
+    logit_model <- step(logit_model, trace = 0, k = k, direction = "backward") # Modified BIC
     # Cutpoint
     analysis_data$predict <- predict(logit_model, type = "response")
     logit_cut <- cutpointr(
@@ -131,7 +135,7 @@ aki_dev_wrapper <- function(
   summary$sensitivity <- logit_cut$sensitivity[[1]]
   summary$specificity <- logit_cut$specificity[[1]]
   summary$optimal_cutpoint <- logit_cut$optimal_cutpoint
-  summary$per_admin_in <- summary$n_admissions / n_analysis_data * 100
+  summary$per_admin_in <- summary$n_admissions / n_analysis_data
   summary$n_admissions_pos <- length(unique(analysis_data$AdmissionID[analysis_data[outcome_var] == logit_cut$pos_class]))
   summary$n_admissions_neg <- length(unique(analysis_data$AdmissionID[analysis_data[outcome_var] == logit_cut$neg_class]))
   summary$per_admin_pos <- summary$n_admissions_pos / n_analysis_data_pos
@@ -139,7 +143,7 @@ aki_dev_wrapper <- function(
   summary$n <- nrow(analysis_data)
   summary$n_event_pos <- sum(analysis_data[outcome_var] == logit_cut$pos_class)
   summary$n_event_neg <- sum(analysis_data[outcome_var] == logit_cut$neg_class)
-  summary$glm_model <- gsub("~(\\s+\\+){1,}", "~", paste0(format(formula(logit_model)), collapse = ""))
+  summary$glm_model <- gsub("\\~(\\s+\\+){1,}", "~", paste0(format(formula(logit_model)), collapse = ""))
   summary$glm_model <- gsub("\\s+", " ", summary$glm_model)
 
   # Return
@@ -165,30 +169,33 @@ aki_dev_wrapper <- function(
 #   ),
 #   cr_predictors = "cr",
 #   add_gradient_predictor = 1 # umol/L/h
-#   )
+# )
 # test1logit <- glm(
 #   AKI_ICU ~ Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease + cr + cr_gradient,
-#   family = "binomial", 
-#   data = analysis_df %>% mutate(cr_gradient = if_else(del_cr >= 1 * del_t_ch_hr, 1, 0)))
+#   family = "binomial",
+#   data = analysis_df %>% mutate(cr_gradient = if_else(del_cr >= 1 * del_t_ch_hr, 1, 0))
+# )
 # test1cut <- cutpointr(predict(test1logit), test1logit$data$AKI_ICU, metric = youden)
 # summary(test1cut)
-# 
-# 
+# (test1func)
+#
 # test2func <- aki_dev_wrapper(
 #   outcome_var = "AKI_2or3",
 #   baseline_predictors = NULL,
 #   add_gradient_predictor = 1,
 #   del_t_ch_hr_range = c(6, 7),
-#   del_t_aki_hr_range = c(24, 48)
+#   del_t_aki_hr_range = c(8, 48)
 # )
 # test2logit <- glm(
 #   AKI_ICU ~ cr_gradient,
-#   family = "binomial", 
-#   data = analysis_df %>% mutate(cr_gradient = if_else(del_cr >= 1 * del_t_ch_hr, 1, 0)) %>% 
-#     filter(del_t_ch_hr >= 6, del_t_ch_hr <= 7, is.na(del_t_aki_hr) | del_t_aki_hr >= 24 & del_t_aki_hr <= 48))
+#   family = "binomial",
+#   data = analysis_df %>% mutate(cr_gradient = if_else(del_cr >= 1 * del_t_ch_hr, 1, 0)) %>%
+#     filter(del_t_ch_hr >= 6, del_t_ch_hr <= 7, is.na(del_t_aki_hr) | del_t_aki_hr >= 8 & del_t_aki_hr <= 48)
+# )
 # test2cut <- cutpointr(predict(test2logit), test2logit$data$AKI_2or3, metric = youden)
 # summary(test2cut)
-# 
+# (test2func)
+#
 # test3func <- aki_dev_wrapper(
 #   outcome_var = "AKI_ICU",
 #   baseline_predictors = c(
@@ -198,21 +205,24 @@ aki_dev_wrapper <- function(
 #   cr_predictors = "cr",
 #   add_gradient_predictor = 1, # umol/L/h
 #   del_t_ch_hr_range = c(6, 7),
-#   del_t_aki_hr_range = c(24, 48),
+#   del_t_aki_hr_range = c(8, 48),
 #   stepwise = TRUE,
 #   k = "mBIC"
 # )
 # test3logit <- step(
 #   glm(
 #     AKI_ICU ~ Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease + cr + cr_gradient,
-#     family = "binomial", 
-#     data = analysis_df %>% mutate(cr_gradient = if_else(del_cr >= 1 * del_t_ch_hr, 1, 0)) %>% 
-#       filter(del_t_ch_hr >= 6, del_t_ch_hr <= 7, is.na(del_t_aki_hr) | del_t_aki_hr >= 24 & del_t_aki_hr <= 48)),
+#     family = "binomial",
+#     data = analysis_df %>% mutate(cr_gradient = if_else(del_cr >= 1 * del_t_ch_hr, 1, 0)) %>%
+#       filter(del_t_ch_hr >= 6, del_t_ch_hr <= 7, is.na(del_t_aki_hr) | del_t_aki_hr >= 8 & del_t_aki_hr <= 48)
+#   ),
 #   trace = 0,
 #   k = log(test3func$n_admissions),
-#   direction = "backward")
+#   direction = "backward"
+# )
 # test3cut <- cutpointr(predict(test3logit), test3logit$data$AKI_ICU, metric = youden)
 # summary(test3cut)
+# (test3func)
 
 
 # temp <- aki_dev_wrapper(

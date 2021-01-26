@@ -5,7 +5,7 @@ save_plots <- FALSE
 load_library <- function(req_file = "requirements.txt", bib_file = NULL) {
   packages <- readLines(req_file)
   new.packages <-
-    packages[!(packages %in% installed.packages()[, "Package"])]
+    packages[!(packages %in% utils::installed.packages()[, "Package"])]
 
   if (length(new.packages)) {
     install.packages(new.packages)
