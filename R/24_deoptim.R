@@ -54,6 +54,37 @@ deoptim_wrapper <- function(
   ))
 }
 
+# ---- baseline ----
+baseline_all <- aki_dev_wrapper(
+  outcome_var = "AKI_2or3",
+  baseline_predictors = c(
+    "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
+    # "Age + APACHE_II + APACHE_III + Baseline_Cr",
+    "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
+  ),
+  cr_predictors = NULL,
+  add_gradient_predictor = NULL,
+  all_data = TRUE,
+  analysis_data = admission_df
+)
+publish(baseline_all$model, print = FALSE, digits = c(2, 3))$regressionTable
+
+
+baseline_sig <- aki_dev_wrapper(
+  outcome_var = "AKI_2or3",
+  baseline_predictors = c(
+    "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
+    "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
+  ),
+  cr_predictors = NULL,
+  add_gradient_predictor = NULL,
+  stepwise = TRUE,
+  k = "AIC",
+  all_data = TRUE,
+  analysis_data = baseline_df
+)
+publish(baseline_sig$model, print = FALSE, digits = c(2, 3))$regressionTable
+
 # ---- cr_ch_only ----
 set.seed(8)
 cr_ch_optim <- deoptim_wrapper(
@@ -68,7 +99,31 @@ cr_ch_optim <- deoptim_wrapper(
 )
 cr_ch_optim$bestmem
 
-heuristic_wrapper(cr_ch_optim$result$optim$bestmem, outcome_var = "AKI_2or3",
-                  baseline_predictors = "",
-                  cr_predictors = "",
-                  add_gradient_predictor = 1)
+heuristic_wrapper(cr_ch_optim$result$optim$bestmem,
+  outcome_var = "AKI_2or3",
+  baseline_predictors = "",
+  cr_predictors = "",
+  add_gradient_predictor = 1
+)
+
+
+# ---- multi ----
+set.seed(8)
+cr_ch_optim <- deoptim_wrapper(
+  lower = c(4, 0.5, 3, 1),
+  upper = c(6, 6, 12, 48),
+  itermax = 50,
+  outcome_var = "AKI_2or3",
+  baseline_predictors = NULL,
+  cr_predictors = NULL,
+  add_gradient_predictor = 1,
+  penalty_fn = heuristic_penalty
+)
+cr_ch_optim$bestmem
+
+heuristic_wrapper(cr_ch_optim$result$optim$bestmem,
+  outcome_var = "AKI_2or3",
+  baseline_predictors = "",
+  cr_predictors = "",
+  add_gradient_predictor = 1
+)

@@ -1,5 +1,5 @@
 # ---- analysis_ts ----
-# consider having col for ABG vs BioChem here and apply a filter
+# consider having col for ABG vs BioChem here and apply a filter !!IMPORTANT
 analysis_df <- cr_ch_ts %>%
   select(
     `UR number`:Admission, Pt_Study_nos, Event,
@@ -17,13 +17,47 @@ analysis_df <- cr_ch_ts %>%
     APACHE_III = if_else(is.na(APACHE_III), median(APACHE_III, na.rm = TRUE), APACHE_III)
   ) %>% # FIXME Replace with REAL data
   ungroup() %>%
-  filter(abs(del_cr) < 50) %>% # Consider if this is reasonable or not
   mutate(
     del_t_ch_hr = as.numeric(del_t_ch, "hours"),
     del_t_aki_hr = as.numeric(del_t_aki, "hours")
   ) %>%
   mutate(AKI_2or3 = if_else(AKI_stage >= 2, 1, 0, 0)) %>%
   select(-del_t_ch, -del_t_aki)
+
+baseline_df <- analysis_df %>%
+  select(-DateTime_Pathology_Result:-del_t_aki_hr) %>%
+  unique(.) %>%
+  mutate(
+    del_t_ch_hr = 0, # consider changing to median or something later
+    del_t_aki_hr = 0
+  )
+
+admission_df <- admission_data %>%
+  filter(
+    Excl_criteria_ok == 1,
+  ) %>%
+  mutate(
+    DateTime_ICU_dc = Date_ICU_dc + hours(23) + minutes(59) + seconds(59)
+  ) %>%
+  select(
+    `UR number`:Admission, Pt_Study_nos, Event, Excl_criteria_ok,
+    Age, Male, APACHE_II, APACHE_III, Mecvenadm,
+    Baseline_Cr, PCs_cardio, Vasopressor:Chronic_liver_disease,
+    AKI_ICU, AKI_stage,
+    DateTime_ICU_admit, DateTime_ICU_dc,
+    Baseline_Cr:Cr_defined_AKI_stage
+  ) %>%
+  # REALLY SHOULD BE A RIGHT JOIN FROM baseline_df
+  mutate(AKI_2or3 = if_else(AKI_stage >= 2, 1, 0, 0)) %>%
+  mutate(
+    del_t_ch_hr = 0, # consider changing to median or something later
+    del_t_aki_hr = 0
+  ) %>%
+  mutate(
+    APACHE_II = if_else(is.na(APACHE_II), median(APACHE_II, na.rm = TRUE), APACHE_II),
+    APACHE_III = if_else(is.na(APACHE_III), median(APACHE_III, na.rm = TRUE), APACHE_III)
+  )
+
 
 # --- time_to_aki_plot ----
 # analysis_df %>%
@@ -79,6 +113,8 @@ aki_dev_wrapper <- function(
   analysis_data <- filter(analysis_data, is.na(del_t_aki_hr) | del_t_aki_hr >= del_t_aki_hr_range[1] & del_t_aki_hr <= del_t_aki_hr_range[2])
   summary$aki_hr_lower <- del_t_aki_hr_range[1]
   summary$aki_hr_upper <- del_t_aki_hr_range[2]
+  # Remove any very large jumps
+  analysis_data <- filter(analysis_data, abs(del_cr) < 100) # Consider if this is reasonable or not
   # Check number of rows
   if (nrow(analysis_data) <= 2) {
     warning(paste0("Insufficient rows in analysis_data"))
