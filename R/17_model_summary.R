@@ -37,7 +37,9 @@ bind_rows(optim_model_list) %>%
 
 write.csv(bind_rows(optim_model_list), file = "model_summary.csv", row.names = FALSE)
 
-rm(cr_ch_prev_study_bin, only_model_1, base_all_model, example_bin_2,
-   multi_model_1b, multi_model_2b, multi_model_3, multi_model_4, 
-   multi_model_5, multi_model_6, multi_model_7, multi_model_8, multi_model_9, 
-   multi_model_10, multi_model_11, optim_model_list)
+rm(
+  cr_ch_prev_study_bin, only_model_1, base_all_model, example_bin_2,
+  multi_model_1b, multi_model_2b, multi_model_3, multi_model_4,
+  multi_model_5, multi_model_6, multi_model_7, multi_model_8, multi_model_9,
+  multi_model_10, multi_model_11, optim_model_list
+)

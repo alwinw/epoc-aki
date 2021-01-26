@@ -27,7 +27,7 @@ screening_data <- screening_log %>%
   filter(!duplicate) %>%
   mutate(
     Epis_cr_change = if_else(grepl("LT[0-9]", Pt_Study_no), "Y", NA_character_),
-    Epis_olig      = if_else(grepl("L[0-9]", Pt_Study_no), "Y", NA_character_)
+    Epis_olig = if_else(grepl("L[0-9]", Pt_Study_no), "Y", NA_character_)
   ) %>%
   select(`UR number`:Pt_Study_no, Dates_screened, Event, starts_with("Epis_"))
 
@@ -96,7 +96,7 @@ epoc_aki <- obs_data %>%
   group_by(Pt_Study_no) %>%
   mutate(
     Epis_cr_change_no = cumsum(Epis_cr_change == "Y"),
-    Epis_olig_no      = cumsum(Epis_olig == "Y")
+    Epis_olig_no = cumsum(Epis_olig == "Y")
   ) %>%
   ungroup() %>%
   rowwise() %>%

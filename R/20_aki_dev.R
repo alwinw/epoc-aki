@@ -1,4 +1,5 @@
 # ---- analysis_ts ----
+# consider having col for ABG vs BioChem here and apply a filter
 analysis_df <- cr_ch_ts %>%
   select(
     `UR number`:Admission, Pt_Study_nos, Event,
@@ -27,143 +28,194 @@ analysis_df <- cr_ch_ts %>%
 
 # ---- aki_dev_wrapper ----
 aki_dev_wrapper <- function(
-  outcome_var = "AKI_ICU",
-  baseline_predictors = c("Age"),
-  cr_predictors = NULL,
-  del_t_ch_hr_range = NULL,
-  del_t_aki_hr_range = NULL,
-  add_gradient_predictor = NULL,
-  stepwise = FALSE,
-  k = "mBIC",
-  plot_cutpoint = FALSE,
-  heuristic_only = FALSE,
-  all_data = FALSE,
-  analysis_data = analysis_df
-) {
+                            outcome_var = "AKI_ICU",
+                            baseline_predictors = c("Age"),
+                            cr_predictors = NULL,
+                            add_gradient_predictor = NULL,
+                            del_t_ch_hr_range = c(-Inf, Inf),
+                            del_t_aki_hr_range = c(-Inf, Inf),
+                            stepwise = FALSE,
+                            k = "mBIC",
+                            plot_cutpoint = FALSE,
+                            all_data = FALSE,
+                            analysis_data = analysis_df
+                            # Consider adding pos and neg class here
+                            ) {
   # Defaults
-  glm_model <- paste(outcome_var, "~", paste(baseline_predictors, collapse = " + "))
+  glm_model <- paste(outcome_var, "~", paste(c(baseline_predictors, cr_predictors), collapse = " + "))
   n_analysis_data <- length(unique(analysis_data$AdmissionID))
+  n_analysis_data_pos <- length(unique(analysis_data$AdmissionID[analysis_data[outcome_var] == 1])) ## 1 is hard coded...
 
-  # Apply any filters
-  if (!is.null(del_t_ch_hr_range)) {
-    del_t_ch_hr_range <- sort(del_t_ch_hr_range)
-    if (del_t_ch_hr_range[1] < 0) {
-      warning(paste0("Lower del_t_ch should be > 0, not '", del_t_ch_hr_range[1], "'"))
-      return(NULL)
-    }
-    analysis_data <- filter(analysis_data, del_t_ch_hr >= del_t_ch_hr_range[1], del_t_ch_hr <= del_t_ch_hr_range[2])
-  }
-  if (!is.null(del_t_aki_hr_range)) {
-    del_t_aki_hr_range <- sort(del_t_aki_hr_range)
-    if (del_t_ch_hr_range[1] < 0) {
-      warning(paste0("Lower del_t_aki should be > 0, not '", del_t_aki_hr_range[1], "'"))
-      return(NULL)
-    }
-    analysis_data <- filter(analysis_data, is.na(del_t_aki_hr) | del_t_aki_hr >= del_t_aki_hr_range[1] & del_t_aki_hr <= del_t_aki_hr_range[2])
-  }
+  # Create output summary
+  summary <- data.frame(
+    AUC = 0, sensitivity = 0, specificity = 0, optimal_cutpoint = 0,
+    per_admin_in = 0, per_admin_pos = 0, n_admissions = 0, n_admissions_pos = 0, n_admissions_neg = 0, n_UR = 0, n = 0,
+    n_event_pos = 0, n_event_neg = 0, glm_model = 0, AUC_all = 0,
+    ch_hr_lower = -Inf, ch_hr_upper = Inf, aki_hr_lower = -Inf, aki_hr_upper = Inf
+  )
+
+  # Apply ch_hr filter
+  del_t_ch_hr_range <- sort(del_t_ch_hr_range)
+  analysis_data <- filter(analysis_data, del_t_ch_hr >= del_t_ch_hr_range[1], del_t_ch_hr <= del_t_ch_hr_range[2])
+  summary$ch_hr_lower <- del_t_ch_hr_range[1]
+  summary$ch_hr_upper <- del_t_ch_hr_range[2]
+  # Apply aki_hr filter
+  del_t_aki_hr_range <- sort(del_t_aki_hr_range)
+  analysis_data <- filter(analysis_data, is.na(del_t_aki_hr) | del_t_aki_hr >= del_t_aki_hr_range[1] & del_t_aki_hr <= del_t_aki_hr_range[2])
+  summary$aki_hr_lower <- del_t_aki_hr_range[1]
+  summary$aki_hr_upper <- del_t_aki_hr_range[2]
+  # Check number of rows
   if (nrow(analysis_data) == 0) {
     warning(paste0("No rows in analysis_data found"))
-    return(NULL)
+    return(summary)
   }
+  summary$n_admissions <- length(unique(analysis_data$AdmissionID))
 
-  # Add cr variables
-  if (!is.null(cr_predictors)) {
-    glm_model <- paste(glm_model, paste(cr_predictors, collapse = " + "), sep = " + ")
-  }
+  # Create cr_gradient
   if (!is.null(add_gradient_predictor)) {
     analysis_data <- mutate(analysis_data, cr_gradient = if_else(del_cr >= add_gradient_predictor * del_t_ch_hr, 1, 0))
     glm_model <- paste(glm_model, "+ cr_gradient")
   }
 
   # Run glm
-  n_admissions <- length(unique(analysis_data$AdmissionID))
-  glm_model <- gsub("~  \\+", "~", glm_model)
-  logit_model <- glm(formula = glm_model, family = "binomial", data = analysis_data)
+  logit_model <- tryCatch(glm(formula = glm_model, family = "binomial", data = analysis_data),
+    error = function(e) {
+      warning("glm for complete model failed")
+      warning(e)
+      e
+    }
+  )
+  if (inherits(logit_model, "error")) {
+    return(summary)
+  }
+  # Cutpoint
+  analysis_data$predict <- predict(logit_model, type = "response")
+  logit_cut <- cutpointr(
+    analysis_data, predict, {{ outcome_var }},
+    use_midpoints = TRUE, direction = ">=", pos_class = 1, neg_class = 0,
+    method = maximize_metric, metric = youden
+  )
+  # Update summary
+  summary$AUC_all <- logit_cut$AUC
+
+  # Run stepwise glm
   if (stepwise) {
-    analysis_data$all_predict <- predict(logit_model, type = "response")
-    logit_cut_all <- cutpointr(
-      analysis_data, all_predict, {{ outcome_var }},
-      use_midpoints = TRUE,
-      direction = ">=", pos_class = 1, neg_class = 0,
-      method = maximize_metric, metric = youden
-    )
     if (k == "AIC") {
       k <- 2
     } else if (k == "BIC") {
       k <- log(nrow(analysis_data))
     } else {
-      k <- log(n_admissions)
+      k <- log(summary$n_admissions) # Modified BIC
     }
-    logit_model <- step(logit_model, trace = 0, k = k, direction = "backward") # Modified BIC
-    glm_model <- gsub("\\s+", " ", paste0(format(formula(logit_model)), collapse = ""))
+    logit_model <- tryCatch(step(logit_model, trace = 0, k = k, direction = "backward"), # Modified BIC
+      error = function(e) {
+        warning("Stepwise glm failed")
+        warning(e)
+        e
+      }
+    )
+    if (inherits(logit_model, "error")) {
+      return(summary)
+    } # all zero EXCEPT AUC_all
+    # Cutpoint
+    analysis_data$predict <- predict(logit_model, type = "response")
+    logit_cut <- cutpointr(
+      analysis_data, predict, {{ outcome_var }},
+      use_midpoints = TRUE, direction = ">=", pos_class = 1, neg_class = 0,
+      method = maximize_metric, metric = youden
+    )
   }
 
-  analysis_data$predict <- predict(logit_model, type = "response")
-  logit_cut <- cutpointr(
-    analysis_data, predict, {{ outcome_var }},
-    use_midpoints = TRUE,
-    direction = ">=", pos_class = 1, neg_class = 0,
-    method = maximize_metric, metric = youden
-  )
-  if (plot_cutpoint) {
-    print(plot(logit_cut))
-  }
+  # Update summary
+  summary$AUC <- logit_cut$AUC
+  summary$sensitivity <- logit_cut$sensitivity[[1]]
+  summary$specificity <- logit_cut$specificity[[1]]
+  summary$optimal_cutpoint <- logit_cut$optimal_cutpoint
+  summary$per_admin_in <- summary$n_admissions / n_analysis_data * 100
+  summary$n_admissions_pos <- length(unique(analysis_data$AdmissionID[analysis_data[outcome_var] == logit_cut$pos_class]))
+  summary$n_admissions_neg <- length(unique(analysis_data$AdmissionID[analysis_data[outcome_var] == logit_cut$neg_class]))
+  summary$per_admin_pos <- summary$n_admissions_pos / n_analysis_data_pos
+  summary$n_UR <- length(unique(analysis_data$`UR number`))
+  summary$n <- nrow(analysis_data)
+  summary$n_event_pos <- sum(analysis_data[outcome_var] == logit_cut$pos_class)
+  summary$n_event_neg <- sum(analysis_data[outcome_var] == logit_cut$neg_class)
+  summary$glm_model <- gsub("~(\\s+\\+){1,}", "~", paste0(format(formula(logit_model)), collapse = ""))
+  summary$glm_model <- gsub("\\s+", " ", summary$glm_model)
 
-  # Summary
-  if (heuristic_only) {
-    return(data.frame(
-      AUC = logit_cut$AUC,
-      per_admin_in = n_admissions / n_analysis_data,
-      n_admissions = n_admissions
-    ))
-  }
-  summary <- data.frame(
-    AUC = logit_cut$AUC,
-    sensitivity = logit_cut$sensitivity[[1]],
-    specificity = logit_cut$specificity[[1]],
-    optimal_cutpoint = logit_cut$optimal_cutpoint,
-    per_admin_in = n_admissions / n_analysis_data,
-    n_admissions = n_admissions,
-    n_admissions_pos = length(unique(analysis_data$AdmissionID[analysis_data$AKI_ICU == 1])),
-    n_admissions_neg = length(unique(analysis_data$AdmissionID[analysis_data$AKI_ICU == 0])),
-    n_UR = length(unique(analysis_data$`UR number`)),
-    n = nrow(analysis_data),
-    n_event_pos = sum(analysis_data$AKI_ICU == 1),
-    n_event_neg = sum(analysis_data$AKI_ICU == 0)
-  )
-  if (stepwise) summary$AUC_all <- logit_cut_all$AUC
-
+  # Return
   if (!all_data) {
     return(summary)
   } else {
-    ch_hr_lower <- NA
-    ch_hr_upper <- NA
-    aki_hr_lower <- NA
-    aki_hr_upper <- NA
-    if (!is.null(del_t_ch_hr_range)) {
-      ch_hr_lower <- del_t_ch_hr_range[1]
-      ch_hr_upper <- del_t_ch_hr_range[2]
-    }
-    if (!is.null(del_t_aki_hr_range)) {
-      aki_hr_lower <- del_t_aki_hr_range[1]
-      aki_hr_upper <- del_t_aki_hr_range[2]
-    }
-    params <- data.frame(
-      glm_model = glm_model,
-      ch_hr_lower = ch_hr_lower, ch_hr_upper = ch_hr_upper,
-      aki_hr_lower = aki_hr_lower, aki_hr_upper = aki_hr_upper
-    )
     return(list(
       model = logit_model,
       cutpoint = logit_cut,
       summary = summary,
-      data = analysis_data,
-      params = params
+      data = analysis_data
     ))
   }
 }
 
-# temp = aki_dev_wrapper(
+
+# ---- aki_dev_wrapper_tests ----
+# test1func <- aki_dev_wrapper(
+#   outcome_var = "AKI_ICU",
+#   baseline_predictors = c(
+#     "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
+#     "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
+#   ),
+#   cr_predictors = "cr",
+#   add_gradient_predictor = 1 # umol/L/h
+#   )
+# test1logit <- glm(
+#   AKI_ICU ~ Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease + cr + cr_gradient,
+#   family = "binomial", 
+#   data = analysis_df %>% mutate(cr_gradient = if_else(del_cr >= 1 * del_t_ch_hr, 1, 0)))
+# test1cut <- cutpointr(predict(test1logit), test1logit$data$AKI_ICU, metric = youden)
+# summary(test1cut)
+# 
+# 
+# test2func <- aki_dev_wrapper(
+#   outcome_var = "AKI_2or3",
+#   baseline_predictors = NULL,
+#   add_gradient_predictor = 1,
+#   del_t_ch_hr_range = c(6, 7),
+#   del_t_aki_hr_range = c(24, 48)
+# )
+# test2logit <- glm(
+#   AKI_ICU ~ cr_gradient,
+#   family = "binomial", 
+#   data = analysis_df %>% mutate(cr_gradient = if_else(del_cr >= 1 * del_t_ch_hr, 1, 0)) %>% 
+#     filter(del_t_ch_hr >= 6, del_t_ch_hr <= 7, is.na(del_t_aki_hr) | del_t_aki_hr >= 24 & del_t_aki_hr <= 48))
+# test2cut <- cutpointr(predict(test2logit), test2logit$data$AKI_2or3, metric = youden)
+# summary(test2cut)
+# 
+# test3func <- aki_dev_wrapper(
+#   outcome_var = "AKI_ICU",
+#   baseline_predictors = c(
+#     "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
+#     "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
+#   ),
+#   cr_predictors = "cr",
+#   add_gradient_predictor = 1, # umol/L/h
+#   del_t_ch_hr_range = c(6, 7),
+#   del_t_aki_hr_range = c(24, 48),
+#   stepwise = TRUE,
+#   k = "mBIC"
+# )
+# test3logit <- step(
+#   glm(
+#     AKI_ICU ~ Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease + cr + cr_gradient,
+#     family = "binomial", 
+#     data = analysis_df %>% mutate(cr_gradient = if_else(del_cr >= 1 * del_t_ch_hr, 1, 0)) %>% 
+#       filter(del_t_ch_hr >= 6, del_t_ch_hr <= 7, is.na(del_t_aki_hr) | del_t_aki_hr >= 24 & del_t_aki_hr <= 48)),
+#   trace = 0,
+#   k = log(test3func$n_admissions),
+#   direction = "backward")
+# test3cut <- cutpointr(predict(test3logit), test3logit$data$AKI_ICU, metric = youden)
+# summary(test3cut)
+
+
+# temp <- aki_dev_wrapper(
 #   outcome_var = "AKI_ICU",
 #   baseline_predictors = c(
 #     "Age + APACHE_II + APACHE_III + Baseline_Cr",
@@ -177,10 +229,15 @@ aki_dev_wrapper <- function(
 #   k = "BIC",
 #   all_data = TRUE,
 #   analysis_data = analysis_df
-# ); summarise_cutpoint(temp); temp$params$glm_model; publish(temp$model, print = FALSE)$regressionTable
+# )
+# summarise_cutpoint(temp)
+# temp$params$glm_model
+# publish(temp$model, print = FALSE)$regressionTable
 
 
 # ---- time_aki_wrapper ----
+# analysis to determine model for the time to AKI development,
+# rather than AKI development as a binary outcome
 
 
 # ---- summarise_cutpoint_function ----

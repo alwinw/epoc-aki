@@ -1,16 +1,15 @@
 # ---- aki_optim_wrapper ----
 aki_optim_wrapper <- function(
-  optim_in,
-  outcome_var = "AKI_ICU",
-  baseline_predictors = "",
-  cr_predictors = "",
-  add_gradient_predictor = NULL,
-  stepwise = FALSE,
-  k = "AIC",
-  lower = c(3, 0.1, 8, 3),
-  upper = c(10, 3, 12, 48),
-  cluster = FALSE
-) {
+                              optim_in,
+                              outcome_var = "AKI_ICU",
+                              baseline_predictors = "",
+                              cr_predictors = "",
+                              add_gradient_predictor = NULL,
+                              stepwise = FALSE,
+                              k = "AIC",
+                              lower = c(3, 0.1, 8, 3),
+                              upper = c(10, 3, 12, 48),
+                              cluster = FALSE) {
   optim_in_list <- asplit(optim_in, 1)
   if (cluster) {
     cl <- makeCluster(detectCores())
@@ -116,15 +115,14 @@ aki_optim_wrapper <- function(
 
 # ---- aki_grid_wrapper ----
 aki_grid_wrapper <- function(
-  grid_in,
-  outcome_var = "AKI_ICU",
-  baseline_predictors = "",
-  cr_predictors = "",
-  add_gradient_predictor = NULL,
-  stepwise = FALSE,
-  k = "mBIC",
-  cluster = FALSE
-) {
+                             grid_in,
+                             outcome_var = "AKI_ICU",
+                             baseline_predictors = "",
+                             cr_predictors = "",
+                             add_gradient_predictor = NULL,
+                             stepwise = FALSE,
+                             k = "mBIC",
+                             cluster = FALSE) {
   grid_list <- asplit(grid_in, 1)
   if (cluster) {
     cl <- makeCluster(detectCores())
@@ -142,11 +140,11 @@ aki_grid_wrapper <- function(
   }
 
   grid_out <- pblapply(grid_list, function(par) {
-    ch_min <- par[1]  ## NOTE: THIS IS DIFFERENT to aki_optim_wrapper
+    ch_min <- par[1] ## NOTE: THIS IS DIFFERENT to aki_optim_wrapper
     ch_max <- par[1] + par[2] ## NOTE: THIS IS DIFFERENT to aki_optim_wrapper
     aki_min <- par[3]
     aki_max <- par[3] + par[4]
-    model = aki_dev_wrapper(
+    model <- aki_dev_wrapper(
       outcome_var = outcome_var,
       baseline_predictors = baseline_predictors,
       cr_predictors = cr_predictors,
@@ -165,7 +163,7 @@ aki_grid_wrapper <- function(
   if (cluster) {
     stopCluster(cl)
   }
-  grid_tidy = tibble(bind_rows(grid_out))
+  grid_tidy <- tibble(bind_rows(grid_out))
 
   return(grid_tidy)
 }
