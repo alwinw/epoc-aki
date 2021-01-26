@@ -121,8 +121,10 @@ aki_dev_wrapper <- function(
       k <- 2
     } else if (k == "BIC") {
       k <- log(nrow(analysis_data))
-    } else {
-      k <- log(summary$n_admissions) # Modified BIC
+    } else if (k == "mBIC") { # Modified BIC
+      k <- log(summary$n_admissions)
+    } else if (!(is.double(k))) {
+      stop("k must be a known IC method or double")
     }
     logit_model <- step(logit_model, trace = 0, k = k, direction = "backward") # Modified BIC
     # Cutpoint

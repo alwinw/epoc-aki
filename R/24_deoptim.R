@@ -1,9 +1,20 @@
 # ---- wrapper functions ----
+
+tanh_penalty <- function(x, c, d, s) 1 / 2 + 1 / 2 * tanh(s / d * atanh(0.8) * (x - c))
+
 heuristic_penalty <- function(summary) {
   0 +
-    (1 - summary$AUC) +
+    (1 - summary$AUC) * 3 +
     (1 - summary$per_admin_in) * 2 +
-    (1 - summary$per_admin_pos) * 3
+    (1 - summary$per_admin_pos) * 3 +
+    tanh_penalty(summary$ch_hr_lower, 9, 1, 1) +
+    tanh_penalty(summary$ch_hr_upper, 9, 1, 1) +
+    tanh_penalty(summary$aki_hr_upper, 15, 15, -1) +
+    tanh_penalty(summary$aki_hr_upper, 60, 10, 1) +
+    grepl("APACHE_II", summary$glm_model) * 2 +
+    grepl("APACHE_III", summary$glm_model) * 2 +
+    grepl("Baseline_Cr", summary$glm_model) +
+    grepl("cr", summary$glm_model)
   # other
 }
 
@@ -20,11 +31,11 @@ heuristic_wrapper <- function(
   summary$penalty <- penalty_fn(summary)
   return(return_fn(summary))
 }
-# heuristic_wrapper(
+# summary <- heuristic_wrapper(
 #   c(6, 1, 6, 12),
 #   outcome_var = "AKI_ICU",
 #   penalty_fn = function(summary) 1 - summary$AUC,
-#   return_fn = function(summary) summary$penalty
+#   return_fn = function(summary) summary
 # )
 
 deoptim_wrapper <- function(
@@ -42,7 +53,7 @@ deoptim_wrapper <- function(
       reltol = 1e-5,
       parallelType = 1,
       packages = c("dplyr", "cutpointr"),
-      parVar = c("analysis_df", "aki_dev_wrapper")
+      parVar = c("analysis_df", "aki_dev_wrapper", "heuristic_penalty", "tanh_penalty")
     ),
     ...,
     return_fn = return_fn,
@@ -59,7 +70,6 @@ baseline_all <- aki_dev_wrapper(
   outcome_var = "AKI_2or3",
   baseline_predictors = c(
     "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
-    # "Age + APACHE_II + APACHE_III + Baseline_Cr",
     "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
   ),
   cr_predictors = NULL,
@@ -74,7 +84,6 @@ baseline_sig <- aki_dev_wrapper(
   outcome_var = "AKI_2or3",
   baseline_predictors = c(
     "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
-    # "Age + APACHE_II + APACHE_III + Baseline_Cr",
     "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
   ),
   cr_predictors = NULL,
@@ -91,7 +100,7 @@ publish(baseline_sig$model, print = FALSE, digits = c(2, 3))$regressionTable
 set.seed(8)
 cr_ch_optim <- deoptim_wrapper(
   lower = c(4, 0.5, 3, 1),
-  upper = c(6, 6, 12, 48),
+  upper = c(6, 6, 12, 72),
   itermax = 50,
   outcome_var = "AKI_2or3",
   baseline_predictors = NULL,
@@ -101,19 +110,21 @@ cr_ch_optim <- deoptim_wrapper(
 )
 cr_ch_optim$bestmem
 
-heuristic_wrapper(cr_ch_optim$result$optim$bestmem,
+cr_ch_bestmem <- heuristic_wrapper(cr_ch_optim$result$optim$bestmem,
   outcome_var = "AKI_2or3",
   baseline_predictors = "",
   cr_predictors = "",
-  add_gradient_predictor = 1
+  add_gradient_predictor = 1,
+  all_data = TRUE
 )
+publish(cr_ch_bestmem$model, print = FALSE, digits = c(2, 3))$regressionTable
 
 
 # ---- multi ----
 set.seed(8)
-cr_ch_optim <- deoptim_wrapper(
+multi_optim <- deoptim_wrapper(
   lower = c(4, 0.5, 3, 1),
-  upper = c(6, 6, 12, 48),
+  upper = c(6, 6, 12, 72),
   itermax = 50,
   outcome_var = "AKI_2or3",
   baseline_predictors = NULL,
@@ -121,11 +132,19 @@ cr_ch_optim <- deoptim_wrapper(
   add_gradient_predictor = 1,
   penalty_fn = heuristic_penalty
 )
-cr_ch_optim$bestmem
+multi_optim$bestmem
 
-heuristic_wrapper(cr_ch_optim$result$optim$bestmem,
+multi_bestmem <- heuristic_wrapper(multi_optim$result$optim$bestmem,
   outcome_var = "AKI_2or3",
-  baseline_predictors = "",
-  cr_predictors = "",
-  add_gradient_predictor = 1
+  baseline_predictors = c(
+    "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
+    "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
+  ),
+  cr_predictors = "cr",
+  add_gradient_predictor = 1,
+  stepwise = TRUE,
+  k = "mBIC",
+  all_data = TRUE
 )
+publish(multi_bestmem$model, print = FALSE, digits = c(2, 3))$regressionTable
+multi_bestmem$summary
