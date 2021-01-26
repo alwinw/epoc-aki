@@ -65,7 +65,7 @@ baseline_all <- aki_dev_wrapper(
   cr_predictors = NULL,
   add_gradient_predictor = NULL,
   all_data = TRUE,
-  analysis_data = admission_df
+  analysis_data = baseline_df
 )
 publish(baseline_all$model, print = FALSE, digits = c(2, 3))$regressionTable
 
@@ -74,6 +74,7 @@ baseline_sig <- aki_dev_wrapper(
   outcome_var = "AKI_2or3",
   baseline_predictors = c(
     "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
+    # "Age + APACHE_II + APACHE_III + Baseline_Cr",
     "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
   ),
   cr_predictors = NULL,
@@ -83,6 +84,7 @@ baseline_sig <- aki_dev_wrapper(
   all_data = TRUE,
   analysis_data = baseline_df
 )
+baseline_sig$summary
 publish(baseline_sig$model, print = FALSE, digits = c(2, 3))$regressionTable
 
 # ---- cr_ch_only ----

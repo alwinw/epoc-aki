@@ -73,7 +73,7 @@ cr_ch_ts_all <- admission_data %>%
     `Criteria for stage of AKI` = Criteria.for.stage.of.AKI
   )
 
-neither_ts <- cr_ch_ts_all %>%
+neither_ts <- cr_ch_ts_all %>% # Neither from initial data study
   filter(is.na(AKI_ICU)) %>%
   filter(!is.na(cr)) %>% # Only one measurement in ICU
   group_by(AdmissionID) %>%
@@ -106,12 +106,17 @@ neither_ts <- cr_ch_ts_all %>%
     del_t_aki = if_else(AKI_ICU == 1, as.duration(DateTime_AKI_Dx - DateTime_Pathology_Result), as.duration(NA_real_))
   ) %>%
   ungroup()
-# length(unique(neither_ts$AdmissionID))
+
+insufficient_cr <- cr_ch_ts_all %>%
+  filter(is.na(AKI_ICU)) %>%
+  filter(is.na(cr)) %>%
+  mutate(Baseline_Cr = median(neither_ts$Baseline_Cr, na.rm = TRUE)) %>% ## FIXME
+  mutate(AKI_ICU = 0, AKI_stage = 0)
 
 cr_ch_ts <- rbind(
   cr_ch_ts_all %>% filter(!is.na(AKI_ICU)), # No issues
   neither_ts, # Had to check for AKI
-  cr_ch_ts_all %>% filter(is.na(AKI_ICU), is.na(cr)) # Not enough cr changes
+  insufficient_cr # Not enough cr changes
 ) %>%
   mutate(
     del_t_ch_hr = as.numeric(del_t_ch, "hours"),
@@ -125,7 +130,7 @@ if (nrow(cr_ch_ts) != nrow(cr_ch_ts_all)) {
 }
 # TODO Add more checks on number of rows, etc
 
-rm(cr_ch_ts_all, neither_ts, generate_cr_ch)
+rm(cr_ch_ts_all, neither_ts, insufficient_cr, generate_cr_ch)
 
 
 # ---- cr_changes_overview ----

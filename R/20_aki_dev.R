@@ -4,8 +4,8 @@ analysis_df <- cr_ch_ts %>%
   select(
     `UR number`:Admission, Pt_Study_nos, Event,
     Age:Chronic_liver_disease,
-    AKI_ICU, AKI_stage, DateTime_Pathology_Result,
-    del_t_ch:cr
+    AKI_ICU, AKI_stage,
+    DateTime_Pathology_Result:AKI_2or3
   ) %>%
   mutate(
     APACHE_II = if_else(APACHE_II == 0, NA_real_, APACHE_II),
@@ -23,35 +23,9 @@ baseline_df <- analysis_df %>%
   unique(.) %>%
   mutate(
     del_t_ch_hr = 0, # consider changing to median or something later
-    del_t_aki_hr = 0
+    del_t_aki_hr = 0,
+    del_cr = 0
   )
-
-admission_df <- admission_data %>%
-  filter(
-    Excl_criteria_ok == 1,
-  ) %>%
-  mutate(
-    DateTime_ICU_dc = Date_ICU_dc + hours(23) + minutes(59) + seconds(59)
-  ) %>%
-  select(
-    `UR number`:Admission, Pt_Study_nos, Event, Excl_criteria_ok,
-    Age, Male, APACHE_II, APACHE_III, Mecvenadm,
-    Baseline_Cr, PCs_cardio, Vasopressor:Chronic_liver_disease,
-    AKI_ICU, AKI_stage,
-    DateTime_ICU_admit, DateTime_ICU_dc,
-    Baseline_Cr:Cr_defined_AKI_stage
-  ) %>%
-  # REALLY SHOULD BE A RIGHT JOIN FROM baseline_df
-  mutate(AKI_2or3 = if_else(AKI_stage >= 2, 1, 0, 0)) %>%
-  mutate(
-    del_t_ch_hr = 0, # consider changing to median or something later
-    del_t_aki_hr = 0
-  ) %>%
-  mutate(
-    APACHE_II = if_else(is.na(APACHE_II), median(APACHE_II, na.rm = TRUE), APACHE_II),
-    APACHE_III = if_else(is.na(APACHE_III), median(APACHE_III, na.rm = TRUE), APACHE_III)
-  )
-
 
 # --- time_to_aki_plot ----
 # analysis_df %>%
