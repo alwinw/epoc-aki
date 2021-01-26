@@ -37,7 +37,6 @@ aki_dev_wrapper <- function(
                             stepwise = FALSE,
                             k = "mBIC",
                             plot_cutpoint = FALSE,
-                            heuristic_only = FALSE,
                             all_data = FALSE,
                             analysis_data = analysis_df) {
   # Defaults
@@ -47,28 +46,19 @@ aki_dev_wrapper <- function(
   # Create output summary
   summary <- data.frame(
     AUC = 0, sensitivity = 0, specificity = 0, optimal_cutpoint = 0,
-    per_admin_in = 0,n_admissions = 0, n_admissions_pos = 0, n_admissions_neg = 0, n_UR = 0, n = 0,
+    per_admin_in = 0, n_admissions = 0, n_admissions_pos = 0, n_admissions_neg = 0, n_UR = 0, n = 0,
     n_event_pos = 0, n_event_neg = 0, glm_model = 0, AUC_all = 0,
     ch_hr_lower = -Inf, ch_hr_upper = Inf, aki_hr_lower = -Inf, aki_hr_upper = Inf
   )
-  
+
   # Apply ch_hr filter
   del_t_ch_hr_range <- sort(del_t_ch_hr_range)
-  analysis_data <- filter(
-    analysis_data,
-    del_t_ch_hr >= del_t_ch_hr_range[1],
-    del_t_ch_hr <= del_t_ch_hr_range[2]
-  )
+  analysis_data <- filter(analysis_data, del_t_ch_hr >= del_t_ch_hr_range[1], del_t_ch_hr <= del_t_ch_hr_range[2])
   summary$ch_hr_lower <- del_t_ch_hr_range[1]
   summary$ch_hr_upper <- del_t_ch_hr_range[2]
   # Apply aki_hr filter
   del_t_aki_hr_range <- sort(del_t_aki_hr_range)
-  analysis_data <- filter(
-    analysis_data,
-    is.na(del_t_aki_hr) |
-      del_t_aki_hr >= del_t_aki_hr_range[1] &
-        del_t_aki_hr <= del_t_aki_hr_range[2]
-  )
+  analysis_data <- filter(analysis_data, is.na(del_t_aki_hr) | del_t_aki_hr >= del_t_aki_hr_range[1] & del_t_aki_hr <= del_t_aki_hr_range[2])
   summary$aki_hr_lower <- del_t_aki_hr_range[1]
   summary$aki_hr_upper <- del_t_aki_hr_range[2]
   # Check number of rows
@@ -83,17 +73,18 @@ aki_dev_wrapper <- function(
     analysis_data <- mutate(analysis_data, cr_gradient = if_else(del_cr >= add_gradient_predictor * del_t_ch_hr, 1, 0))
     glm_model <- paste(glm_model, "+ cr_gradient")
   }
-  
+
   # Run glm
-  logit_model <- tryCatch({
-    glm(formula = glm_model, family = "binomial", data = analysis_data)
-  },
-  error = function(e) {
-    warning("glm for complete model failed")
-    warning(e)
-    e
-  })
-  if (inherits(logit_model, "error")) return(summary)
+  logit_model <- tryCatch(glm(formula = glm_model, family = "binomial", data = analysis_data),
+    error = function(e) {
+      warning("glm for complete model failed")
+      warning(e)
+      e
+    }
+  )
+  if (inherits(logit_model, "error")) {
+    return(summary)
+  }
   # Cutpoint
   analysis_data$predict <- predict(logit_model, type = "response")
   logit_cut <- cutpointr(
@@ -102,8 +93,8 @@ aki_dev_wrapper <- function(
     method = maximize_metric, metric = youden
   )
   # Update summary
-  summary$AUC_all = logit_cut$AUC
-  
+  summary$AUC_all <- logit_cut$AUC
+
   # Run stepwise glm
   if (stepwise) {
     if (k == "AIC") {
@@ -113,15 +104,16 @@ aki_dev_wrapper <- function(
     } else {
       k <- log(summary$n_admissions) # Modified BIC
     }
-    logit_model <- tryCatch({
-      step(logit_model, trace = 0, k = k, direction = "backward") # Modified BIC
-    },
-    error = function(e) {
-      warning("Stepwise glm failed")
-      warning(e)
-      e
-    })
-    if (inherits(logit_model, "error")) return(summary) # all zero EXCEPT AUC_all
+    logit_model <- tryCatch(step(logit_model, trace = 0, k = k, direction = "backward"), # Modified BIC
+      error = function(e) {
+        warning("Stepwise glm failed")
+        warning(e)
+        e
+      }
+    )
+    if (inherits(logit_model, "error")) {
+      return(summary)
+    } # all zero EXCEPT AUC_all
     # Cutpoint
     analysis_data$predict <- predict(logit_model, type = "response")
     logit_cut <- cutpointr(
@@ -130,17 +122,19 @@ aki_dev_wrapper <- function(
       method = maximize_metric, metric = youden
     )
   }
-  
+
   # Update summary
-  summary$AUC = logit_cut$AUC
-  summary$sensitivity = logit_cut$sensitivity[[1]]
-  summary$specificity = logit_cut$specificity[[1]]
-  summary$optimal_cutpoint = logit_cut$optimal_cutpoint
-  summary$per_admin_in = summary$n_admissions / n_analysis_data
-  summary$n_admissions_pos = length(unique(analysis_data$AdmissionID[analysis_data$AKI_ICU == 1]))  # FIXME HARD CODED NEEDS FIXING
-  summary$n_admissions_neg = length(unique(analysis_data$AdmissionID[analysis_data$AKI_ICU == 0]))
-  summary$n_UR = length(unique(analysis_data$`UR number`))
-  summary$n = nrow(analysis_data)
+  summary$AUC <- logit_cut$AUC
+  summary$sensitivity <- logit_cut$sensitivity[[1]]
+  summary$specificity <- logit_cut$specificity[[1]]
+  summary$optimal_cutpoint <- logit_cut$optimal_cutpoint
+  summary$per_admin_in <- summary$n_admissions / n_analysis_data * 100
+  summary$n_admissions_pos <- length(unique(analysis_data$AdmissionID[analysis_data[outcome_var] == logit_cut$pos_class]))
+  summary$n_admissions_neg <- length(unique(analysis_data$AdmissionID[analysis_data[outcome_var] == logit_cut$neg_class]))
+  summary$n_UR <- length(unique(analysis_data$`UR number`))
+  summary$n <- nrow(analysis_data)
+  summary$n_event_pos <- sum(analysis_data[outcome_var] == logit_cut$pos_class)
+  summary$n_event_neg <- sum(analysis_data[outcome_var] == logit_cut$neg_class)
   summary$glm_model <- gsub("~(\\s+\\+){1,}", "~", paste0(format(formula(logit_model)), collapse = ""))
 
   # Return
@@ -151,7 +145,7 @@ aki_dev_wrapper <- function(
       model = logit_model,
       cutpoint = logit_cut,
       summary = summary,
-      data = analysis_data,
+      data = analysis_data
     ))
   }
 }
