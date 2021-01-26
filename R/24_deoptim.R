@@ -4,17 +4,17 @@ tanh_penalty <- function(x, c, d, s) 1 / 2 + 1 / 2 * tanh(s / d * atanh(0.8) * (
 
 heuristic_penalty <- function(summary) {
   0 +
-    (1 - summary$AUC) * 3 +
+    (1 - summary$AUC) * 5 +
     (1 - summary$per_admin_in) * 2 +
     (1 - summary$per_admin_pos) * 3 +
     tanh_penalty(summary$ch_hr_lower, 9, 1, 1) +
     tanh_penalty(summary$ch_hr_upper, 9, 1, 1) +
     tanh_penalty(summary$aki_hr_upper, 15, 15, -1) +
     tanh_penalty(summary$aki_hr_upper, 60, 10, 1) +
-    grepl("APACHE_II", summary$glm_model) * 2 +
-    grepl("APACHE_III", summary$glm_model) * 2 +
+    grepl("APACHE_II", summary$glm_model) * 5 +
+    grepl("APACHE_III", summary$glm_model) * 5 +
     grepl("Baseline_Cr", summary$glm_model) +
-    grepl("cr", summary$glm_model)
+    grepl("\\bcr\\b", summary$glm_model) * 5
   # other
 }
 
@@ -101,14 +101,14 @@ set.seed(8)
 cr_ch_optim <- deoptim_wrapper(
   lower = c(4, 0.5, 3, 1),
   upper = c(6, 6, 12, 72),
-  itermax = 50,
+  itermax = 20, # 20 brief test
   outcome_var = "AKI_2or3",
   baseline_predictors = NULL,
   cr_predictors = NULL,
   add_gradient_predictor = 1,
   penalty_fn = heuristic_penalty
 )
-cr_ch_optim$bestmem
+(cr_ch_optim$bestmem)
 
 cr_ch_bestmem <- heuristic_wrapper(cr_ch_optim$result$optim$bestmem,
   outcome_var = "AKI_2or3",
@@ -118,21 +118,26 @@ cr_ch_bestmem <- heuristic_wrapper(cr_ch_optim$result$optim$bestmem,
   all_data = TRUE
 )
 publish(cr_ch_bestmem$model, print = FALSE, digits = c(2, 3))$regressionTable
-
+cr_ch_bestmem$summary
 
 # ---- multi ----
 set.seed(8)
 multi_optim <- deoptim_wrapper(
   lower = c(4, 0.5, 3, 1),
   upper = c(6, 6, 12, 72),
-  itermax = 50,
+  itermax = 20,
   outcome_var = "AKI_2or3",
-  baseline_predictors = NULL,
-  cr_predictors = NULL,
+  baseline_predictors = c(
+    "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
+    "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
+  ),
+  cr_predictors = "cr",
   add_gradient_predictor = 1,
+  stepwise = TRUE,
+  k = "mBIC",
   penalty_fn = heuristic_penalty
 )
-multi_optim$bestmem
+(multi_optim$bestmem)
 
 multi_bestmem <- heuristic_wrapper(multi_optim$result$optim$bestmem,
   outcome_var = "AKI_2or3",
