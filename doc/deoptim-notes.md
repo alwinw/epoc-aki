@@ -313,30 +313,30 @@ Baseline model of all patients (n_admissions = 387). All explanatory variables i
 ```R
 > publish(baseline_all$model, print = FALSE, digits = c(2, 3))$regressionTable
                 Variable Units OddsRatio       CI.95  p-value
-1                    Age            1.00 [0.98;1.03]   0.7232
-2                   Male            0.86 [0.47;1.58]   0.6342
-3              Mecvenadm            1.52 [0.65;3.54]   0.3365
-4              APACHE_II            1.10 [1.01;1.21]   0.0374
-5             APACHE_III            0.99 [0.97;1.02]   0.6463
-6            Baseline_Cr            1.00 [0.99;1.01]   0.4983
-7             PCs_cardio            2.14 [1.04;4.42]   0.0398
-8            Vasopressor            1.68 [0.94;3.01]   0.0781
-9               Diabetes            1.44 [0.76;2.73]   0.2621
-10                    AF            1.61 [0.69;3.73]   0.2678
-11                   IHD            1.57 [0.79;3.11]   0.1978
-12                    HF            1.07 [0.31;3.78]   0.9106
-13                    HT            0.97 [0.53;1.77]   0.9278
-14                   PVD            1.03 [0.34;3.10]   0.9560
-15 Chronic_liver_disease            1.75 [0.69;4.45]   0.2359
+1                    Age            1.01 [0.98;1.03]   0.6594
+2                   Male            0.84 [0.45;1.55]   0.5706
+3              Mecvenadm            1.32 [0.56;3.11]   0.5196
+4              APACHE_II            1.12 [1.02;1.23]   0.0197
+5             APACHE_III            0.99 [0.97;1.02]   0.5154
+6            Baseline_Cr            1.00 [0.99;1.01]   0.4860
+7             PCs_cardio            2.31 [1.10;4.83]   0.0265
+8            Vasopressor            1.72 [0.96;3.08]   0.0709
+9               Diabetes            1.56 [0.82;2.98]   0.1783
+10                    AF            1.69 [0.73;3.95]   0.2221
+11                   IHD            1.55 [0.78;3.10]   0.2140
+12                    HF            1.04 [0.30;3.69]   0.9460
+13                    HT            1.01 [0.55;1.86]   0.9664
+14                   PVD            1.04 [0.34;3.17]   0.9422
+15 Chronic_liver_disease            1.87 [0.73;4.78]   0.1898
 > baseline_all$summary
-        AUC sensitivity specificity optimal_cutpoint per_admin_in per_admin_pos n_admissions
-1 0.7155683   0.7246377   0.6446541        0.1785853            1             1          387
-  n_admissions_pos n_admissions_neg n_UR   n n_event_pos n_event_neg
-1               69              318  377 387          69         318
+        AUC sensitivity specificity optimal_cutpoint per_admin_in per_admin_pos n_admissions n_admissions_pos
+1 0.7230154   0.6029412   0.7799353         0.235965            1             1          377               68
+  n_admissions_neg n_UR   n n_event_pos n_event_neg
+1              309  367 377          68         309
                                                                                                                                                           glm_model
 1 AKI_2or3 ~ Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease
     AUC_all ch_hr_lower ch_hr_upper aki_hr_lower aki_hr_upper
-1 0.7155683        -Inf         Inf         -Inf          Inf
+1 0.7230154        -Inf         Inf         -Inf          Inf
 ```
 
 Baseline model with backwards stepwise regressions. Only impactful variable remain
@@ -344,18 +344,16 @@ Baseline model with backwards stepwise regressions. Only impactful variable rema
 ```R
 > publish(baseline_sig$model, print = FALSE, digits = c(2, 3))$regressionTable
      Variable Units OddsRatio       CI.95   p-value
-1   APACHE_II            1.10 [1.04;1.15]   < 0.001
-2  PCs_cardio            2.52 [1.39;4.59]   0.00241
-3 Vasopressor            1.72 [0.98;3.00]   0.05659
+1   APACHE_II            1.10 [1.05;1.16]   < 0.001
+2  PCs_cardio            2.68 [1.46;4.92]   0.00153
+3 Vasopressor            1.72 [0.98;3.01]   0.05944
 > baseline_sig$summary
-        AUC sensitivity specificity optimal_cutpoint per_admin_in per_admin_pos n_admissions
-1 0.6830736   0.4492754   0.8522013         0.251568            1             1          387
-  n_admissions_pos n_admissions_neg n_UR   n n_event_pos n_event_neg
-1               69              318  377 387          69         318
-                                        glm_model   AUC_all ch_hr_lower ch_hr_upper aki_hr_lower
-1 AKI_2or3 ~ APACHE_II + PCs_cardio + Vasopressor 0.7155683        -Inf         Inf         -Inf
-  aki_hr_upper
-1          Inf
+      AUC sensitivity specificity optimal_cutpoint per_admin_in per_admin_pos n_admissions n_admissions_pos
+1 0.68913   0.4558824   0.8511327        0.2587635            1             1          377               68
+  n_admissions_neg n_UR   n n_event_pos n_event_neg                                       glm_model   AUC_all ch_hr_lower
+1              309  367 377          68         309 AKI_2or3 ~ APACHE_II + PCs_cardio + Vasopressor 0.7230154        -Inf
+  ch_hr_upper aki_hr_lower aki_hr_upper
+1         Inf         -Inf          Inf
 ```
 
 Only cr: From differential evolution optimisation, this is the best model for creatinine change of >1mg/L/hr (cr_gradient) for AKI stage 2 or 3

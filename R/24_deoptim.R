@@ -159,8 +159,8 @@ multi_bestmem_all <- heuristic_wrapper(
   multi_optim$result$optim$bestmem,
   outcome_var = "AKI_2or3",
   baseline_predictors = c(
-   "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
-   "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
+    "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
+    "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
   ),
   cr_predictors = "cr",
   add_gradient_predictor = 1,
