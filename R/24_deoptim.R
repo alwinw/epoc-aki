@@ -14,7 +14,8 @@ heuristic_penalty <- function(summary) {
     grepl("APACHE_II", summary$glm_model) * 5 +
     grepl("APACHE_III", summary$glm_model) * 5 +
     grepl("Baseline_Cr", summary$glm_model) +
-    grepl("\\bcr\\b", summary$glm_model) * 5
+    grepl("\\bcr\\b", summary$glm_model) * 3 +
+    (1 - grepl("cr_gradient", summary$glm_model)) * 6
   # other
 }
 
@@ -49,7 +50,7 @@ deoptim_wrapper <- function(
     upper = upper,
     control = DEoptim.control(
       itermax = itermax,
-      NP = 100,
+      NP = 160,
       reltol = 1e-5,
       parallelType = 1,
       packages = c("dplyr", "cutpointr"),
@@ -79,7 +80,6 @@ baseline_all <- aki_dev_wrapper(
 )
 publish(baseline_all$model, print = FALSE, digits = c(2, 3))$regressionTable
 
-
 baseline_sig <- aki_dev_wrapper(
   outcome_var = "AKI_2or3",
   baseline_predictors = c(
@@ -108,7 +108,6 @@ cr_ch_optim <- deoptim_wrapper(
   add_gradient_predictor = 1,
   penalty_fn = heuristic_penalty
 )
-(cr_ch_optim$bestmem)
 
 cr_ch_bestmem <- heuristic_wrapper(cr_ch_optim$result$optim$bestmem,
   outcome_var = "AKI_2or3",
@@ -137,7 +136,6 @@ multi_optim <- deoptim_wrapper(
   k = "mBIC",
   penalty_fn = heuristic_penalty
 )
-(multi_optim$bestmem)
 
 multi_bestmem <- heuristic_wrapper(multi_optim$result$optim$bestmem,
   outcome_var = "AKI_2or3",
