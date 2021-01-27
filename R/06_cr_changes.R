@@ -73,7 +73,7 @@ cr_ch_ts_all <- admission_data %>%
     `Criteria for stage of AKI` = Criteria.for.stage.of.AKI
   ) %>%
   mutate(
-    Olig_defined_AKI = `AKI Dx oliguria`
+    Olig_defined_AKI = if_else(`AKI Dx oliguria` == 1, 1, 0, 0)
   )
 
 neither_ts <- cr_ch_ts_all %>% # Neither from initial data study
@@ -130,7 +130,14 @@ cr_ch_ts <- rbind(
   mutate(
     AKI_2or3 = if_else(AKI_stage >= 2, 1, 0, 0),
     Cr_defined_AKI_2or3 = if_else(Cr_defined_AKI == 1, AKI_2or3, 0, 0),
-    Olig_defined_AKI_2or3 = if_else(Cr_defined_AKI == 0, AKI_2or3, 0, 0)
+    Olig_defined_AKI_2or3 = if_else(Olig_defined_AKI == 1, AKI_2or3, 0, 0)
+  ) %>%
+  group_by(AdmissionID) %>%
+  mutate( # TODO work out why this is required..
+    Cr_defined_AKI = max(Cr_defined_AKI),
+    Cr_defined_AKI_2or3 = max(Cr_defined_AKI_2or3),
+    Olig_defined_AKI = max(Olig_defined_AKI),
+    Olig_defined_AKI_2or3 = max(Olig_defined_AKI_2or3)
   ) %>%
   select(-del_t_ch, -del_t_aki)
 

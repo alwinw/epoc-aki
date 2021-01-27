@@ -5,7 +5,8 @@ analysis_df <- cr_ch_ts %>%
     `UR number`:Admission, Pt_Study_nos, Event,
     Age:Chronic_liver_disease,
     AKI_ICU,
-    DateTime_Pathology_Result:AKI_2or3, Cr_defined_AKI, Cr_defined_AKI_2or3, Olig_defined_AKI_2or3
+    DateTime_Pathology_Result:AKI_2or3,
+    Cr_defined_AKI, Cr_defined_AKI_2or3, Olig_defined_AKI, Olig_defined_AKI_2or3
   ) %>%
   mutate(
     APACHE_II = if_else(APACHE_II == 0, NA_real_, APACHE_II),
@@ -19,7 +20,7 @@ analysis_df <- cr_ch_ts %>%
   ungroup()
 
 baseline_df <- analysis_df %>%
-  select(-DateTime_Pathology_Result:-del_t_aki_hr) %>%
+  select(-DateTime_Pathology_Result:-cr, -del_t_ch_hr:-del_t_aki_hr) %>%
   unique(.) %>%
   mutate(
     del_t_ch_hr = 0, # consider changing to median or something later
@@ -29,20 +30,12 @@ baseline_df <- analysis_df %>%
 
 if (anyNA(baseline_df)) stop("There is missing data in baseline_df")
 stopifnot(length(unique(baseline_df$AdmissionID)) == nrow(baseline_df))
-
 stopifnot(baseline_df %>% filter(AKI_ICU == 0, Cr_defined_AKI == 1) %>% nrow(.) == 0)
 
-baseline_df %>%
-  filter(AKI_ICU == 1) %>%
-  nrow(.)
-baseline_df %>%
-  filter(Cr_defined_AKI == 1) %>%
-  nrow(.)
-baseline_df %>%
-  filter(Olig_defined_AKI_2or3 == 1) %>%
-  nrow(.)
-
 # Compare with admissions data
+stopifnot(nrow(filter(baseline_df, AKI_ICU == 1)) >= nrow(filter(admission_data, AKI_ICU == 1)))
+stopifnot(nrow(filter(baseline_df, Cr_defined_AKI == 1)) >= nrow(filter(admission_data, Cr_defined_AKI == 1)))
+stopifnot(nrow(filter(baseline_df, Olig_defined_AKI == 1)) >= nrow(filter(admission_data, `AKI Dx oliguria` == 1)))
 
 # --- time_to_aki_plot ----
 # analysis_df %>%
