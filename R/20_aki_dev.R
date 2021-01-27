@@ -40,6 +40,7 @@ stopifnot(nrow(filter(baseline_df, Cr_defined_AKI == 1)) >= nrow(filter(admissio
 stopifnot(nrow(filter(baseline_df, Olig_defined_AKI == 1)) >= nrow(filter(admission_data, `AKI Dx oliguria` == 1)))
 
 baseline_df <- filter(baseline_df, !del_cr)
+analysis_df <- filter(analysis_df, !is.na(del_cr))
 
 # --- time_to_aki_plot ----
 # analysis_df %>%

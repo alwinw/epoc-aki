@@ -35,7 +35,7 @@ Baseline model of all patients (n_admissions = 387). All explanatory variables i
 1 0.7230154        -Inf         Inf         -Inf          Inf
 ```
 
-Baseline model with backwards stepwise regressions. Only impactful variable remain
+Baseline model with backwards stepwise regressions for AKI stage 2 or 3. Only impactful variable remain
 
 ```R
 > publish(baseline_sig$model, print = FALSE, digits = c(2, 3))$regressionTable
@@ -50,6 +50,30 @@ Baseline model with backwards stepwise regressions. Only impactful variable rema
 1              309  367 377          68         309 AKI_2or3 ~ APACHE_II + PCs_cardio + Vasopressor 0.7230154        -Inf
   ch_hr_upper aki_hr_lower aki_hr_upper
 1         Inf         -Inf          Inf
+```
+
+Baseline model with backwards stepwise regressions for AKI (any stage). Only impactful variables remain
+
+```R
+> publish(baseline_sig_AKI_ICU$model, print = FALSE, digits = c(2, 3))$regressionTable
+               Variable Units OddsRatio       CI.95   p-value
+1             Mecvenadm            1.65 [0.94;2.91]   0.08367
+2            APACHE_III            1.01 [1.00;1.03]   0.06418
+3           Baseline_Cr            1.01 [1.00;1.02]   0.16412
+4            PCs_cardio            1.48 [0.87;2.52]   0.15141
+5           Vasopressor            2.81 [1.70;4.66]   < 0.001
+6              Diabetes            1.63 [0.92;2.89]   0.09480
+7                    HT            1.60 [1.01;2.56]   0.04735
+8 Chronic_liver_disease            3.51 [1.53;8.09]   0.00315
+> baseline_sig_AKI_ICU$summary
+        AUC sensitivity specificity optimal_cutpoint per_admin_in per_admin_pos n_admissions n_admissions_pos
+1 0.7349842   0.7395349   0.6358025        0.5355923            1             1          377              215
+  n_admissions_neg n_UR   n n_event_pos n_event_neg
+1              162  367 377         215         162
+                                                                                                          glm_model
+1 AKI_ICU ~ Mecvenadm + APACHE_III + Baseline_Cr + PCs_cardio + Vasopressor + Diabetes + HT + Chronic_liver_disease
+    AUC_all ch_hr_lower ch_hr_upper aki_hr_lower aki_hr_upper
+1 0.7384439        -Inf         Inf         -Inf          Inf
 ```
 
 Only cr: From differential evolution optimisation, this is the best model for creatinine change of >1mg/L/hr (cr_gradient) for AKI stage 2 or 3

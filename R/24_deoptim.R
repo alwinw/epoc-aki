@@ -97,6 +97,22 @@ baseline_sig <- aki_dev_wrapper(
 publish(baseline_sig$model, print = FALSE, digits = c(2, 3))$regressionTable
 baseline_sig$summary
 
+baseline_sig_AKI_ICU <- aki_dev_wrapper(
+  outcome_var = "AKI_ICU",
+  baseline_predictors = c(
+    "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
+    "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
+  ),
+  cr_predictors = NULL,
+  add_gradient_predictor = NULL,
+  stepwise = TRUE,
+  k = "AIC",
+  all_data = TRUE,
+  analysis_data = baseline_df
+)
+publish(baseline_sig_AKI_ICU$model, print = FALSE, digits = c(2, 3))$regressionTable
+baseline_sig_AKI_ICU$summary
+
 # ---- cr_ch_only ----
 set.seed(8)
 cr_ch_optim <- deoptim_wrapper(
