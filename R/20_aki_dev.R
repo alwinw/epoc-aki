@@ -4,8 +4,8 @@ analysis_df <- cr_ch_ts %>%
   select(
     `UR number`:Admission, Pt_Study_nos, Event,
     Age:Chronic_liver_disease,
-    AKI_ICU, AKI_stage,
-    DateTime_Pathology_Result:AKI_2or3
+    AKI_ICU,
+    DateTime_Pathology_Result:AKI_2or3, Cr_defined_AKI, Cr_defined_AKI_2or3, Olig_defined_AKI_2or3
   ) %>%
   mutate(
     APACHE_II = if_else(APACHE_II == 0, NA_real_, APACHE_II),
@@ -26,6 +26,23 @@ baseline_df <- analysis_df %>%
     del_t_aki_hr = 0,
     del_cr = 0
   )
+
+if (anyNA(baseline_df)) stop("There is missing data in baseline_df")
+stopifnot(length(unique(baseline_df$AdmissionID)) == nrow(baseline_df))
+
+stopifnot(baseline_df %>% filter(AKI_ICU == 0, Cr_defined_AKI == 1) %>% nrow(.) == 0)
+
+baseline_df %>%
+  filter(AKI_ICU == 1) %>%
+  nrow(.)
+baseline_df %>%
+  filter(Cr_defined_AKI == 1) %>%
+  nrow(.)
+baseline_df %>%
+  filter(Olig_defined_AKI_2or3 == 1) %>%
+  nrow(.)
+
+# Compare with admissions data
 
 # --- time_to_aki_plot ----
 # analysis_df %>%

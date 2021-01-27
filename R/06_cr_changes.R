@@ -71,6 +71,9 @@ cr_ch_ts_all <- admission_data %>%
     `AKI Dx Cr 1.5 times` = AKI.Dx.Cr.1.5.times,
     `AKI Dx oliguria` = AKI.Dx.oliguria,
     `Criteria for stage of AKI` = Criteria.for.stage.of.AKI
+  ) %>%
+  mutate(
+    Olig_defined_AKI = `AKI Dx oliguria`
   )
 
 neither_ts <- cr_ch_ts_all %>% # Neither from initial data study
@@ -88,6 +91,8 @@ neither_ts <- cr_ch_ts_all %>% # Neither from initial data study
       TRUE ~ 0
     ),
     Max_Cr_ICU = max(cr),
+    Cr_defined_AKI = AKI_ICU, # Since these are all defined on AKI_ICU here
+    Olig_defined_AKI = 0 # Since only Cr considered
   ) %>%
   arrange(AdmissionID, desc(cr)) %>%
   mutate(
@@ -111,7 +116,7 @@ insufficient_cr <- cr_ch_ts_all %>%
   filter(is.na(AKI_ICU)) %>%
   filter(is.na(cr)) %>%
   mutate(Baseline_Cr = median(neither_ts$Baseline_Cr, na.rm = TRUE)) %>% ## FIXME
-  mutate(AKI_ICU = 0, AKI_stage = 0)
+  mutate(AKI_ICU = 0, AKI_stage = 0, Cr_defined_AKI = 0, Olig_defined_AKI = 0)
 
 cr_ch_ts <- rbind(
   cr_ch_ts_all %>% filter(!is.na(AKI_ICU)), # No issues
@@ -122,7 +127,11 @@ cr_ch_ts <- rbind(
     del_t_ch_hr = as.numeric(del_t_ch, "hours"),
     del_t_aki_hr = as.numeric(del_t_aki, "hours")
   ) %>%
-  mutate(AKI_2or3 = if_else(AKI_stage >= 2, 1, 0, 0)) %>%
+  mutate(
+    AKI_2or3 = if_else(AKI_stage >= 2, 1, 0, 0),
+    Cr_defined_AKI_2or3 = if_else(Cr_defined_AKI == 1, AKI_2or3, 0, 0),
+    Olig_defined_AKI_2or3 = if_else(Cr_defined_AKI == 0, AKI_2or3, 0, 0)
+  ) %>%
   select(-del_t_ch, -del_t_aki)
 
 if (nrow(cr_ch_ts) != nrow(cr_ch_ts_all)) {

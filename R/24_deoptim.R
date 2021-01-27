@@ -126,14 +126,9 @@ multi_optim <- deoptim_wrapper(
   upper = c(6, 6, 12, 72),
   itermax = 20,
   outcome_var = "AKI_2or3",
-  baseline_predictors = c(
-    "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
-    "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
-  ),
+  baseline_predictors = gsub(".*~ ", "", multi_bestmem$summary$glm_model),
   cr_predictors = "cr",
   add_gradient_predictor = 1,
-  stepwise = TRUE,
-  k = "mBIC",
   penalty_fn = heuristic_penalty
 )
 
@@ -151,3 +146,13 @@ multi_bestmem <- heuristic_wrapper(multi_optim$result$optim$bestmem,
 )
 publish(multi_bestmem$model, print = FALSE, digits = c(2, 3))$regressionTable
 multi_bestmem$summary
+
+multi_bestmem_cr <- heuristic_wrapper(
+  multi_optim$result$optim$bestmem,
+  outcome_var = "Cr_defined_AKI_2or3",
+  baseline_predictors = gsub(".*~ ", "", multi_bestmem$summary$glm_model),
+  all_data = TRUE,
+  analysis_data = multi_bestmem$data
+)
+publish(multi_bestmem_cr$model, print = FALSE, digits = c(2, 3))$regressionTable
+multi_bestmem_cr$summary
