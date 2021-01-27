@@ -155,6 +155,21 @@ multi_bestmem <- heuristic_wrapper(multi_optim$result$optim$bestmem,
 publish(multi_bestmem$model, print = FALSE, digits = c(2, 3))$regressionTable
 multi_bestmem$summary
 
+multi_bestmem_all <- heuristic_wrapper(
+  multi_optim$result$optim$bestmem,
+  outcome_var = "AKI_2or3",
+  baseline_predictors = c(
+   "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
+   "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
+  ),
+  cr_predictors = "cr",
+  add_gradient_predictor = 1,
+
+  all_data = TRUE
+)
+publish(multi_bestmem_all$model, print = FALSE, digits = c(2, 3))$regressionTable
+multi_bestmem_all$summary
+
 # FIXME: n_admission for these below are based on multi_bestmem$data, not the real analysis_data...
 
 multi_bestmem_aki <- heuristic_wrapper(
@@ -177,6 +192,16 @@ multi_bestmem_cr <- heuristic_wrapper(
 publish(multi_bestmem_cr$model, print = FALSE, digits = c(2, 3))$regressionTable
 multi_bestmem_cr$summary
 
+multi_bestmem_cr_all <- heuristic_wrapper(
+  multi_optim$result$optim$bestmem,
+  outcome_var = "Cr_defined_AKI",
+  baseline_predictors = gsub(".*~ ", "", multi_bestmem$summary$glm_model),
+  all_data = TRUE,
+  analysis_data = multi_bestmem$data
+)
+publish(multi_bestmem_cr_all$model, print = FALSE, digits = c(2, 3))$regressionTable
+multi_bestmem_cr_all$summary
+
 multi_bestmem_olig <- heuristic_wrapper(
   multi_optim$result$optim$bestmem,
   outcome_var = "Olig_defined_AKI_2or3",
@@ -186,3 +211,23 @@ multi_bestmem_olig <- heuristic_wrapper(
 )
 publish(multi_bestmem_olig$model, print = FALSE, digits = c(2, 3))$regressionTable
 multi_bestmem_olig$summary
+
+multi_bestmem_olig_all <- heuristic_wrapper(
+  multi_optim$result$optim$bestmem,
+  outcome_var = "Olig_defined_AKI",
+  baseline_predictors = gsub(".*~ ", "", multi_bestmem$summary$glm_model),
+  all_data = TRUE,
+  analysis_data = multi_bestmem$data
+)
+publish(multi_bestmem_olig_all$model, print = FALSE, digits = c(2, 3))$regressionTable
+multi_bestmem_olig_all$summary
+
+multi_bestmem_baseline <- heuristic_wrapper(
+  multi_optim$result$optim$bestmem,
+  outcome_var = "AKI_2or3",
+  baseline_predictors = gsub(".*~ | \\+ cr_gradient", "", multi_bestmem$summary$glm_model),
+  all_data = TRUE,
+  analysis_data = multi_bestmem$data
+)
+publish(multi_bestmem_baseline$model, print = FALSE, digits = c(2, 3))$regressionTable
+multi_bestmem_baseline$summary
