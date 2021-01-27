@@ -303,3 +303,153 @@ Iteration: 20 bestvalit: 3.823878 bestmemit:    5.300000    1.600000    9.300000
   aki_hr_lower aki_hr_upper
 1          9.3           40
 ```
+
+## Summary
+
+Baseline model of all patients (n_admissions = 387). All explanatory variables included
+
+```R
+> publish(baseline_all$model, print = FALSE, digits = c(2, 3))$regressionTable
+                Variable Units OddsRatio       CI.95  p-value
+1                    Age            1.00 [0.98;1.03]   0.7232
+2                   Male            0.86 [0.47;1.58]   0.6342
+3              Mecvenadm            1.52 [0.65;3.54]   0.3365
+4              APACHE_II            1.10 [1.01;1.21]   0.0374
+5             APACHE_III            0.99 [0.97;1.02]   0.6463
+6            Baseline_Cr            1.00 [0.99;1.01]   0.4983
+7             PCs_cardio            2.14 [1.04;4.42]   0.0398
+8            Vasopressor            1.68 [0.94;3.01]   0.0781
+9               Diabetes            1.44 [0.76;2.73]   0.2621
+10                    AF            1.61 [0.69;3.73]   0.2678
+11                   IHD            1.57 [0.79;3.11]   0.1978
+12                    HF            1.07 [0.31;3.78]   0.9106
+13                    HT            0.97 [0.53;1.77]   0.9278
+14                   PVD            1.03 [0.34;3.10]   0.9560
+15 Chronic_liver_disease            1.75 [0.69;4.45]   0.2359
+> baseline_all$summary
+        AUC sensitivity specificity optimal_cutpoint per_admin_in per_admin_pos n_admissions
+1 0.7155683   0.7246377   0.6446541        0.1785853            1             1          387
+  n_admissions_pos n_admissions_neg n_UR   n n_event_pos n_event_neg
+1               69              318  377 387          69         318
+                                                                                                                                                          glm_model
+1 AKI_2or3 ~ Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease
+    AUC_all ch_hr_lower ch_hr_upper aki_hr_lower aki_hr_upper
+1 0.7155683        -Inf         Inf         -Inf          Inf
+```
+
+Baseline model with backwards stepwise regressions. Only impactful variable remain
+
+```R
+> publish(baseline_sig$model, print = FALSE, digits = c(2, 3))$regressionTable
+     Variable Units OddsRatio       CI.95   p-value
+1   APACHE_II            1.10 [1.04;1.15]   < 0.001
+2  PCs_cardio            2.52 [1.39;4.59]   0.00241
+3 Vasopressor            1.72 [0.98;3.00]   0.05659
+> baseline_sig$summary
+        AUC sensitivity specificity optimal_cutpoint per_admin_in per_admin_pos n_admissions
+1 0.6830736   0.4492754   0.8522013         0.251568            1             1          387
+  n_admissions_pos n_admissions_neg n_UR   n n_event_pos n_event_neg
+1               69              318  377 387          69         318
+                                        glm_model   AUC_all ch_hr_lower ch_hr_upper aki_hr_lower
+1 AKI_2or3 ~ APACHE_II + PCs_cardio + Vasopressor 0.7155683        -Inf         Inf         -Inf
+  aki_hr_upper
+1          Inf
+```
+
+From differential evolution optimisation, this is the best model for creatinine change of >1mg/L/hr (cr_gradient) for AKI stage 2 or 3
+
+```R
+> publish(cr_ch_bestmem$model, print = FALSE, digits = c(2, 3))$regressionTable
+     Variable Units OddsRatio       CI.95 p-value
+1 cr_gradient            2.50 [2.09;2.99]  <0.001
+
+> cr_ch_bestmem$summary
+        AUC sensitivity specificity optimal_cutpoint per_admin_in per_admin_pos n_admissions n_admissions_pos n_admissions_neg n_UR    n
+1 0.6034536    0.464837   0.7420701        0.1654717    0.8630491     0.7246377          334               50              284  325 4177
+  n_event_pos n_event_neg              glm_model   AUC_all ch_hr_lower ch_hr_upper aki_hr_lower aki_hr_upper
+1         583        3594 AKI_2or3 ~ cr_gradient 0.6034536         1.1         7.1            3         37.4
+```
+
+From differential evolution optimisation, this is the best multivariable model for AKI stage 2 or 3 chosen with backward selection.
+
+```R
+> publish(multi_bestmem$model, print = FALSE, digits = c(2, 3))$regressionTable
+               Variable Units OddsRatio        CI.95   p-value
+1            PCs_cardio            3.30  [1.75;6.22]   < 0.001
+2           Vasopressor            2.50  [1.37;4.56]   0.00279
+3                    HT            0.40  [0.20;0.80]   0.00934
+4 Chronic_liver_disease           11.81 [5.57;25.07]   < 0.001
+5           cr_gradient            2.86  [1.58;5.17]   < 0.001
+> multi_bestmem$summary
+        AUC sensitivity specificity optimal_cutpoint per_admin_in per_admin_pos n_admissions
+1 0.8694461   0.7704918    0.864486        0.1214668    0.5426357     0.2608696          210
+  n_admissions_pos n_admissions_neg n_UR   n n_event_pos n_event_neg
+1               18              192  204 917          61         856
+                                                                       glm_model   AUC_all
+1 AKI_2or3 ~ PCs_cardio + Vasopressor + HT + Chronic_liver_disease + cr_gradient 0.8736977
+  ch_hr_lower ch_hr_upper aki_hr_lower aki_hr_upper
+1         4.5         6.1          9.3           40
+```
+
+Using the multivariable model, now try to predict AKI_ICU (any stage)
+
+```R
+> publish(multi_bestmem_aki$model, print = FALSE, digits = c(2, 3))$regressionTable
+               Variable Units OddsRatio        CI.95 p-value
+1            PCs_cardio            1.84  [1.31;2.60]  <0.001
+2           Vasopressor            2.41  [1.73;3.34]  <0.001
+3                    HT            1.05  [0.75;1.48]   0.768
+4 Chronic_liver_disease            9.83 [5.28;18.30]  <0.001
+5           cr_gradient            2.11  [1.45;3.07]  <0.001
+> multi_bestmem_aki$summary
+        AUC sensitivity specificity optimal_cutpoint per_admin_in per_admin_pos n_admissions
+1 0.7187298   0.7217391   0.5938865        0.2102887            1             1          210
+  n_admissions_pos n_admissions_neg n_UR   n n_event_pos n_event_neg
+1               79              131  204 917         230         687
+                                                                      glm_model   AUC_all ch_hr_lower
+1 AKI_ICU ~ PCs_cardio + Vasopressor + HT + Chronic_liver_disease + cr_gradient 0.7187298         4.5
+  ch_hr_upper aki_hr_lower aki_hr_upper
+1         6.1          9.3           40
+```
+
+Using the multivariable model, now try to predict creatinine defined AKI stage 2 or 3
+
+```R
+> publish(multi_bestmem_cr$model, print = FALSE, digits = c(2, 3))$regressionTable
+               Variable Units OddsRatio         CI.95  p-value
+1            PCs_cardio            1.10   [0.47;2.57]   0.8184
+2           Vasopressor            2.85   [1.25;6.47]   0.0126
+3                    HT            0.52   [0.19;1.41]   0.1975
+4 Chronic_liver_disease           25.11 [10.90;57.82]   <0.001
+5           cr_gradient            2.57   [1.18;5.59]   0.0173
+> multi_bestmem_cr$summary
+        AUC sensitivity specificity optimal_cutpoint per_admin_in per_admin_pos n_admissions
+1 0.8848741   0.7027027   0.9443182       0.07899507            1             1          210
+  n_admissions_pos n_admissions_neg n_UR   n n_event_pos n_event_neg
+1               12              198  204 917          37         880
+                                                                                  glm_model   AUC_all
+1 Cr_defined_AKI_2or3 ~ PCs_cardio + Vasopressor + HT + Chronic_liver_disease + cr_gradient 0.8848741
+  ch_hr_lower ch_hr_upper aki_hr_lower aki_hr_upper
+1         4.5         6.1          9.3           40
+```
+
+Using the multivariable model, now try to predict oliguria defined AKI stage 2 or 3
+
+```R
+> publish(multi_bestmem_olig$model, print = FALSE, digits = c(2, 3))$regressionTable
+               Variable Units OddsRatio        CI.95   p-value
+1            PCs_cardio            4.22  [1.94;9.18]   < 0.001
+2           Vasopressor            3.00  [1.43;6.29]   0.00358
+3                    HT            0.54  [0.24;1.20]   0.12810
+4 Chronic_liver_disease            5.04 [1.93;13.17]   < 0.001
+5           cr_gradient            1.62  [0.77;3.43]   0.20278
+> multi_bestmem_olig$summary
+        AUC sensitivity specificity optimal_cutpoint per_admin_in per_admin_pos n_admissions
+1 0.8395289   0.9166667   0.7150965       0.03789761            1             1          210
+  n_admissions_pos n_admissions_neg n_UR   n n_event_pos n_event_neg
+1               11              199  204 917          36         881
+                                                                                    glm_model   AUC_all
+1 Olig_defined_AKI_2or3 ~ PCs_cardio + Vasopressor + HT + Chronic_liver_disease + cr_gradient 0.8395289
+  ch_hr_lower ch_hr_upper aki_hr_lower aki_hr_upper
+1         4.5         6.1          9.3           40
+```

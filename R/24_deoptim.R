@@ -79,6 +79,7 @@ baseline_all <- aki_dev_wrapper(
   analysis_data = baseline_df
 )
 publish(baseline_all$model, print = FALSE, digits = c(2, 3))$regressionTable
+baseline_all$summary
 
 baseline_sig <- aki_dev_wrapper(
   outcome_var = "AKI_2or3",
@@ -93,8 +94,8 @@ baseline_sig <- aki_dev_wrapper(
   all_data = TRUE,
   analysis_data = baseline_df
 )
-baseline_sig$summary
 publish(baseline_sig$model, print = FALSE, digits = c(2, 3))$regressionTable
+baseline_sig$summary
 
 # ---- cr_ch_only ----
 set.seed(8)
@@ -137,6 +138,8 @@ multi_optim <- deoptim_wrapper(
   penalty_fn = heuristic_penalty
 )
 
+if (FALSE) multi_optim <- list(result = list(optim = list(bestmem = c(5.3, 1.6, 9.3, 30.7))))
+
 multi_bestmem <- heuristic_wrapper(multi_optim$result$optim$bestmem,
   outcome_var = "AKI_2or3",
   baseline_predictors = c(
@@ -151,6 +154,18 @@ multi_bestmem <- heuristic_wrapper(multi_optim$result$optim$bestmem,
 )
 publish(multi_bestmem$model, print = FALSE, digits = c(2, 3))$regressionTable
 multi_bestmem$summary
+
+# FIXME: n_admission for these below are based on multi_bestmem$data, not the real analysis_data...
+
+multi_bestmem_aki <- heuristic_wrapper(
+  multi_optim$result$optim$bestmem,
+  outcome_var = "AKI_ICU",
+  baseline_predictors = gsub(".*~ ", "", multi_bestmem$summary$glm_model),
+  all_data = TRUE,
+  analysis_data = multi_bestmem$data
+)
+publish(multi_bestmem_aki$model, print = FALSE, digits = c(2, 3))$regressionTable
+multi_bestmem_aki$summary
 
 multi_bestmem_cr <- heuristic_wrapper(
   multi_optim$result$optim$bestmem,
