@@ -11,12 +11,12 @@ heuristic_penalty <- function(summary) {
     tanh_penalty(summary$ch_hr_upper, 9, 1, 1) +
     tanh_penalty(summary$aki_hr_upper, 15, 15, -1) +
     tanh_penalty(summary$aki_hr_upper, 60, 10, 1) +
-    grepl("APACHE_II", summary$glm_model) * 5 +
-    grepl("APACHE_III", summary$glm_model) * 5 +
-    grepl("Baseline_Cr", summary$glm_model) +
+    grepl("\\bAPACHE_II\\b", summary$glm_model) * 5 +
+    grepl("\\bAPACHE_III\\b", summary$glm_model) * 5 +
+    grepl("\\bBaseline_Cr\\b", summary$glm_model) +
     grepl("\\bcr\\b", summary$glm_model) * 3 +
-    (1 - grepl("cr_gradient", summary$glm_model)) * 6
-  # other
+    (1 - grepl("cr_gradient", summary$glm_model)) * 6 #+
+  # grepl("\\bHT\\b", summary$glm_model)
 }
 
 heuristic_wrapper <- function(
@@ -50,7 +50,7 @@ deoptim_wrapper <- function(
     upper = upper,
     control = DEoptim.control(
       itermax = itermax,
-      NP = 160,
+      NP = 320,
       reltol = 1e-5,
       parallelType = 1,
       packages = c("dplyr", "cutpointr"),
@@ -138,15 +138,20 @@ cr_ch_bestmem$summary
 
 # ---- multi ----
 set.seed(8)
+
+multi_baseline_predictors <- c(
+  # "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
+  # "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
+  "Age + Male + APACHE_II + APACHE_III + Baseline_Cr",
+  "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + PVD + Chronic_liver_disease"
+)
+
 multi_optim <- deoptim_wrapper(
   lower = c(4, 0.5, 3, 1),
   upper = c(6, 6, 12, 72),
-  itermax = 20,
+  itermax = 200,
   outcome_var = "AKI_2or3",
-  baseline_predictors = c(
-    "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
-    "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
-  ),
+  baseline_predictors = multi_baseline_predictors,
   cr_predictors = "cr",
   add_gradient_predictor = 1,
   stepwise = TRUE,
@@ -158,10 +163,7 @@ if (FALSE) multi_optim <- list(result = list(optim = list(bestmem = c(5.3, 1.6, 
 
 multi_bestmem <- heuristic_wrapper(multi_optim$result$optim$bestmem,
   outcome_var = "AKI_2or3",
-  baseline_predictors = c(
-    "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
-    "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
-  ),
+  baseline_predictors = multi_baseline_predictors,
   cr_predictors = "cr",
   add_gradient_predictor = 1,
   stepwise = TRUE,
@@ -174,10 +176,7 @@ multi_bestmem$summary
 multi_bestmem_all <- heuristic_wrapper(
   multi_optim$result$optim$bestmem,
   outcome_var = "AKI_2or3",
-  baseline_predictors = c(
-    "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
-    "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
-  ),
+  baseline_predictors = multi_baseline_predictors,
   cr_predictors = "cr",
   add_gradient_predictor = 1,
 
