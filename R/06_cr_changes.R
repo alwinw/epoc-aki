@@ -71,9 +71,12 @@ cr_ch_ts_all <- admission_data %>%
     `AKI Dx Cr 1.5 times` = AKI.Dx.Cr.1.5.times,
     `AKI Dx oliguria` = AKI.Dx.oliguria,
     `Criteria for stage of AKI` = Criteria.for.stage.of.AKI
+  ) %>%
+  mutate(
+    Olig_defined_AKI = if_else(`AKI Dx oliguria` == 1, 1, 0, 0)
   )
 
-neither_ts <- cr_ch_ts_all %>%
+neither_ts <- cr_ch_ts_all %>% # Neither from initial data study
   filter(is.na(AKI_ICU)) %>%
   filter(!is.na(cr)) %>% # Only one measurement in ICU
   group_by(AdmissionID) %>%
@@ -81,13 +84,15 @@ neither_ts <- cr_ch_ts_all %>%
     # No need to check for olig definition of AKI, else would have had "oliguria episode"
     Baseline_Cr = min(cr),
     AKI_ICU = if_else(cr > Baseline_Cr * 1.5, 1, 0), # FIXME NEED TO PROGRAM IN THE RISE CASE TOO
-    AKI_stage = case_when( # TODO Add other variables too!
+    AKI_stage = case_when( # TODO Add other gradient definition too!
       cr > Baseline_Cr * 3 ~ 3,
       cr > Baseline_Cr * 2 ~ 2,
       cr > Baseline_Cr * 1.5 ~ 1,
       TRUE ~ 0
     ),
     Max_Cr_ICU = max(cr),
+    Cr_defined_AKI = AKI_ICU, # Since these are all defined on AKI_ICU here
+    Olig_defined_AKI = 0 # Since only Cr considered
   ) %>%
   arrange(AdmissionID, desc(cr)) %>%
   mutate(
@@ -106,23 +111,49 @@ neither_ts <- cr_ch_ts_all %>%
     del_t_aki = if_else(AKI_ICU == 1, as.duration(DateTime_AKI_Dx - DateTime_Pathology_Result), as.duration(NA_real_))
   ) %>%
   ungroup()
-# length(unique(neither_ts$AdmissionID))
+
+insufficient_cr <- cr_ch_ts_all %>%
+  filter(is.na(AKI_ICU)) %>%
+  filter(is.na(cr)) %>%
+  mutate(Baseline_Cr = median(neither_ts$Baseline_Cr, na.rm = TRUE)) %>% ## FIXME
+  mutate(AKI_ICU = 0, AKI_stage = 0, Cr_defined_AKI = 0, Olig_defined_AKI = 0)
 
 cr_ch_ts <- rbind(
-  cr_ch_ts_all %>% filter(!is.na(AKI_ICU)),
-  neither_ts
-)
+  cr_ch_ts_all %>% filter(!is.na(AKI_ICU)), # No issues
+  neither_ts, # Had to check for AKI
+  insufficient_cr # Not enough cr changes
+) %>%
+  mutate(
+    del_t_ch_hr = as.numeric(del_t_ch, "hours"),
+    del_t_aki_hr = as.numeric(del_t_aki, "hours")
+  ) %>%
+  mutate(
+    AKI_2or3 = if_else(AKI_stage >= 2, 1, 0, 0),
+    Cr_defined_AKI_2or3 = if_else(Cr_defined_AKI == 1, AKI_2or3, 0, 0),
+    Olig_defined_AKI_2or3 = if_else(Olig_defined_AKI == 1, AKI_2or3, 0, 0)
+  ) %>%
+  group_by(AdmissionID) %>%
+  mutate( # TODO work out why this is required..
+    Cr_defined_AKI = max(Cr_defined_AKI),
+    Cr_defined_AKI_2or3 = max(Cr_defined_AKI_2or3),
+    Olig_defined_AKI = max(Olig_defined_AKI),
+    Olig_defined_AKI_2or3 = max(Olig_defined_AKI_2or3)
+  ) %>%
+  select(-del_t_ch, -del_t_aki)
 
-# TODO Add checks on number of rows, etc
+if (nrow(cr_ch_ts) != nrow(cr_ch_ts_all)) {
+  stop("Differring row numbers")
+}
+# TODO Add more checks on number of rows, etc
 
-rm(cr_ch_ts_all, neither_ts, generate_cr_ch)
+rm(cr_ch_ts_all, neither_ts, insufficient_cr, generate_cr_ch)
 
 
 # ---- cr_changes_overview ----
 cr_ch_ts %>%
   filter(abs(del_cr) < 50) %>%
   mutate(
-    t_AKI = if_else(is.na(del_t_aki) | del_t_aki > 0, "Before", "After")
+    t_AKI = if_else(is.na(del_t_aki_hr) | del_t_aki_hr > 0, "Before", "After")
   ) %>%
   select(AdmissionID, AKI_ICU, DateTime_Pathology_Result, t_AKI) %>%
   # unique(.) %>%
@@ -140,7 +171,7 @@ cr_ch_ts %>%
 cr_ch_ts %>%
   filter(abs(del_cr) < 50) %>%
   mutate(
-    t_AKI = if_else(is.na(del_t_aki) | del_t_aki > 0, "Before", "After")
+    t_AKI = if_else(is.na(del_t_aki_hr) | del_t_aki_hr > 0, "Before", "After")
   ) %>%
   select(AdmissionID, AKI_ICU, t_AKI) %>%
   group_by(AdmissionID) %>%
@@ -155,7 +186,7 @@ cr_ch_ts %>%
   kable(., caption = "Admission breakdown")
 
 # ---- summary_plots ----
-# ggplot(cr_ch_ts, aes(x = del_t_ch/3600)) +
+# ggplot(cr_ch_ts, aes(x = del_t_ch_hr)) +
 #   geom_histogram(bins = 100, fill = "cyan", colour = "blue") +
 #   xlim(0, 48)
 # # Add another plot based on admissions?
@@ -164,7 +195,7 @@ cr_ch_ts %>%
 #   geom_histogram(bins = 50, fill = "cyan", colour = "blue") +
 #   xlim(0, 100)
 #
-# ggplot(cr_ch_ts, aes(x = del_t_ch/3600, y = del_cr)) +
+# ggplot(cr_ch_ts, aes(x = del_t_ch_hr, y = del_cr)) +
 #   geom_hex(bins = 100) +
 #   xlim(0, 48) + ylim(-100, 100) +
 #   coord_cartesian(expand = FALSE) +
@@ -172,14 +203,14 @@ cr_ch_ts %>%
 
 # ---- heatmap_plot ----
 heatmap_all <- cr_ch_ts %>%
-  filter(is.na(del_t_aki) | del_t_aki > 0) %>%
+  filter(is.na(del_t_aki_hr) | del_t_aki_hr > 0) %>%
   mutate(
     heatmap = case_when(
-      is.na(del_t_aki) ~ " No AKI",
-      del_t_aki / 3600 < 4 ~ "t_AKI in  0-4hrs",
-      del_t_aki / 3600 < 8 ~ "t_AKI in  4-8hrs",
-      del_t_aki / 3600 < 12 ~ "t_AKI in  8-12hrs",
-      del_t_aki / 3600 < 16 ~ "t_AKI in 12-16hrs",
+      is.na(del_t_aki_hr) ~ " No AKI",
+      del_t_aki_hr < 4 ~ "t_AKI in  0-4hrs",
+      del_t_aki_hr < 8 ~ "t_AKI in  4-8hrs",
+      del_t_aki_hr < 12 ~ "t_AKI in  8-12hrs",
+      del_t_aki_hr < 16 ~ "t_AKI in 12-16hrs",
       TRUE ~ "t_AKI in 16+hrs"
     ),
   )
@@ -188,8 +219,8 @@ heatmap_count <- heatmap_all %>%
   group_by(heatmap) %>%
   summarise(n_cr = n(), n_admission = n_distinct(AdmissionID), .groups = "keep")
 heatmap_ts <- heatmap_all %>%
-  filter(del_t_ch / 3600 < 13, abs(del_cr) < 50)
-heatmap_plot <- ggplot(heatmap_ts, aes(x = del_t_ch / 3600, y = del_cr)) +
+  filter(del_t_ch_hr < 13, abs(del_cr) < 50)
+heatmap_plot <- ggplot(heatmap_ts, aes(x = del_t_ch_hr, y = del_cr)) +
   geom_density_2d_filled(
     aes(fill = after_stat(level_mid)),
     contour_var = "density"
