@@ -151,22 +151,29 @@ deoptim_search <- function(
   if (!grepl("\\bcr\\b", optim_model$summary$glm_model)) cr_predictors <- NULL
   if (!grepl("\\bcr_gradient\\b", optim_model$summary$glm_model)) add_gradient_predictor <- NULL
 
-  secondary_model <- heuristic_wrapper(
-    best$result$optim$bestmem,
-    outcome_var = "AKI_ICU", # HARD CODED, consider changing!!
-    baseline_predictors = baseline_predictors,
-    cr_predictors = cr_predictors,
-    add_gradient_predictor = add_gradient_predictor,
-    all_data = TRUE
+  secondary_models <- lapply(
+    secondary_outcomes,
+    function(outcome_var) {
+      secondary_model <- heuristic_wrapper(
+        best$result$optim$bestmem,
+        outcome_var = outcome_var,
+        baseline_predictors = baseline_predictors,
+        cr_predictors = cr_predictors,
+        add_gradient_predictor = add_gradient_predictor,
+        all_data = TRUE
+      )
+      cat(paste0("\n----------------\nSame model with secondary outcome ", outcome_var, ":\n"))
+      publish(secondary_model$model)
+      print(secondary_model$summary)
+      return(secondary_model)
+    }
   )
-  cat("\n----------------\nSame model with secondary outcome:\n")
-  publish(secondary_model$model)
-  print(secondary_model$summary)
+  names(secondary_models) <- secondary_outcomes
 
   return(list(
     optim_value = optim_value,
     optim_model = optim_model,
-    secondary_model = secondary_model
+    secondary_models = secondary_models
   ))
 }
 
