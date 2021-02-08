@@ -133,7 +133,7 @@ deoptim_search <- function(
   )
 
   optim_model <- heuristic_wrapper(
-    best$result$optim$bestmem,
+    optim_value$result$optim$bestmem,
     outcome_var = outcome_var,
     baseline_predictors = baseline_predictors,
     cr_predictors = cr_predictors,
@@ -143,8 +143,8 @@ deoptim_search <- function(
     all_data = TRUE
   )
   cat("\n----------------\nOptimised model found:\n")
-  publish(optim_model$model)
-  print(optim_model$summary)
+  print(kable(publish(optim_model$model, print = FALSE, digits = c(2, 3))$regressionTable %>% select(-Units), align = c("l", "r", "c", "r")))
+  print(kable(t(optim_model$summary), col.names = paste("Outcome:", outcome_var)))
 
   # Update the predictors if it was stepwise!
   baseline_predictors <- gsub(".*~ | \\+ \\bcr\\b| \\+ \\bcr_gradient\\b", "", optim_model$summary$glm_model)
@@ -155,7 +155,7 @@ deoptim_search <- function(
     secondary_outcomes,
     function(outcome_var) {
       secondary_model <- heuristic_wrapper(
-        best$result$optim$bestmem,
+        optim_value$result$optim$bestmem,
         outcome_var = outcome_var,
         baseline_predictors = baseline_predictors,
         cr_predictors = cr_predictors,
@@ -163,9 +163,8 @@ deoptim_search <- function(
         all_data = TRUE
       )
       cat(paste0("\n----------------\nSame model with secondary outcome ", outcome_var, ":\n"))
-      publish(secondary_model$model)
-      print(secondary_model$summary)
-      return(secondary_model)
+      print(kable(publish(secondary_model$model, print = FALSE, digits = c(2, 3))$regressionTable %>% select(-Units), align = c("l", "r", "c", "r")))
+      print(kable(t(secondary_model$summary), col.names = paste("Outcome:", outcome_var)))
     }
   )
   names(secondary_models) <- secondary_outcomes
@@ -192,7 +191,7 @@ multi_model <- deoptim_search(
   k = "mBIC",
   penalty_fn = heuristic_penalty,
   itermax = 2,
-  NP = 32,
+  NP = 8,
   parallel = TRUE,
   secondary_outcomes = c(
     "AKI_ICU",
