@@ -10,87 +10,89 @@ stopifnot(nrow(demographics_df) == nrow(baseline_df))
 # TODO check why there are NAs for Wt
 # TODO calculate LOS in the admission_data
 
+outcome_var <- "AKI_2or3"
 
-demographics_df %>%
-  group_by(Epis_cr) %>%
+number <- demographics_df %>%
+  select({{ outcome_var }}) %>%
+  group_by(.data[[outcome_var]]) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  pivot_wider(names_from = {{ outcome_var }}, values_from = n) %>%
+  mutate(variable = "number", all = nrow(demographics_df), pval = NA)
+
+cont_vars <- c(
+  "Age", "Wt", "APACHE_II", "APACHE_II"
+)
+
+cont_all <- demographics_df %>%
+  select(all_of(cont_vars)) %>%
+  pivot_longer(everything(), names_to = "variable") %>%
+  group_by(variable) %>%
   summarise(
-    n = n(),
-    median = median(Age),
-    q1 = quantile(Age, c(0.25)),
-    q3 = quantile(Age, c(0.75))
+    all = sprintf(
+      "%.1f (%.1f - %.1f)",
+      median(value, na.rm = TRUE),
+      quantile(value, 0.25, na.rm = TRUE),
+      quantile(value, 0.75, na.rm = TRUE)
+    ),
+    .groups = "drop"
   )
-wilcox.test(Age ~ Epis_cr, demographics_df)
-
-demographics_df %>%
-  group_by(Epis_cr) %>%
-  summarise(
-    n = n(),
-    median = median(Wt, na.rm = TRUE),
-    q1 = quantile(Wt, c(0.25), na.rm = TRUE),
-    q3 = quantile(Wt, c(0.75), na.rm = TRUE)
-  )
-wilcox.test(Wt ~ Epis_cr, demographics_df)
-
-
-demographics_df %>%
-  group_by(Epis_cr) %>%
-  summarise(
-    n = n(),
-    median = median(APACHE_II, na.rm = TRUE),
-    q1 = quantile(APACHE_II, c(0.25), na.rm = TRUE),
-    q3 = quantile(APACHE_II, c(0.75), na.rm = TRUE)
-  )
-wilcox.test(APACHE_II ~ Epis_cr, demographics_df)
-
 
 cont_iqr <- demographics_df %>%
-  select(
-    AKI_2or3,
-    Age, Wt, APACHE_II, APACHE_III
-  ) %>% 
-  pivot_longer(-AKI_2or3, names_to = "variable") %>% 
-  group_by(AKI_2or3, variable) %>% 
+  select({{ outcome_var }}, all_of(cont_vars)) %>%
+  pivot_longer(-{{ outcome_var }}, names_to = "variable") %>%
+  group_by(.data[[outcome_var]], variable) %>%
   summarise(
-    median = median(value, na.rm = TRUE),
-    q1 = quantile(value, 0.25, na.rm = TRUE),
-    q3 = quantile(value, 0.75, na.rm = TRUE),
+    text = sprintf(
+      "%.1f (%.1f - %.1f)",
+      median(value, na.rm = TRUE),
+      quantile(value, 0.25, na.rm = TRUE),
+      quantile(value, 0.75, na.rm = TRUE)
+    ),
     .groups = "drop"
-  ) %>% 
-  mutate(text = sprintf("%.1f (%.1f - %.1f)", median, q1, q3)) %>% 
-  select(AKI_2or3, variable, text) %>% 
+  ) %>%
   pivot_wider(names_from = AKI_2or3, values_from = text)
 
 cont_pval <- demographics_df %>%
-  select(
-    AKI_2or3,
-    Age, Wt, APACHE_II, APACHE_III
-  ) %>% 
-  pivot_longer(-AKI_2or3, names_to = "variable") %>% 
-  group_by(variable) %>% 
-  summarise(pval = wilcox.test(value ~ AKI_2or3)$p.value, .groups = "drop") %>%
+  select({{ outcome_var }}, all_of(cont_vars)) %>%
+  pivot_longer(-{{ outcome_var }}, names_to = "variable") %>%
+  group_by(variable) %>%
+  summarise(pval = wilcox.test(value ~ AKI_2or3)$p.value, .groups = "drop") %>% # FIXME hard coding
   select(variable, pval)
 
-bin_n <- demographics_df %>% 
-  select(
-    AKI_2or3,
-    Male, Mecvenadm
-  ) %>% 
-  pivot_longer(-AKI_2or3, names_to = "variable") %>% 
-  group_by(AKI_2or3, variable, value) %>% 
-  summarise(n = n(), .groups = "drop") %>% 
-  group_by(AKI_2or3, variable) %>% 
-  mutate(text = sprintf("%d (%.1f%%)", n, n/sum(n)*100)) %>% 
-  filter(value == 1) %>%  # might have to check for NAs?
-  select(-value, -n) %>% 
-  pivot_wider(names_from = AKI_2or3, values_from = text)
+bin_vars <- c(
+  "AKI_2or3",
+  "Male", "Mecvenadm",
+  "Surgadmission"
+)
 
-bin_pval <- demographics_df %>% 
+bin_n <- demographics_df %>%
+  select(all_of(bin_vars)) %>%
+  pivot_longer(-{{ outcome_var }}, names_to = "variable") %>%
+  group_by(.data[[outcome_var]], variable, value) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  group_by(.data[[outcome_var]], variable) %>%
+  mutate(text = sprintf("%d (%.1f%%)", n, n / sum(n) * 100)) %>%
+  filter(value == 1) %>% # might have to check for NAs?
+  group_by(variable) %>%
+  mutate(all = sum(n)) %>% # FIXME needs percentage as well
+  select(-value, -n) %>%
+  pivot_wider(names_from = {{ outcome_var }}, values_from = text)
+
+bin_pval <- demographics_df %>%
   select(
     AKI_2or3,
-    Male, Mecvenadm
-  ) %>% 
-  pivot_longer(-AKI_2or3, names_to = "variable") %>% 
-  group_by(variable) %>% 
+    Male, Mecvenadm,
+    Surgadmission
+  ) %>%
+  pivot_longer(-AKI_2or3, names_to = "variable") %>%
+  group_by(variable) %>%
   summarise(pval = chisq.test(AKI_2or3, value)$p.value, .groups = "drop")
 
+demographics_table <- rbind(
+  number,
+  left_join(left_join(cont_iqr, cont_all), cont_pval),
+  left_join(bin_n, bin_pval)
+) %>%
+  select(variable, all, {{ outcome_var }} := `1`, "No_{{outcome_var}}" := `0`, pval)
 
+kable(demographics_table)
