@@ -159,7 +159,7 @@ deoptim_search <- function(
     add_gradient_predictor = add_gradient_predictor,
     all_data = TRUE,
   )
-  cat("\n----------------\nOptim model for found, with all variables:\n")
+  cat("\n----------------\nOptimised model with all variables:\n")
   print(kable(publish(optim_model_full$model, print = FALSE, digits = c(2, 3))$regressionTable %>% select(-Units), align = c("l", "r", "c", "r")))
   print(kable(t(optim_model_full$summary), col.names = paste("Outcome:", outcome_var)))
 
