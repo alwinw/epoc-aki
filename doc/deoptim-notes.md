@@ -1767,6 +1767,127 @@ Optimised model found:
 | aki_hr_upper     | 25.6                                                                      |
 
 ----------------
+Optim model for found, with all variables:
+
+
+| Variable              | OddsRatio |     CI.95      | p-value |
+| :-------------------- | --------: | :------------: | ------: |
+| Age                   |      0.98 |  [0.96;1.00]   |  0.0998 |
+| Male                  |      0.94 |  [0.47;1.89]   |  0.8649 |
+| APACHE_II             |      0.99 |  [0.88;1.12]   |  0.8629 |
+| APACHE_III            |      1.01 |  [0.98;1.05]   |  0.4407 |
+| Baseline_Cr           |      0.97 |  [0.94;1.00]   |  0.0275 |
+| PCs_cardio            |      7.98 |  [3.53;18.03]  |  <0.001 |
+| Vasopressor           |      3.14 |  [1.68;5.86]   |  <0.001 |
+| Diabetes              |      2.38 |  [1.21;4.66]   |  0.0116 |
+| AF                    |      0.82 |  [0.28;2.43]   |  0.7269 |
+| IHD                   |      1.88 |  [0.94;3.75]   |  0.0744 |
+| HF                    |      2.89 |  [0.76;10.97]  |  0.1180 |
+| PVD                   |      0.46 |  [0.05;4.49]   |  0.5031 |
+| Chronic_liver_disease |     48.49 | [19.14;122.87] |  <0.001 |
+| cr                    |      1.03 |  [1.00;1.05]   |  0.0427 |
+| cr_gradient           |      1.83 |  [1.00;3.37]   |  0.0502 |
+
+
+|                  | Outcome: AKI_2or3                                                                                                                                                   |
+| :--------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| AUC              | 0.8738167                                                                                                                                                           |
+| sensitivity      | 0.7428571                                                                                                                                                           |
+| specificity      | 0.8690836                                                                                                                                                           |
+| optimal_cutpoint | 0.1037076                                                                                                                                                           |
+| per_admin_in     | 0.5915119                                                                                                                                                           |
+| per_admin_pos    | 0.3382353                                                                                                                                                           |
+| n_admissions     | 223                                                                                                                                                                 |
+| n_admissions_pos | 23                                                                                                                                                                  |
+| n_admissions_neg | 200                                                                                                                                                                 |
+| n_UR             | 217                                                                                                                                                                 |
+| n                | 1063                                                                                                                                                                |
+| n_event_pos      | 70                                                                                                                                                                  |
+| n_event_neg      | 993                                                                                                                                                                 |
+| glm_model        | AKI_2or3 ~ Age + Male + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + PVD + Chronic_liver_disease + cr + cr_gradient |
+| AUC_all          | 0.8738167                                                                                                                                                           |
+| ch_hr_lower      | 4                                                                                                                                                                   |
+| ch_hr_upper      | 5.8                                                                                                                                                                 |
+| aki_hr_lower     | 8.7                                                                                                                                                                 |
+| aki_hr_upper     | 25.6                                                                                                                                                                |
+
+----------------
+Baseline model for all admissions:
+
+
+| Variable              | OddsRatio |    CI.95    | p-value |
+| :-------------------- | --------: | :---------: | ------: |
+| Age                   |      1.01 | [0.98;1.03] |  0.6247 |
+| Male                  |      0.85 | [0.46;1.56] |  0.5906 |
+| APACHE_II             |      1.12 | [1.02;1.23] |  0.0136 |
+| APACHE_III            |      0.99 | [0.97;1.02] |  0.5155 |
+| Baseline_Cr           |      1.00 | [0.98;1.01] |  0.4404 |
+| PCs_cardio            |      2.52 | [1.27;5.03] |  0.0085 |
+| Vasopressor           |      1.79 | [1.00;3.17] |  0.0484 |
+| Diabetes              |      1.56 | [0.82;2.97] |  0.1791 |
+| AF                    |      1.67 | [0.72;3.84] |  0.2322 |
+| IHD                   |      1.54 | [0.77;3.08] |  0.2224 |
+| HF                    |      1.06 | [0.30;3.74] |  0.9233 |
+| PVD                   |      1.00 | [0.33;3.03] |  0.9941 |
+| Chronic_liver_disease |      1.89 | [0.75;4.76] |  0.1771 |
+
+
+|                  | Outcome: AKI_2or3                                                                                                                                |
+| :--------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- |
+| AUC              | 0.7193033                                                                                                                                        |
+| sensitivity      | 0.5882353                                                                                                                                        |
+| specificity      | 0.7702265                                                                                                                                        |
+| optimal_cutpoint | 0.2272172                                                                                                                                        |
+| per_admin_in     | 1                                                                                                                                                |
+| per_admin_pos    | 1                                                                                                                                                |
+| n_admissions     | 377                                                                                                                                              |
+| n_admissions_pos | 68                                                                                                                                               |
+| n_admissions_neg | 309                                                                                                                                              |
+| n_UR             | 367                                                                                                                                              |
+| n                | 377                                                                                                                                              |
+| n_event_pos      | 68                                                                                                                                               |
+| n_event_neg      | 309                                                                                                                                              |
+| glm_model        | AKI_2or3 ~ Age + Male + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + PVD + Chronic_liver_disease |
+| AUC_all          | 0.7193033                                                                                                                                        |
+| ch_hr_lower      | -Inf                                                                                                                                             |
+| ch_hr_upper      | Inf                                                                                                                                              |
+| aki_hr_lower     | -Inf                                                                                                                                             |
+| aki_hr_upper     | Inf                                                                                                                                              |
+
+----------------
+Baseline model for all admissions (sig only):
+
+
+| Variable    | OddsRatio |    CI.95    | p-value |
+| :---------- | --------: | :---------: | ------: |
+| APACHE_II   |      1.10 | [1.05;1.16] | < 0.001 |
+| PCs_cardio  |      2.68 | [1.46;4.92] | 0.00153 |
+| Vasopressor |      1.72 | [0.98;3.01] | 0.05944 |
+
+
+|                  | Outcome: AKI_2or3                               |
+| :--------------- | :---------------------------------------------- |
+| AUC              | 0.68913                                         |
+| sensitivity      | 0.4558824                                       |
+| specificity      | 0.8511327                                       |
+| optimal_cutpoint | 0.2587635                                       |
+| per_admin_in     | 1                                               |
+| per_admin_pos    | 1                                               |
+| n_admissions     | 377                                             |
+| n_admissions_pos | 68                                              |
+| n_admissions_neg | 309                                             |
+| n_UR             | 367                                             |
+| n                | 377                                             |
+| n_event_pos      | 68                                              |
+| n_event_neg      | 309                                             |
+| glm_model        | AKI_2or3 ~ APACHE_II + PCs_cardio + Vasopressor |
+| AUC_all          | 0.7193033                                       |
+| ch_hr_lower      | -Inf                                            |
+| ch_hr_upper      | Inf                                             |
+| aki_hr_lower     | -Inf                                            |
+| aki_hr_upper     | Inf                                             |
+
+----------------
 Same model with secondary outcome AKI_ICU:
 
 
