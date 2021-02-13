@@ -74,7 +74,7 @@ bin_n <- demographics_df %>%
   mutate(text = sprintf("%d (%.1f%%)", n, n / sum(n) * 100)) %>%
   filter(value == 1) %>% # might have to check for NAs?
   group_by(variable) %>%
-  mutate(all = sum(n)) %>% # FIXME needs percentage as well
+  mutate(all = sprintf("%d (%.1f%%)", sum(n), sum(n) / nrow(demographics_df) * 100)) %>%
   select(-value, -n) %>%
   pivot_wider(names_from = {{ outcome_var }}, values_from = text)
 
