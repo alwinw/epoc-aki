@@ -1,5 +1,4 @@
 # ---- wrapper functions ----
-
 tanh_penalty <- function(x, c, d, s) 1 / 2 + 1 / 2 * tanh(s / d * atanh(0.8) * (x - c))
 
 heuristic_penalty <- function(summary) {
@@ -7,6 +6,7 @@ heuristic_penalty <- function(summary) {
     (1 - summary$AUC) * 5 +
     (1 - summary$per_admin_in) * 2 +
     (1 - summary$per_admin_pos) * 3 +
+    tanh_penalty(summary$ch_hr_lower, 3.25, 0.25, -1) * 5 +
     tanh_penalty(summary$ch_hr_lower, 9, 1, 1) +
     tanh_penalty(summary$ch_hr_upper, 9, 1, 1) +
     tanh_penalty(summary$aki_hr_upper, 15, 15, -1) +
@@ -15,8 +15,7 @@ heuristic_penalty <- function(summary) {
     grepl("\\bAPACHE_III\\b", summary$glm_model) * 5 +
     grepl("\\bBaseline_Cr\\b", summary$glm_model) +
     grepl("\\bcr\\b", summary$glm_model) * 3 +
-    (1 - grepl("cr_gradient", summary$glm_model)) * 6 #+
-  # grepl("\\bHT\\b", summary$glm_model)
+    (1 - grepl("cr_gradient", summary$glm_model)) * 6
 }
 
 heuristic_wrapper <- function(
@@ -32,32 +31,39 @@ heuristic_wrapper <- function(
   summary$penalty <- penalty_fn(summary)
   return(return_fn(summary))
 }
-# summary <- heuristic_wrapper(
-#   c(6, 1, 6, 12),
-#   outcome_var = "AKI_ICU",
-#   penalty_fn = function(summary) 1 - summary$AUC,
-#   return_fn = function(summary) summary
-# )
 
 deoptim_wrapper <- function(
                             lower, upper,
-                            itermax, ...,
+                            itermax,
+                            NP = 320,
+                            ...,
                             return_fn = function(summary) summary$penalty,
-                            fnMap = function(x) round(x, 1)) {
-  result <- DEoptim(
-    heuristic_wrapper,
-    lower = lower,
-    upper = upper,
-    control = DEoptim.control(
+                            fnMap = function(x) round(x, 1),
+                            parallel = FALSE) {
+  if (parallel) {
+    control <- DEoptim.control(
       itermax = itermax,
-      NP = 320,
+      NP = NP,
       reltol = 1e-5,
       parallelType = 1,
       packages = c("dplyr", "cutpointr"),
       parVar = c("analysis_df", "aki_dev_wrapper", "heuristic_penalty", "tanh_penalty")
-    ),
-    ...,
-    return_fn = return_fn,
+    )
+  } else {
+    control <- DEoptim.control(
+      itermax = itermax,
+      NP = NP,
+      reltol = 1e-5
+    )
+  }
+
+  result <- DEoptim(
+    heuristic_wrapper,
+    lower = lower,
+    upper = upper,
+    control = control,
+    ..., # Passed into the heuristic wrapper
+    return_fn = return_fn, # Also passed into the heuristic wrapper
     fnMap = fnMap
   )
   return(list(
@@ -66,183 +72,201 @@ deoptim_wrapper <- function(
   ))
 }
 
-# ---- baseline ----
-baseline_all <- aki_dev_wrapper(
+# Example:
+# example1 <- deoptim_wrapper(
+#   lower = c(4, 0.5, 3, 1),
+#   upper = c(6, 6, 12, 72),
+#   itermax = 3, # 20 brief test
+#   NP = 32,
+#   outcome_var = "AKI_2or3",
+#   baseline_predictors = NULL,
+#   cr_predictors = NULL,
+#   add_gradient_predictor = 1,
+#   penalty_fn = heuristic_penalty,
+#   parallel = FALSE
+# )
+# example2 <- deoptim_wrapper(
+#   lower = c(4, 0.5, 3, 1),
+#   upper = c(6, 6, 12, 72),
+#   itermax = 3, # 20 brief test
+#   NP = 32,
+#   outcome_var = "AKI_2or3",
+#   baseline_predictors = NULL,
+#   cr_predictors = NULL,
+#   add_gradient_predictor = 1,
+#   penalty_fn = heuristic_penalty,
+#   parallel = TRUE
+# )
+
+
+# ---- deoptim functions ----
+deoptim_search <- function(
+                           outcome_var,
+                           baseline_predictors,
+                           cr_predictors = NULL,
+                           add_gradient_predictor = NULL,
+                           stepwise = FALSE,
+                           k = "mBIC",
+                           # Additional arguments to send to aki_dev
+                           penalty_fn = heuristic_penalty,
+                           itermax = 200,
+                           NP = 320,
+                           parallel = TRUE,
+                           secondary_outcomes = c(
+                             "AKI_ICU",
+                             "Cr_defined_AKI_2or3", "Cr_defined_AKI",
+                             "Olig_defined_AKI_2or3", "Olig_defined_AKI"
+                           ),
+                           override = NULL) {
+  if (is.null(override)) {
+    optim_value <- deoptim_wrapper(
+      lower = c(4, 0.5, 3, 1),
+      upper = c(6, 6, 12, 72),
+      outcome_var = outcome_var,
+      baseline_predictors = baseline_predictors,
+      cr_predictors = cr_predictors,
+      add_gradient_predictor = add_gradient_predictor,
+      stepwise = stepwise,
+      k = k,
+      penalty_fn = heuristic_penalty,
+      itermax = itermax,
+      NP = NP,
+      parallel = parallel
+    )
+  } else {
+    optim_value <- list(result = list(optim = list(bestmem = override)))
+  }
+
+  optim_model <- heuristic_wrapper(
+    optim_value$result$optim$bestmem,
+    outcome_var = outcome_var,
+    baseline_predictors = baseline_predictors,
+    cr_predictors = cr_predictors,
+    add_gradient_predictor = add_gradient_predictor,
+    stepwise = stepwise,
+    k = k,
+    all_data = TRUE
+  )
+  cat("\n----------------\nOptimised model found:\n")
+  print(kable(publish(optim_model$model, print = FALSE, digits = c(2, 3))$regressionTable %>% select(-Units), align = c("l", "r", "c", "r")))
+  print(kable(t(optim_model$summary), col.names = paste("Outcome:", outcome_var)))
+
+  optim_model_full <- heuristic_wrapper(
+    optim_value$result$optim$bestmem,
+    outcome_var = outcome_var,
+    baseline_predictors = baseline_predictors,
+    cr_predictors = cr_predictors,
+    add_gradient_predictor = add_gradient_predictor,
+    all_data = TRUE,
+  )
+  cat("\n----------------\nOptim model for found, with all variables:\n")
+  print(kable(publish(optim_model_full$model, print = FALSE, digits = c(2, 3))$regressionTable %>% select(-Units), align = c("l", "r", "c", "r")))
+  print(kable(t(optim_model_full$summary), col.names = paste("Outcome:", outcome_var)))
+
+
+  baseline_all <- aki_dev_wrapper( # Must be with baseline_df
+    outcome_var = outcome_var,
+    baseline_predictors = baseline_predictors,
+    cr_predictors = NULL,
+    add_gradient_predictor = NULL,
+    all_data = TRUE,
+    analysis_data = baseline_df
+  )
+  cat("\n----------------\nBaseline model for all admissions:\n")
+  print(kable(publish(baseline_all$model, print = FALSE, digits = c(2, 3))$regressionTable %>% select(-Units), align = c("l", "r", "c", "r")))
+  print(kable(t(baseline_all$summary), col.names = paste("Outcome:", outcome_var)))
+
+  baseline_sig <- aki_dev_wrapper( # Must be with baseline_df
+    outcome_var = outcome_var,
+    baseline_predictors = baseline_predictors,
+    cr_predictors = NULL,
+    add_gradient_predictor = NULL,
+    stepwise = TRUE,
+    k = "AIC",
+    all_data = TRUE,
+    analysis_data = baseline_df
+  )
+  cat("\n----------------\nBaseline model for all admissions (sig only):\n")
+  print(kable(publish(baseline_sig$model, print = FALSE, digits = c(2, 3))$regressionTable %>% select(-Units), align = c("l", "r", "c", "r")))
+  print(kable(t(baseline_sig$summary), col.names = paste("Outcome:", outcome_var)))
+
+  # Update the predictors if it was stepwise!
+  baseline_predictors <- gsub(".*~ | \\+ \\bcr\\b| \\+ \\bcr_gradient\\b", "", optim_model$summary$glm_model)
+  if (!grepl("\\bcr\\b", optim_model$summary$glm_model)) cr_predictors <- NULL
+  if (!grepl("\\bcr_gradient\\b", optim_model$summary$glm_model)) add_gradient_predictor <- NULL
+
+  secondary_models <- lapply(
+    secondary_outcomes,
+    function(outcome_var) {
+      secondary_model <- heuristic_wrapper(
+        optim_value$result$optim$bestmem,
+        outcome_var = outcome_var,
+        baseline_predictors = baseline_predictors,
+        cr_predictors = cr_predictors,
+        add_gradient_predictor = add_gradient_predictor,
+        all_data = TRUE
+      )
+      cat(paste0("\n----------------\nSame model with secondary outcome ", outcome_var, ":\n"))
+      print(kable(publish(secondary_model$model, print = FALSE, digits = c(2, 3))$regressionTable %>% select(-Units), align = c("l", "r", "c", "r")))
+      print(kable(t(secondary_model$summary), col.names = paste("Outcome:", outcome_var)))
+      return(secondary_model)
+    }
+  )
+  names(secondary_models) <- secondary_outcomes
+
+  return(list(
+    optim_value = optim_value,
+    optim_model = optim_model,
+    optim_model_full = optim_model_full,
+    baseline_models = list(baseline_all = baseline_all, baseline_sig = baseline_sig),
+    secondary_models = secondary_models
+  ))
+}
+
+
+multi_model <- deoptim_search(
   outcome_var = "AKI_2or3",
   baseline_predictors = c(
-    "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
-    "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
+    "Age + Male + APACHE_II + APACHE_III + Baseline_Cr",
+    "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + PVD + Chronic_liver_disease" # HT excluded
   ),
-  cr_predictors = NULL,
-  add_gradient_predictor = NULL,
-  all_data = TRUE,
-  analysis_data = baseline_df
-)
-publish(baseline_all$model, print = FALSE, digits = c(2, 3))$regressionTable
-baseline_all$summary
-
-baseline_sig <- aki_dev_wrapper(
-  outcome_var = "AKI_2or3",
-  baseline_predictors = c(
-    "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
-    "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
-  ),
-  cr_predictors = NULL,
-  add_gradient_predictor = NULL,
-  stepwise = TRUE,
-  k = "AIC",
-  all_data = TRUE,
-  analysis_data = baseline_df
-)
-publish(baseline_sig$model, print = FALSE, digits = c(2, 3))$regressionTable
-baseline_sig$summary
-
-baseline_sig_AKI_ICU <- aki_dev_wrapper(
-  outcome_var = "AKI_ICU",
-  baseline_predictors = c(
-    "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
-    "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
-  ),
-  cr_predictors = NULL,
-  add_gradient_predictor = NULL,
-  stepwise = TRUE,
-  k = "AIC",
-  all_data = TRUE,
-  analysis_data = baseline_df
-)
-publish(baseline_sig_AKI_ICU$model, print = FALSE, digits = c(2, 3))$regressionTable
-baseline_sig_AKI_ICU$summary
-
-# ---- cr_ch_only ----
-set.seed(8)
-cr_ch_optim <- deoptim_wrapper(
-  lower = c(4, 0.5, 3, 1),
-  upper = c(6, 6, 12, 72),
-  itermax = 20, # 20 brief test
-  outcome_var = "AKI_2or3",
-  baseline_predictors = NULL,
-  cr_predictors = NULL,
+  cr_predictors = "cr",
   add_gradient_predictor = 1,
-  penalty_fn = heuristic_penalty
-)
-
-cr_ch_bestmem <- heuristic_wrapper(cr_ch_optim$result$optim$bestmem,
-  outcome_var = "AKI_2or3",
-  baseline_predictors = "",
-  cr_predictors = "",
-  add_gradient_predictor = 1,
-  all_data = TRUE
-)
-publish(cr_ch_bestmem$model, print = FALSE, digits = c(2, 3))$regressionTable
-cr_ch_bestmem$summary
-
-# ---- multi ----
-set.seed(8)
-
-multi_baseline_predictors <- c(
-  # "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
-  # "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
-  "Age + Male + APACHE_II + APACHE_III + Baseline_Cr",
-  "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + PVD + Chronic_liver_disease"
-)
-
-multi_optim <- deoptim_wrapper(
-  lower = c(4, 0.5, 3, 1),
-  upper = c(6, 6, 12, 72),
+  stepwise = TRUE,
+  k = "mBIC",
+  penalty_fn = heuristic_penalty,
   itermax = 200,
+  NP = 320,
+  parallel = TRUE,
+  secondary_outcomes = c(
+    "AKI_ICU",
+    "Cr_defined_AKI_2or3", "Cr_defined_AKI",
+    "Olig_defined_AKI_2or3", "Olig_defined_AKI"
+  ),
+  override = c(4.9, 1.8, 8.7, 16.9)
+)
+
+
+stop("Complete")
+
+set.seed(8)
+multi_model <- deoptim_search(
   outcome_var = "AKI_2or3",
-  baseline_predictors = multi_baseline_predictors,
+  baseline_predictors = c(
+    "Age + Male + APACHE_II + APACHE_III + Baseline_Cr",
+    "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + PVD + Chronic_liver_disease" # HT excluded
+  ),
   cr_predictors = "cr",
   add_gradient_predictor = 1,
   stepwise = TRUE,
   k = "mBIC",
-  penalty_fn = heuristic_penalty
+  penalty_fn = heuristic_penalty,
+  itermax = 200,
+  NP = 320,
+  parallel = TRUE,
+  secondary_outcomes = c(
+    "AKI_ICU",
+    "Cr_defined_AKI_2or3", "Cr_defined_AKI",
+    "Olig_defined_AKI_2or3", "Olig_defined_AKI"
+  )
 )
-
-if (FALSE) multi_optim <- list(result = list(optim = list(bestmem = c(5.3, 1.6, 9.3, 30.7))))
-
-multi_bestmem <- heuristic_wrapper(multi_optim$result$optim$bestmem,
-  outcome_var = "AKI_2or3",
-  baseline_predictors = multi_baseline_predictors,
-  cr_predictors = "cr",
-  add_gradient_predictor = 1,
-  stepwise = TRUE,
-  k = "mBIC",
-  all_data = TRUE
-)
-publish(multi_bestmem$model, print = FALSE, digits = c(2, 3))$regressionTable
-multi_bestmem$summary
-
-multi_bestmem_all <- heuristic_wrapper(
-  multi_optim$result$optim$bestmem,
-  outcome_var = "AKI_2or3",
-  baseline_predictors = multi_baseline_predictors,
-  cr_predictors = "cr",
-  add_gradient_predictor = 1,
-
-  all_data = TRUE
-)
-publish(multi_bestmem_all$model, print = FALSE, digits = c(2, 3))$regressionTable
-multi_bestmem_all$summary
-
-# FIXME: n_admission for these below are based on multi_bestmem$data, not the real analysis_data...
-
-multi_bestmem_aki <- heuristic_wrapper(
-  multi_optim$result$optim$bestmem,
-  outcome_var = "AKI_ICU",
-  baseline_predictors = gsub(".*~ ", "", multi_bestmem$summary$glm_model),
-  all_data = TRUE,
-  analysis_data = multi_bestmem$data
-)
-publish(multi_bestmem_aki$model, print = FALSE, digits = c(2, 3))$regressionTable
-multi_bestmem_aki$summary
-
-multi_bestmem_cr <- heuristic_wrapper(
-  multi_optim$result$optim$bestmem,
-  outcome_var = "Cr_defined_AKI_2or3",
-  baseline_predictors = gsub(".*~ ", "", multi_bestmem$summary$glm_model),
-  all_data = TRUE,
-  analysis_data = multi_bestmem$data
-)
-publish(multi_bestmem_cr$model, print = FALSE, digits = c(2, 3))$regressionTable
-multi_bestmem_cr$summary
-
-multi_bestmem_cr_all <- heuristic_wrapper(
-  multi_optim$result$optim$bestmem,
-  outcome_var = "Cr_defined_AKI",
-  baseline_predictors = gsub(".*~ ", "", multi_bestmem$summary$glm_model),
-  all_data = TRUE,
-  analysis_data = multi_bestmem$data
-)
-publish(multi_bestmem_cr_all$model, print = FALSE, digits = c(2, 3))$regressionTable
-multi_bestmem_cr_all$summary
-
-multi_bestmem_olig <- heuristic_wrapper(
-  multi_optim$result$optim$bestmem,
-  outcome_var = "Olig_defined_AKI_2or3",
-  baseline_predictors = gsub(".*~ ", "", multi_bestmem$summary$glm_model),
-  all_data = TRUE,
-  analysis_data = multi_bestmem$data
-)
-publish(multi_bestmem_olig$model, print = FALSE, digits = c(2, 3))$regressionTable
-multi_bestmem_olig$summary
-
-multi_bestmem_olig_all <- heuristic_wrapper(
-  multi_optim$result$optim$bestmem,
-  outcome_var = "Olig_defined_AKI",
-  baseline_predictors = gsub(".*~ ", "", multi_bestmem$summary$glm_model),
-  all_data = TRUE,
-  analysis_data = multi_bestmem$data
-)
-publish(multi_bestmem_olig_all$model, print = FALSE, digits = c(2, 3))$regressionTable
-multi_bestmem_olig_all$summary
-
-multi_bestmem_baseline <- heuristic_wrapper(
-  multi_optim$result$optim$bestmem,
-  outcome_var = "AKI_2or3",
-  baseline_predictors = gsub(".*~ | \\+ cr_gradient", "", multi_bestmem$summary$glm_model),
-  all_data = TRUE,
-  analysis_data = multi_bestmem$data
-)
-publish(multi_bestmem_baseline$model, print = FALSE, digits = c(2, 3))$regressionTable
-multi_bestmem_baseline$summary

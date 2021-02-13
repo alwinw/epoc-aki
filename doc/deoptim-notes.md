@@ -473,7 +473,6 @@ Iteration: 20 bestvalit: 4.020938 bestmemit:    5.200000    1.300000   10.300000
 1         678 AKI_2or3 ~ PCs_cardio + Chronic_liver_disease 0.8209624        4.55        5.85         10.3         35.4
 ```
 
-
 ## No HT Penalty, increase NP = 320 and itermax = 200
 
 ```R
@@ -1500,4 +1499,561 @@ Iteration: 200 bestvalit: 3.371818 bestmemit:    4.400000    2.500000    8.70000
 1          95        1401 AKI_2or3 ~ PCs_cardio + Vasopressor + Diabetes + IHD + Chronic_liver_disease 0.8670423        3.15        5.65
   aki_hr_lower aki_hr_upper
 1          8.7         25.5
+```
+
+## Rerun
+
+New Penalty Function:
+
+```R
+heuristic_penalty <- function(summary) {
+  0 +
+    (1 - summary$AUC) * 5 +
+    (1 - summary$per_admin_in) * 2 +
+    (1 - summary$per_admin_pos) * 3 +
+    tanh_penalty(summary$ch_hr_lower, 3.25, 0.25, -1) * 5 +
+    tanh_penalty(summary$ch_hr_lower, 9, 1, 1) +
+    tanh_penalty(summary$ch_hr_upper, 9, 1, 1) +
+    tanh_penalty(summary$aki_hr_upper, 15, 15, -1) +
+    tanh_penalty(summary$aki_hr_upper, 60, 10, 1) +
+    grepl("\\bAPACHE_II\\b", summary$glm_model) * 5 +
+    grepl("\\bAPACHE_III\\b", summary$glm_model) * 5 +
+    grepl("\\bBaseline_Cr\\b", summary$glm_model) +
+    grepl("\\bcr\\b", summary$glm_model) * 3 +
+    (1 - grepl("cr_gradient", summary$glm_model)) * 6
+}
+```
+
+```R
+> set.seed(8)
+
+> multi_model <- deoptim_search(
++   outcome_var = "AKI_2or3",
++   baseline_predictors = c(
++     "Age + Male + APACHE_II + APACHE_III + Baseline_Cr", .... [TRUNCATED]
+Iteration: 1 bestvalit: 4.280829 bestmemit:    5.600000    2.000000   10.100000    6.900000
+Iteration: 2 bestvalit: 4.280829 bestmemit:    5.600000    2.000000   10.100000    6.900000
+Iteration: 3 bestvalit: 4.280829 bestmemit:    5.600000    2.000000   10.100000    6.900000
+Iteration: 4 bestvalit: 4.280829 bestmemit:    5.600000    2.000000   10.100000    6.900000
+Iteration: 5 bestvalit: 4.106870 bestmemit:    5.400000    1.500000    9.400000   15.700000
+Iteration: 6 bestvalit: 3.888496 bestmemit:    5.200000    1.200000    8.600000   28.200000
+Iteration: 7 bestvalit: 3.888496 bestmemit:    5.200000    1.200000    8.600000   28.200000
+Iteration: 8 bestvalit: 3.888496 bestmemit:    5.200000    1.200000    8.600000   28.200000
+Iteration: 9 bestvalit: 3.888496 bestmemit:    5.200000    1.200000    8.600000   28.200000
+Iteration: 10 bestvalit: 3.888496 bestmemit:    5.200000    1.200000    8.600000   28.200000
+Iteration: 11 bestvalit: 3.888496 bestmemit:    5.200000    1.200000    8.600000   28.200000
+Iteration: 12 bestvalit: 3.888496 bestmemit:    5.200000    1.200000    8.600000   28.200000
+Iteration: 13 bestvalit: 3.888496 bestmemit:    5.200000    1.200000    8.600000   28.200000
+Iteration: 14 bestvalit: 3.888496 bestmemit:    5.200000    1.200000    8.600000   28.200000
+Iteration: 15 bestvalit: 3.888496 bestmemit:    5.200000    1.200000    8.600000   28.200000
+Iteration: 16 bestvalit: 3.888496 bestmemit:    5.200000    1.200000    8.600000   28.200000
+Iteration: 17 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 18 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 19 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 20 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 21 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 22 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 23 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 24 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 25 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 26 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 27 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 28 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 29 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 30 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 31 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 32 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 33 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 34 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 35 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 36 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 37 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 38 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 39 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 40 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 41 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 42 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 43 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 44 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 45 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 46 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 47 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 48 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 49 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 50 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 51 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 52 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 53 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 54 bestvalit: 3.741489 bestmemit:    5.200000    2.200000    8.800000   16.600000
+Iteration: 55 bestvalit: 3.706739 bestmemit:    5.100000    2.000000    8.700000   16.800000
+Iteration: 56 bestvalit: 3.706739 bestmemit:    5.100000    2.000000    8.700000   16.800000
+Iteration: 57 bestvalit: 3.706739 bestmemit:    5.100000    2.000000    8.700000   16.800000
+Iteration: 58 bestvalit: 3.706739 bestmemit:    5.100000    2.000000    8.700000   16.800000
+Iteration: 59 bestvalit: 3.706739 bestmemit:    5.100000    2.000000    8.700000   16.800000
+Iteration: 60 bestvalit: 3.706739 bestmemit:    5.100000    2.000000    8.700000   16.800000
+Iteration: 61 bestvalit: 3.706739 bestmemit:    5.100000    2.000000    8.700000   16.800000
+Iteration: 62 bestvalit: 3.706739 bestmemit:    5.100000    2.000000    8.700000   16.800000
+Iteration: 63 bestvalit: 3.706739 bestmemit:    5.100000    2.000000    8.700000   16.800000
+Iteration: 64 bestvalit: 3.706739 bestmemit:    5.100000    2.000000    8.700000   16.800000
+Iteration: 65 bestvalit: 3.706739 bestmemit:    5.100000    2.000000    8.700000   16.800000
+Iteration: 66 bestvalit: 3.706739 bestmemit:    5.100000    2.000000    8.700000   16.800000
+Iteration: 67 bestvalit: 3.706739 bestmemit:    5.100000    2.000000    8.700000   16.800000
+Iteration: 68 bestvalit: 3.706739 bestmemit:    5.100000    2.000000    8.700000   16.800000
+Iteration: 69 bestvalit: 3.706739 bestmemit:    5.100000    2.000000    8.700000   16.800000
+Iteration: 70 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 71 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 72 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 73 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 74 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 75 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 76 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 77 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 78 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 79 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 80 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 81 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 82 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 83 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 84 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 85 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 86 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 87 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 88 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 89 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 90 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 91 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 92 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 93 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 94 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 95 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 96 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 97 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 98 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 99 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 100 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 101 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 102 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 103 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 104 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 105 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 106 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 107 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 108 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 109 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 110 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 111 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 112 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 113 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 114 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 115 bestvalit: 3.681642 bestmemit:    5.000000    1.800000    8.700000   17.600000
+Iteration: 116 bestvalit: 3.648368 bestmemit:    4.900000    1.800000    8.700000   16.800000
+Iteration: 117 bestvalit: 3.648368 bestmemit:    4.900000    1.800000    8.700000   16.800000
+Iteration: 118 bestvalit: 3.648368 bestmemit:    4.900000    1.800000    8.700000   16.800000
+Iteration: 119 bestvalit: 3.648368 bestmemit:    4.900000    1.800000    8.700000   16.800000
+Iteration: 120 bestvalit: 3.648368 bestmemit:    4.900000    1.800000    8.700000   16.800000
+Iteration: 121 bestvalit: 3.648368 bestmemit:    4.900000    1.800000    8.700000   16.800000
+Iteration: 122 bestvalit: 3.648368 bestmemit:    4.900000    1.800000    8.700000   16.800000
+Iteration: 123 bestvalit: 3.648368 bestmemit:    4.900000    1.800000    8.700000   16.800000
+Iteration: 124 bestvalit: 3.648368 bestmemit:    4.900000    1.800000    8.700000   16.800000
+Iteration: 125 bestvalit: 3.648368 bestmemit:    4.900000    1.800000    8.700000   16.800000
+Iteration: 126 bestvalit: 3.648368 bestmemit:    4.900000    1.800000    8.700000   16.800000
+Iteration: 127 bestvalit: 3.648368 bestmemit:    4.900000    1.800000    8.700000   16.800000
+Iteration: 128 bestvalit: 3.648368 bestmemit:    4.900000    1.800000    8.700000   16.800000
+Iteration: 129 bestvalit: 3.648368 bestmemit:    4.900000    1.800000    8.700000   16.800000
+Iteration: 130 bestvalit: 3.648368 bestmemit:    4.900000    1.800000    8.700000   16.800000
+Iteration: 131 bestvalit: 3.648368 bestmemit:    4.900000    1.800000    8.700000   16.800000
+Iteration: 132 bestvalit: 3.648368 bestmemit:    4.900000    1.800000    8.700000   16.800000
+Iteration: 133 bestvalit: 3.648368 bestmemit:    4.900000    1.800000    8.700000   16.800000
+Iteration: 134 bestvalit: 3.648368 bestmemit:    4.900000    1.800000    8.700000   16.800000
+Iteration: 135 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 136 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 137 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 138 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 139 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 140 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 141 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 142 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 143 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 144 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 145 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 146 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 147 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 148 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 149 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 150 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 151 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 152 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 153 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 154 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 155 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 156 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 157 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 158 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 159 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 160 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 161 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 162 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 163 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 164 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 165 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 166 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 167 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 168 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 169 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 170 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 171 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 172 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 173 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 174 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 175 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 176 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 177 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 178 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 179 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 180 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 181 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 182 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 183 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 184 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 185 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 186 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 187 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 188 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 189 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 190 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 191 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 192 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 193 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 194 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 195 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 196 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 197 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 198 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 199 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+Iteration: 200 bestvalit: 3.646976 bestmemit:    4.900000    1.800000    8.700000   16.900000
+
+----------------
+Optimised model found:
+
+
+| Variable              | OddsRatio |     CI.95     | p-value |
+| :-------------------- | --------: | :-----------: | ------: |
+| PCs_cardio            |      6.04 | [3.04;12.01]  | < 0.001 |
+| Vasopressor           |      3.24 |  [1.81;5.81]  | < 0.001 |
+| Chronic_liver_disease |     39.96 | [16.69;95.68] | < 0.001 |
+| cr_gradient           |      2.49 |  [1.43;4.33]  | 0.00119 |
+
+
+|                  | Outcome: AKI_2or3                                                         |
+| :--------------- | :------------------------------------------------------------------------ |
+| AUC              | 0.8676521                                                                 |
+| sensitivity      | 0.8285714                                                                 |
+| specificity      | 0.7875126                                                                 |
+| optimal_cutpoint | 0.07828242                                                                |
+| per_admin_in     | 0.5915119                                                                 |
+| per_admin_pos    | 0.3382353                                                                 |
+| n_admissions     | 223                                                                       |
+| n_admissions_pos | 23                                                                        |
+| n_admissions_neg | 200                                                                       |
+| n_UR             | 217                                                                       |
+| n                | 1063                                                                      |
+| n_event_pos      | 70                                                                        |
+| n_event_neg      | 993                                                                       |
+| glm_model        | AKI_2or3 ~ PCs_cardio + Vasopressor + Chronic_liver_disease + cr_gradient |
+| AUC_all          | 0.8738167                                                                 |
+| ch_hr_lower      | 4                                                                         |
+| ch_hr_upper      | 5.8                                                                       |
+| aki_hr_lower     | 8.7                                                                       |
+| aki_hr_upper     | 25.6                                                                      |
+
+----------------
+Optim model for found, with all variables:
+
+
+| Variable              | OddsRatio |     CI.95      | p-value |
+| :-------------------- | --------: | :------------: | ------: |
+| Age                   |      0.98 |  [0.96;1.00]   |  0.0998 |
+| Male                  |      0.94 |  [0.47;1.89]   |  0.8649 |
+| APACHE_II             |      0.99 |  [0.88;1.12]   |  0.8629 |
+| APACHE_III            |      1.01 |  [0.98;1.05]   |  0.4407 |
+| Baseline_Cr           |      0.97 |  [0.94;1.00]   |  0.0275 |
+| PCs_cardio            |      7.98 |  [3.53;18.03]  |  <0.001 |
+| Vasopressor           |      3.14 |  [1.68;5.86]   |  <0.001 |
+| Diabetes              |      2.38 |  [1.21;4.66]   |  0.0116 |
+| AF                    |      0.82 |  [0.28;2.43]   |  0.7269 |
+| IHD                   |      1.88 |  [0.94;3.75]   |  0.0744 |
+| HF                    |      2.89 |  [0.76;10.97]  |  0.1180 |
+| PVD                   |      0.46 |  [0.05;4.49]   |  0.5031 |
+| Chronic_liver_disease |     48.49 | [19.14;122.87] |  <0.001 |
+| cr                    |      1.03 |  [1.00;1.05]   |  0.0427 |
+| cr_gradient           |      1.83 |  [1.00;3.37]   |  0.0502 |
+
+
+|                  | Outcome: AKI_2or3                                                                                                                                                   |
+| :--------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| AUC              | 0.8738167                                                                                                                                                           |
+| sensitivity      | 0.7428571                                                                                                                                                           |
+| specificity      | 0.8690836                                                                                                                                                           |
+| optimal_cutpoint | 0.1037076                                                                                                                                                           |
+| per_admin_in     | 0.5915119                                                                                                                                                           |
+| per_admin_pos    | 0.3382353                                                                                                                                                           |
+| n_admissions     | 223                                                                                                                                                                 |
+| n_admissions_pos | 23                                                                                                                                                                  |
+| n_admissions_neg | 200                                                                                                                                                                 |
+| n_UR             | 217                                                                                                                                                                 |
+| n                | 1063                                                                                                                                                                |
+| n_event_pos      | 70                                                                                                                                                                  |
+| n_event_neg      | 993                                                                                                                                                                 |
+| glm_model        | AKI_2or3 ~ Age + Male + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + PVD + Chronic_liver_disease + cr + cr_gradient |
+| AUC_all          | 0.8738167                                                                                                                                                           |
+| ch_hr_lower      | 4                                                                                                                                                                   |
+| ch_hr_upper      | 5.8                                                                                                                                                                 |
+| aki_hr_lower     | 8.7                                                                                                                                                                 |
+| aki_hr_upper     | 25.6                                                                                                                                                                |
+
+----------------
+Baseline model for all admissions:
+
+
+| Variable              | OddsRatio |    CI.95    | p-value |
+| :-------------------- | --------: | :---------: | ------: |
+| Age                   |      1.01 | [0.98;1.03] |  0.6247 |
+| Male                  |      0.85 | [0.46;1.56] |  0.5906 |
+| APACHE_II             |      1.12 | [1.02;1.23] |  0.0136 |
+| APACHE_III            |      0.99 | [0.97;1.02] |  0.5155 |
+| Baseline_Cr           |      1.00 | [0.98;1.01] |  0.4404 |
+| PCs_cardio            |      2.52 | [1.27;5.03] |  0.0085 |
+| Vasopressor           |      1.79 | [1.00;3.17] |  0.0484 |
+| Diabetes              |      1.56 | [0.82;2.97] |  0.1791 |
+| AF                    |      1.67 | [0.72;3.84] |  0.2322 |
+| IHD                   |      1.54 | [0.77;3.08] |  0.2224 |
+| HF                    |      1.06 | [0.30;3.74] |  0.9233 |
+| PVD                   |      1.00 | [0.33;3.03] |  0.9941 |
+| Chronic_liver_disease |      1.89 | [0.75;4.76] |  0.1771 |
+
+
+|                  | Outcome: AKI_2or3                                                                                                                                |
+| :--------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- |
+| AUC              | 0.7193033                                                                                                                                        |
+| sensitivity      | 0.5882353                                                                                                                                        |
+| specificity      | 0.7702265                                                                                                                                        |
+| optimal_cutpoint | 0.2272172                                                                                                                                        |
+| per_admin_in     | 1                                                                                                                                                |
+| per_admin_pos    | 1                                                                                                                                                |
+| n_admissions     | 377                                                                                                                                              |
+| n_admissions_pos | 68                                                                                                                                               |
+| n_admissions_neg | 309                                                                                                                                              |
+| n_UR             | 367                                                                                                                                              |
+| n                | 377                                                                                                                                              |
+| n_event_pos      | 68                                                                                                                                               |
+| n_event_neg      | 309                                                                                                                                              |
+| glm_model        | AKI_2or3 ~ Age + Male + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + PVD + Chronic_liver_disease |
+| AUC_all          | 0.7193033                                                                                                                                        |
+| ch_hr_lower      | -Inf                                                                                                                                             |
+| ch_hr_upper      | Inf                                                                                                                                              |
+| aki_hr_lower     | -Inf                                                                                                                                             |
+| aki_hr_upper     | Inf                                                                                                                                              |
+
+----------------
+Baseline model for all admissions (sig only):
+
+
+| Variable    | OddsRatio |    CI.95    | p-value |
+| :---------- | --------: | :---------: | ------: |
+| APACHE_II   |      1.10 | [1.05;1.16] | < 0.001 |
+| PCs_cardio  |      2.68 | [1.46;4.92] | 0.00153 |
+| Vasopressor |      1.72 | [0.98;3.01] | 0.05944 |
+
+
+|                  | Outcome: AKI_2or3                               |
+| :--------------- | :---------------------------------------------- |
+| AUC              | 0.68913                                         |
+| sensitivity      | 0.4558824                                       |
+| specificity      | 0.8511327                                       |
+| optimal_cutpoint | 0.2587635                                       |
+| per_admin_in     | 1                                               |
+| per_admin_pos    | 1                                               |
+| n_admissions     | 377                                             |
+| n_admissions_pos | 68                                              |
+| n_admissions_neg | 309                                             |
+| n_UR             | 367                                             |
+| n                | 377                                             |
+| n_event_pos      | 68                                              |
+| n_event_neg      | 309                                             |
+| glm_model        | AKI_2or3 ~ APACHE_II + PCs_cardio + Vasopressor |
+| AUC_all          | 0.7193033                                       |
+| ch_hr_lower      | -Inf                                            |
+| ch_hr_upper      | Inf                                             |
+| aki_hr_lower     | -Inf                                            |
+| aki_hr_upper     | Inf                                             |
+
+----------------
+Same model with secondary outcome AKI_ICU:
+
+
+| Variable              | OddsRatio |    CI.95     | p-value |
+| :-------------------- | --------: | :----------: | ------: |
+| PCs_cardio            |      2.09 | [1.50;2.90]  |  <0.001 |
+| Vasopressor           |      2.53 | [1.84;3.49]  |  <0.001 |
+| Chronic_liver_disease |     13.52 | [7.13;25.62] |  <0.001 |
+| cr_gradient           |      2.25 | [1.58;3.22]  |  <0.001 |
+
+
+|                  | Outcome: AKI_ICU                                                         |
+| :--------------- | :----------------------------------------------------------------------- |
+| AUC              | 0.727927                                                                 |
+| sensitivity      | 0.5344828                                                                |
+| specificity      | 0.7845969                                                                |
+| optimal_cutpoint | 0.2503019                                                                |
+| per_admin_in     | 0.5915119                                                                |
+| per_admin_pos    | 0.4                                                                      |
+| n_admissions     | 223                                                                      |
+| n_admissions_pos | 86                                                                       |
+| n_admissions_neg | 137                                                                      |
+| n_UR             | 217                                                                      |
+| n                | 1063                                                                     |
+| n_event_pos      | 232                                                                      |
+| n_event_neg      | 831                                                                      |
+| glm_model        | AKI_ICU ~ PCs_cardio + Vasopressor + Chronic_liver_disease + cr_gradient |
+| AUC_all          | 0.727927                                                                 |
+| ch_hr_lower      | 4                                                                        |
+| ch_hr_upper      | 5.8                                                                      |
+| aki_hr_lower     | 8.7                                                                      |
+| aki_hr_upper     | 25.6                                                                     |
+
+----------------
+Same model with secondary outcome Cr_defined_AKI_2or3:
+
+
+| Variable              | OddsRatio |     CI.95      | p-value |
+| :-------------------- | --------: | :------------: | ------: |
+| PCs_cardio            |      3.43 |  [1.55;7.63]   | 0.00245 |
+| Vasopressor           |      3.85 |  [1.82;8.15]   | < 0.001 |
+| Chronic_liver_disease |     60.57 | [23.68;154.93] | < 0.001 |
+| cr_gradient           |      3.69 |  [1.88;7.24]   | < 0.001 |
+
+
+|                  | Outcome: Cr_defined_AKI_2or3                                                         |
+| :--------------- | :----------------------------------------------------------------------------------- |
+| AUC              | 0.8835489                                                                            |
+| sensitivity      | 0.8958333                                                                            |
+| specificity      | 0.7438424                                                                            |
+| optimal_cutpoint | 0.03487353                                                                           |
+| per_admin_in     | 0.5915119                                                                            |
+| per_admin_pos    | 0.2807018                                                                            |
+| n_admissions     | 223                                                                                  |
+| n_admissions_pos | 16                                                                                   |
+| n_admissions_neg | 207                                                                                  |
+| n_UR             | 217                                                                                  |
+| n                | 1063                                                                                 |
+| n_event_pos      | 48                                                                                   |
+| n_event_neg      | 1015                                                                                 |
+| glm_model        | Cr_defined_AKI_2or3 ~ PCs_cardio + Vasopressor + Chronic_liver_disease + cr_gradient |
+| AUC_all          | 0.8835489                                                                            |
+| ch_hr_lower      | 4                                                                                    |
+| ch_hr_upper      | 5.8                                                                                  |
+| aki_hr_lower     | 8.7                                                                                  |
+| aki_hr_upper     | 25.6                                                                                 |
+
+----------------
+Same model with secondary outcome Cr_defined_AKI:
+
+
+| Variable              | OddsRatio |    CI.95     | p-value |
+| :-------------------- | --------: | :----------: | ------: |
+| PCs_cardio            |      1.08 | [0.72;1.63]  |   0.716 |
+| Vasopressor           |      2.64 | [1.77;3.93]  |  <0.001 |
+| Chronic_liver_disease |     13.64 | [7.23;25.72] |  <0.001 |
+| cr_gradient           |      3.18 | [2.10;4.82]  |  <0.001 |
+
+
+|                  | Outcome: Cr_defined_AKI                                                         |
+| :--------------- | :------------------------------------------------------------------------------ |
+| AUC              | 0.754829                                                                        |
+| sensitivity      | 0.8571429                                                                       |
+| specificity      | 0.5330444                                                                       |
+| optimal_cutpoint | 0.09077924                                                                      |
+| per_admin_in     | 0.5915119                                                                       |
+| per_admin_pos    | 0.3271605                                                                       |
+| n_admissions     | 223                                                                             |
+| n_admissions_pos | 53                                                                              |
+| n_admissions_neg | 170                                                                             |
+| n_UR             | 217                                                                             |
+| n                | 1063                                                                            |
+| n_event_pos      | 140                                                                             |
+| n_event_neg      | 923                                                                             |
+| glm_model        | Cr_defined_AKI ~ PCs_cardio + Vasopressor + Chronic_liver_disease + cr_gradient |
+| AUC_all          | 0.754829                                                                        |
+| ch_hr_lower      | 4                                                                               |
+| ch_hr_upper      | 5.8                                                                             |
+| aki_hr_lower     | 8.7                                                                             |
+| aki_hr_upper     | 25.6                                                                            |
+
+----------------
+Same model with secondary outcome Olig_defined_AKI_2or3:
+
+
+| Variable              | OddsRatio |    CI.95     | p-value |
+| :-------------------- | --------: | :----------: | ------: |
+| PCs_cardio            |      5.41 | [2.31;12.67] | < 0.001 |
+| Vasopressor           |      2.85 | [1.33;6.11]  | 0.00701 |
+| Chronic_liver_disease |     17.92 | [6.39;50.23] | < 0.001 |
+| cr_gradient           |      0.73 | [0.30;1.76]  | 0.48401 |
+
+
+|                  | Outcome: Olig_defined_AKI_2or3                                                         |
+| :--------------- | :------------------------------------------------------------------------------------- |
+| AUC              | 0.8193292                                                                              |
+| sensitivity      | 0.9090909                                                                              |
+| specificity      | 0.6116505                                                                              |
+| optimal_cutpoint | 0.02006377                                                                             |
+| per_admin_in     | 0.5915119                                                                              |
+| per_admin_pos    | 0.4193548                                                                              |
+| n_admissions     | 223                                                                                    |
+| n_admissions_pos | 13                                                                                     |
+| n_admissions_neg | 210                                                                                    |
+| n_UR             | 217                                                                                    |
+| n                | 1063                                                                                   |
+| n_event_pos      | 33                                                                                     |
+| n_event_neg      | 1030                                                                                   |
+| glm_model        | Olig_defined_AKI_2or3 ~ PCs_cardio + Vasopressor + Chronic_liver_disease + cr_gradient |
+| AUC_all          | 0.8193292                                                                              |
+| ch_hr_lower      | 4                                                                                      |
+| ch_hr_upper      | 5.8                                                                                    |
+| aki_hr_lower     | 8.7                                                                                    |
+| aki_hr_upper     | 25.6                                                                                   |
+
+----------------
+Same model with secondary outcome Olig_defined_AKI:
+
+
+| Variable              | OddsRatio |    CI.95    | p-value |
+| :-------------------- | --------: | :---------: | ------: |
+| PCs_cardio            |      2.41 | [1.61;3.59] |  <0.001 |
+| Vasopressor           |      2.21 | [1.50;3.26] |  <0.001 |
+| Chronic_liver_disease |      4.79 | [2.40;9.57] |  <0.001 |
+| cr_gradient           |      1.05 | [0.66;1.65] |   0.847 |
+
+
+|                  | Outcome: Olig_defined_AKI                                                         |
+| :--------------- | :-------------------------------------------------------------------------------- |
+| AUC              | 0.6728498                                                                         |
+| sensitivity      | 0.6692913                                                                         |
+| specificity      | 0.5950855                                                                         |
+| optimal_cutpoint | 0.1148557                                                                         |
+| per_admin_in     | 0.5915119                                                                         |
+| per_admin_pos    | 0.4742268                                                                         |
+| n_admissions     | 223                                                                               |
+| n_admissions_pos | 46                                                                                |
+| n_admissions_neg | 177                                                                               |
+| n_UR             | 217                                                                               |
+| n                | 1063                                                                              |
+| n_event_pos      | 127                                                                               |
+| n_event_neg      | 936                                                                               |
+| glm_model        | Olig_defined_AKI ~ PCs_cardio + Vasopressor + Chronic_liver_disease + cr_gradient |
+| AUC_all          | 0.6728498                                                                         |
+| ch_hr_lower      | 4                                                                                 |
+| ch_hr_upper      | 5.8                                                                               |
+| aki_hr_lower     | 8.7                                                                               |
+| aki_hr_upper     | 25.6                                                                              |
 ```
