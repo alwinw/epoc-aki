@@ -21,8 +21,6 @@ ts_df <- analysis_df %>%
     per_cr_change_time_weighed = del_cr / cr / del_t_ch_hr * 100
   )
 
-outcome_var <- "AKI_2or3"
-
 # ---- tabulate_functions ----
 tabulate_numbers <- function(outcome_var, df, label) {
   df %>%
@@ -89,7 +87,7 @@ tabulate_bin_vars <- function(outcome_var, df, ...) {
       pval = tryCatch(chisq.test(.data[[outcome_var]], value)$p.value, error = function(e) NA),
       .groups = "drop"
     )
-  full_join(bin_n, bin_pval) %>%
+  full_join(bin_n, bin_pval, by = "variable") %>%
     arrange(variable) %>%
     mutate(
       all = if_else(is.na(all), "0 (0.0%)", all),
@@ -100,44 +98,41 @@ tabulate_bin_vars <- function(outcome_var, df, ...) {
 
 # ---- demographics_tables ----
 
-tabulate_numbers("AKI_2or3", demographics_df, "Admissions")
-tabulate_numbers("AKI_2or3", meas_df, "Measurements")
-tabulate_numbers("AKI_2or3", ts_df, "Creatinine_changes")
-tabulate_cont_vars(
-  "AKI_2or3",
-  demographics_df, Age, Wt, APACHE_II, APACHE_III,
-  Baseline_Cr, LOS_ICU_hr, LOS_Hosp_hr, ICU_time2AKI
-)
-tabulate_cont_vars("AKI_2or3", meas_df, cr)
-tabulate_cont_vars("AKI_2or3", baseline_df, n_measurements)
-tabulate_cont_vars(
-  "AKI_2or3",
-  ts_df, del_cr, del_t_ch_hr, del_t_aki_hr,
-  per_cr_change, per_cr_change_time_weighed
-)
-tabulate_bin_vars(
-  "AKI_2or3", demographics_df, Male, Mecvenadm, PCs_cardio, Surgadmission:PCs_metabolic,
-  Vasopressor:Chronic_liver_disease, RRT, AKI_ICU:Olig_defined_AKI_2or3
-) %>% kable(.)
-tabulate_bin_vars("AKI_2or3", ts_df, cr_gradient)
+generate_demographics_table <- function(outcome_var) {
+  tables <- list(
+    tabulate_numbers(outcome_var, demographics_df, "Admissions"),
+    tabulate_numbers(outcome_var, meas_df, "Measurements"),
+    tabulate_numbers(outcome_var, ts_df, "Creatinine_changes"),
+    tabulate_cont_vars(
+      outcome_var,
+      demographics_df, Age, Wt, APACHE_II, APACHE_III,
+      Baseline_Cr, LOS_ICU_hr, LOS_Hosp_hr, ICU_time2AKI
+    ),
+    tabulate_cont_vars(outcome_var, meas_df, cr),
+    tabulate_cont_vars(outcome_var, baseline_df, n_measurements),
+    tabulate_cont_vars(
+      outcome_var,
+      ts_df, del_cr, del_t_ch_hr, del_t_aki_hr,
+      per_cr_change, per_cr_change_time_weighed
+    ),
+    tabulate_bin_vars(
+      outcome_var,
+      demographics_df, Male, Mecvenadm, PCs_cardio, Surgadmission:PCs_metabolic,
+      Vasopressor:Chronic_liver_disease, RRT, AKI_ICU:Olig_defined_AKI_2or3
+    ),
+    tabulate_bin_vars(outcome_var, ts_df, cr_gradient)
+  )
 
+  bind_rows(tables) %>%
+    select(variable, all, {{ outcome_var }} := `1`, "No_{{outcome_var}}" := `0`, pval) %>%
+    mutate(pval = case_when(
+      pval < 0.001 ~ "<0.001",
+      pval < 0.01 ~ "<0.01 ",
+      abs(pval - 0.05) < 0.01 ~ sprintf("%.3f", pval),
+      TRUE ~ sprintf("%.2f ", pval)
+    ))
+}
 
-demographics_table <- rbind(
-  number,
-  full_join(left_join(cont_iqr, cont_all), cont_pval),
-  full_join(bin_n, bin_pval) %>% arrange(variable)
-) %>%
-  mutate(
-    all = if_else(is.na(all), "0 (0.0%)", all),
-    `0` = if_else(is.na(`0`), "0 (0.0%)", `0`),
-    `1` = if_else(is.na(`1`), "0 (0.0%)", `1`)
-  ) %>%
-  select(variable, all, {{ outcome_var }} := `1`, "No_{{outcome_var}}" := `0`, pval) %>%
-  mutate(pval = case_when(
-    pval < 0.001 ~ "<0.001",
-    pval < 0.01 ~ "<0.01 ",
-    abs(pval - 0.05) < 0.01 ~ sprintf("%.3f", pval),
-    TRUE ~ sprintf("%.2f ", pval)
-  ))
+demographics_table <- generate_demographics_table("AKI_2or3")
 
 kable(demographics_table)
