@@ -7,7 +7,9 @@ demographics_df <- left_join(
   # TEMP ONLY
   mutate(Epis_cr = if_else(Event == "Both" | Event == "Cr change only", 1, 0)) %>%
   mutate(
-    ICU_time2AKI = as.numeric(as.duration(DateTime_AKI_Dx - DateTime_ICU_admit), "hours")
+    ICU_time2AKI = as.numeric(as.duration(DateTime_AKI_Dx - DateTime_ICU_admit), "hours"),
+    Dc_ICU_death = if_else(Dc_ICU_Alive == 1, 0, 1),
+    Dc_Hosp_death = if_else(Dc_Hosp_Alive == 1, 0, 1)
   )
 
 stopifnot(nrow(demographics_df) == nrow(baseline_df))
@@ -107,12 +109,13 @@ generate_demographics_table <- function(outcome_var) {
     tabulate_cont_vars(
       outcome_var, demographics_df,
       Age, Wt, APACHE_II, APACHE_III,
-      Baseline_Cr, LOS_ICU_hr, LOS_Hosp_hr, ICU_time2AKI
+      Baseline_Cr, LOS_ICU_days, LOS_Hosp_days, ICU_time2AKI
     ),
     tabulate_bin_vars(
       outcome_var, demographics_df,
       Male, Mecvenadm, PCs_cardio, Surgadmission:PCs_metabolic,
-      Vasopressor:Chronic_liver_disease, RRT, AKI_ICU:Olig_defined_AKI_2or3
+      Vasopressor:Chronic_liver_disease, RRT, AKI_ICU:Olig_defined_AKI_2or3,
+      Dc_ICU_death, Dc_Hosp_death
     ),
     tabulate_numbers(outcome_var, meas_df, "Measurements"),
     tabulate_numbers(outcome_var, ts_df, "Creatinine_changes"),
@@ -138,5 +141,5 @@ generate_demographics_table <- function(outcome_var) {
 
 demographics_table <- generate_demographics_table("AKI_2or3")
 
-kable(demographics_table)
-write.csv(demographics_table, "demographics_table.csv")
+print(kable(demographics_table))
+write.csv(demographics_table, "demographics_table.csv", row.names = FALSE)

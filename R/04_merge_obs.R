@@ -158,14 +158,14 @@ epoc_aki <- obs_data %>%
       grepl("Mortuary", Dc_destination) ~ 0,
       TRUE ~ Dc_Hosp_Alive
     ),
-    LOS_ICU_hr = as.numeric(as.duration(DateTime_ICU_dc - DateTime_ICU_admit), "hours"),
-    LOS_Hosp_hr = as.numeric(as.duration(DateTime_hosp_dc - DateTime_hosp_admit), "hours"),
+    LOS_ICU_days = as.numeric(as.duration(DateTime_ICU_dc - DateTime_ICU_admit), "days"),
+    LOS_Hosp_days = as.numeric(as.duration(DateTime_hosp_dc - DateTime_hosp_admit), "days"),
   ) %>%
   select(
     # PT INFO
     `UR number`,
     AdmissionID, Admission, Total_admissions,
-    DateTime_hosp_admit:DateTime_hosp_dc, Dc_destination, LOS_ICU_hr:LOS_Hosp_hr,
+    DateTime_hosp_admit:DateTime_hosp_dc, Dc_destination, LOS_ICU_days:LOS_Hosp_days,
     Excl_criteria_ok, Event,
     # EPIS
     Pt_Study_nos, Pt_Study_no,
