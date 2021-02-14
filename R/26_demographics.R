@@ -10,7 +10,7 @@ stopifnot(nrow(demographics_df) == nrow(baseline_df))
 # TODO check why there are NAs for Wt
 # TODO calculate LOS in the admission_data
 
-outcome_var <- "AKI_ICU"
+outcome_var <- "AKI_2or3"
 
 number <- demographics_df %>%
   select({{ outcome_var }}) %>%
@@ -75,7 +75,7 @@ bin_n <- bin_df %>%
 bin_pval <- bin_df %>%
   group_by(variable) %>%
   summarise(
-    pval = tryCatch(chisq.test(AKI_2or3, value)$p.value, error = function(e) NA),
+    pval = tryCatch(chisq.test(.data[[outcome_var]], value)$p.value, error = function(e) NA),
     .groups = "drop"
   )
 
