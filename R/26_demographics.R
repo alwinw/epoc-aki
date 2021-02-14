@@ -49,7 +49,7 @@ cont_iqr <- cont_df %>%
     ),
     .groups = "drop"
   ) %>%
-  pivot_wider(names_from = {{outcome_var}}, values_from = text)
+  pivot_wider(names_from = {{ outcome_var }}, values_from = text)
 cont_pval <- cont_df %>%
   group_by(variable) %>%
   summarise(pval = wilcox.test(formula(paste0("value ~ ", outcome_var)))$p.value, .groups = "drop") %>%

@@ -1,17 +1,3 @@
-# ---- find_cols_function ----
-find_cols <- function(text, replace, colnames) {
-  cols <- data.frame(
-    i = grep(paste0("^", text, "|", text, "$"), colnames, ignore.case = TRUE),
-    j = grep(paste0("^", text, "|", text, "$"), colnames, ignore.case = TRUE, value = TRUE),
-    stringsAsFactors = FALSE
-  ) %>%
-    mutate(k = gsub(text, replace, j, ignore.case = TRUE))
-  colnames(cols) <- c(paste0(text, "_i"), paste0(text), "match")
-
-  return(cols)
-}
-
-
 # ---- merge_data_sets_outcomes ----
 creatinine_data <- xlsx_data$creatinine$data_set %>%
   rename(

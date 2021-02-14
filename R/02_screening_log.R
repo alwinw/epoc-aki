@@ -11,11 +11,8 @@ join_demo_screen_log_sheets <- function(demographic, screen_log) {
       "Expected: ", nrow(screen_log)
     ))
   }
-
-  joint <- joint %>%
+  joint %>%
     arrange(Total_admissions, `UR number`, Admission)
-
-  return(joint)
 }
 
 
@@ -184,31 +181,63 @@ if (sum(!is.na(screen_logs$full$Pt_Study_no_olig)) !=
   stop("Number of L patients has changed")
 }
 
+# ---- find_cols_function ----
+find_cols <- function(text, replace, colnames) {
+  cols <- data.frame(
+    i = grep(paste0("^", text, "|", text, "$"), colnames, ignore.case = TRUE),
+    j = grep(paste0("^", text, "|", text, "$"), colnames, ignore.case = TRUE, value = TRUE),
+    stringsAsFactors = FALSE
+  ) %>%
+    mutate(k = gsub(text, replace, j, ignore.case = TRUE))
+  colnames(cols) <- c(paste0(text, "_i"), paste0(text), "match")
+  return(cols)
+}
+
+# TODO I repeat the pivot longer.. mutate.. etc twice, functionalise it!
+
+# ---- screening_log ----
+dttm_col <- inner_join(
+  find_cols("date", "DateTime", colnames(screen_logs$full)),
+  find_cols("time", "DateTime", colnames(screen_logs$full)),
+  by = "match"
+) %>%
+  select(date, time, match)
+
 screening_log <- screen_logs$full %>%
+  pivot_longer(
+    all_of(c(dttm_col$date, dttm_col$time)),
+    names_to = "DateTimeName",
+    values_to = "DateTime"
+  ) %>%
   mutate(
-    Date_hosp_admit = paste(
-      format(Date_hosp_admit, format = "%Y-%m-%d"),
-      format(Time_hosp_admit, format = "%H:%M:%S")
+    DateTimeType = if_else(grepl("^time|time$", DateTimeName, ignore.case = TRUE), "Time", ""),
+    DateTimeType = if_else(grepl("^date|date$", DateTimeName, ignore.case = TRUE), "Date", DateTimeType),
+    DateTimeName = gsub("^time|time$|^date|date$", "DateTime", DateTimeName, ignore.case = TRUE)
+  ) %>%
+  pivot_wider(
+    names_from = "DateTimeType",
+    values_from = "DateTime"
+  ) %>%
+  mutate(
+    datetime = if_else(
+      (is.na(Date) | is.na(Time)),
+      NA_character_,
+      paste(format(Date, format = "%Y-%m-%d"), format(Time, format = "%H:%M:%S"))
     ),
-    Date_ICU_admit = paste(
-      format(Date_ICU_admit, format = "%Y-%m-%d"),
-      format(Time_ICU_admit, format = "%H:%M:%S")
+    Date = NULL,
+    Time = NULL
+  ) %>%
+  mutate(datetime = as_datetime(datetime, tz = "Australia/Melbourne")) %>%
+  pivot_wider(
+    names_from = "DateTimeName",
+    values_from = "datetime"
+  ) %>%
+  select(all_of(unique(
+    gsub("^\\btime\\b|\\btime\\b$|^\\bdate\\b|\bdate\\b$", "DateTime",
+      colnames(.),
+      ignore.case = TRUE
     )
-  ) %>%
-  select(-starts_with("Time_")) %>%
-  rename(
-    DateTime_hosp_admit = Date_hosp_admit,
-    DateTime_ICU_admit = Date_ICU_admit
-  ) %>%
-  mutate_at(
-    vars(DateTime_hosp_admit, DateTime_ICU_admit),
-    function(dt) if_else(dt == "NA NA", NA_character_, dt)
-  ) %>%
-  mutate_at(
-    vars(DateTime_hosp_admit, DateTime_ICU_admit),
-    as_datetime,
-    tz = "Australia/Melbourne"
-  )
+  )))
 
 if (FALSE) {
   kable(
