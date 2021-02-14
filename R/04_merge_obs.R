@@ -128,7 +128,7 @@ epoc_aki <- obs_data %>%
         x == "Y" | x == "y" | x == "1" ~ 1, # Should really change to a factor of the column name
         x == "N" | x == "n" | x == "0" ~ 0,
         is.na(x) ~ NA_real_,
-        TRUE ~ NaN
+        TRUE ~ NaN # TODO check if any NaN later
       )
     }
   ) %>%
@@ -146,11 +146,26 @@ epoc_aki <- obs_data %>%
     ), Comorbidities)
   ) %>%
   mutate_at(vars(Diabetes:Chronic_liver_disease), as.double) %>%
+  mutate(
+    Dc_ICU_Alive = case_when(
+      Dc_ICU_Alive == 1 ~ 1,
+      DateTime_ICU_dc == DateTime_death ~ 0,
+      DateTime_ICU_dc == DateTime_hosp_dc & grepl("Mortuary", Dc_destination) ~ 0,
+      TRUE ~ Dc_ICU_Alive
+    ),
+    Dc_Hosp_Alive = case_when(
+      Dc_Hosp_Alive == 1 ~ 1,
+      grepl("Mortuary", Dc_destination) ~ 0,
+      TRUE ~ Dc_Hosp_Alive
+    ),
+    LOS_ICU_hr = as.numeric(as.duration(DateTime_ICU_dc - DateTime_ICU_admit), "hours"),
+    LOS_Hosp_hr = as.numeric(as.duration(DateTime_hosp_dc - DateTime_hosp_admit), "hours"),
+  ) %>%
   select(
     # PT INFO
     `UR number`,
     AdmissionID, Admission, Total_admissions,
-    DateTime_hosp_admit:DateTime_ICU_admit, Date_ICU_dc:Dc_destination,
+    DateTime_hosp_admit:DateTime_hosp_dc, Dc_destination, LOS_ICU_hr:LOS_Hosp_hr,
     Excl_criteria_ok, Event,
     # EPIS
     Pt_Study_nos, Pt_Study_no,
