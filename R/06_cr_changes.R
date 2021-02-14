@@ -49,7 +49,7 @@ cr_ch_ts_all <- admission_data %>%
     Excl_criteria_ok == 1,
   ) %>%
   mutate(
-    DateTime_ICU_dc = Date_ICU_dc + hours(23) + minutes(59) + seconds(59)
+    DateTime_ICU_dc = DateTime_ICU_dc + hours(23) + minutes(59) + seconds(59)
   ) %>%
   select(
     `UR number`:Admission, Pt_Study_nos, Event, Excl_criteria_ok,
