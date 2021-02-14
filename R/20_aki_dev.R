@@ -23,6 +23,7 @@ analysis_df <- cr_ch_ts %>%
   ungroup()
 
 measurements_df <- analysis_df %>%
+  filter(cr_post_aki == 1) %>% ## ONLY consider post AKI measurements
   mutate(temp = is.na(cr)) %>%
   select(-del_cr, -del_t_ch_hr:-del_t_aki_hr, -cr_post_aki) %>%
   unique(.) %>%
@@ -31,18 +32,16 @@ measurements_df <- analysis_df %>%
     del_t_aki_hr = 0,
     del_cr = temp
   ) %>%
+  group_by(AdmissionID) %>%
+  mutate(
+    n_measurements = n()
+  ) %>%
+  ungroup() %>%
   select(-temp)
 
-baseline_df <- analysis_df %>%
-  mutate(temp = is.na(cr)) %>%
-  select(-DateTime_Pathology_Result:-cr, -del_t_ch_hr:-del_t_aki_hr, -cr_post_aki) %>%
-  unique(.) %>%
-  mutate(
-    del_t_ch_hr = 0, # consider changing to median or something later
-    del_t_aki_hr = 0,
-    del_cr = temp
-  ) %>%
-  select(-temp)
+baseline_df <- measurements_df %>%
+  select(-DateTime_Pathology_Result:-cr) %>%
+  unique(.)
 
 if (anyNA(baseline_df)) stop("There is missing data in baseline_df")
 stopifnot(length(unique(baseline_df$AdmissionID)) == nrow(baseline_df))
