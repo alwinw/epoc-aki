@@ -17,11 +17,25 @@ analysis_df <- cr_ch_ts %>%
     APACHE_II = if_else(is.na(APACHE_II), median(APACHE_II, na.rm = TRUE), APACHE_II),
     APACHE_III = if_else(is.na(APACHE_III), median(APACHE_III, na.rm = TRUE), APACHE_III)
   ) %>% # FIXME Replace with REAL data
+  mutate(
+    cr_post_aki = if_else(is.na(del_t_aki_hr) | del_t_aki_hr >= 0, 1, 0)
+  ) %>%
   ungroup()
+
+measurements_df <- analysis_df %>%
+  mutate(temp = is.na(cr)) %>%
+  select(-del_cr, -del_t_ch_hr:-del_t_aki_hr, -cr_post_aki) %>%
+  unique(.) %>%
+  mutate(
+    del_t_ch_hr = 0, # consider changing to median or something later
+    del_t_aki_hr = 0,
+    del_cr = temp
+  ) %>%
+  select(-temp)
 
 baseline_df <- analysis_df %>%
   mutate(temp = is.na(cr)) %>%
-  select(-DateTime_Pathology_Result:-cr, -del_t_ch_hr:-del_t_aki_hr) %>%
+  select(-DateTime_Pathology_Result:-cr, -del_t_ch_hr:-del_t_aki_hr, -cr_post_aki) %>%
   unique(.) %>%
   mutate(
     del_t_ch_hr = 0, # consider changing to median or something later

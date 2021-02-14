@@ -18,7 +18,7 @@ number <- demographics_df %>%
   summarise(text = sprintf("%d (%.1f%%)", n(), n() / nrow(.) * 100), .groups = "drop") %>%
   pivot_wider(names_from = {{ outcome_var }}, values_from = text) %>%
   mutate(
-    variable = "Number",
+    variable = "Admissions",
     all = sprintf("%d (%.1f%%)", nrow(demographics_df), 100),
     pval = NA
   )
@@ -26,7 +26,8 @@ number <- demographics_df %>%
 cont_df <- demographics_df %>%
   select(
     {{ outcome_var }},
-    Age, Wt, APACHE_II, APACHE_III, Baseline_Cr
+    Age, Wt, APACHE_II, APACHE_III, Baseline_Cr,
+    LOS_ICU_hr, LOS_Hosp_hr
   ) %>%
   pivot_longer(-{{ outcome_var }}, names_to = "variable")
 cont_all <- cont_df %>%
