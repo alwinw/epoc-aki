@@ -101,24 +101,24 @@ tabulate_bin_vars <- function(outcome_var, df, ...) {
 generate_demographics_table <- function(outcome_var) {
   tables <- list(
     tabulate_numbers(outcome_var, demographics_df, "Admissions"),
-    tabulate_numbers(outcome_var, meas_df, "Measurements"),
-    tabulate_numbers(outcome_var, ts_df, "Creatinine_changes"),
     tabulate_cont_vars(
-      outcome_var,
-      demographics_df, Age, Wt, APACHE_II, APACHE_III,
+      outcome_var, demographics_df,
+      Age, Wt, APACHE_II, APACHE_III,
       Baseline_Cr, LOS_ICU_hr, LOS_Hosp_hr, ICU_time2AKI
     ),
+    tabulate_bin_vars(
+      outcome_var, demographics_df,
+      Male, Mecvenadm, PCs_cardio, Surgadmission:PCs_metabolic,
+      Vasopressor:Chronic_liver_disease, RRT, AKI_ICU:Olig_defined_AKI_2or3
+    ),
+    tabulate_numbers(outcome_var, meas_df, "Measurements"),
+    tabulate_numbers(outcome_var, ts_df, "Creatinine_changes"),
     tabulate_cont_vars(outcome_var, meas_df, cr),
     tabulate_cont_vars(outcome_var, baseline_df, n_measurements),
     tabulate_cont_vars(
       outcome_var,
       ts_df, del_cr, del_t_ch_hr, del_t_aki_hr,
       per_cr_change, per_cr_change_time_weighed
-    ),
-    tabulate_bin_vars(
-      outcome_var,
-      demographics_df, Male, Mecvenadm, PCs_cardio, Surgadmission:PCs_metabolic,
-      Vasopressor:Chronic_liver_disease, RRT, AKI_ICU:Olig_defined_AKI_2or3
     ),
     tabulate_bin_vars(outcome_var, ts_df, cr_gradient)
   )
@@ -136,3 +136,4 @@ generate_demographics_table <- function(outcome_var) {
 demographics_table <- generate_demographics_table("AKI_2or3")
 
 kable(demographics_table)
+write.csv(demographics_table, "demographics_table.csv")
