@@ -18,21 +18,20 @@ analysis_df <- cr_ch_ts %>%
     APACHE_III = if_else(is.na(APACHE_III), median(APACHE_III, na.rm = TRUE), APACHE_III)
   ) %>% # FIXME Replace with REAL data
   mutate(
-    cr_post_aki = if_else(is.na(del_t_aki_hr) | del_t_aki_hr >= 0, 1, 0)
+    cr_before_aki = if_else(is.na(del_t_aki_hr) | del_t_aki_hr >= 0, 1, 0)
   ) %>%
   ungroup()
 
 measurements_df <- analysis_df %>%
-  filter(cr_post_aki == 1) %>% ## ONLY consider post AKI measurements
   mutate(temp = is.na(cr)) %>%
-  select(-del_cr, -del_t_ch_hr:-del_t_aki_hr, -cr_post_aki) %>%
+  select(-del_cr, -del_t_ch_hr:-del_t_aki_hr) %>%
   unique(.) %>%
   mutate(
     del_t_ch_hr = 0, # consider changing to median or something later
     del_t_aki_hr = 0,
     del_cr = temp
   ) %>%
-  group_by(AdmissionID) %>%
+  group_by(AdmissionID, cr_before_aki) %>%
   mutate(
     n_measurements = n()
   ) %>%
@@ -41,9 +40,15 @@ measurements_df <- analysis_df %>%
 
 baseline_df <- measurements_df %>%
   select(-DateTime_Pathology_Result:-cr) %>%
+  group_by(AdmissionID) %>%
+  mutate(n_measurements = if_else(cr_before_aki == 1, n_measurements, NA_integer_)) %>%
+  fill(n_measurements, .direction = "updown") %>%
+  # mutate(n_measurements = if_else(is.na(n_measurements), as.integer(0), n_measurements)) %>%
+  select(-cr_before_aki) %>%
+  ungroup() %>%
   unique(.)
 
-if (anyNA(baseline_df)) stop("There is missing data in baseline_df")
+# if (anyNA(baseline_df)) stop("There is missing data in baseline_df")
 stopifnot(length(unique(baseline_df$AdmissionID)) == nrow(baseline_df))
 stopifnot(baseline_df %>% filter(AKI_ICU == 0, Cr_defined_AKI == 1) %>% nrow(.) == 0)
 

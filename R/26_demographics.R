@@ -6,15 +6,18 @@ demographics_df <- left_join(
 ) %>%
   # TEMP ONLY
   mutate(Epis_cr = if_else(Event == "Both" | Event == "Cr change only", 1, 0)) %>%
-  mutate(ICU_time2AKI = as.numeric(as.duration(DateTime_AKI_Dx - DateTime_ICU_admit), "hours"))
+  mutate(
+    ICU_time2AKI = as.numeric(as.duration(DateTime_AKI_Dx - DateTime_ICU_admit), "hours")
+  )
 
 stopifnot(nrow(demographics_df) == nrow(baseline_df))
 # TODO check why there are NAs for Wt
 
-meas_df <- measurements_df
+meas_df <- measurements_df %>%
+  filter(cr_before_aki == 1) ## ONLY consider post AKI measurements
 
 ts_df <- analysis_df %>%
-  filter(cr_post_aki == 1) %>%
+  filter(cr_before_aki == 1) %>%
   mutate(
     cr_gradient = if_else(del_cr >= 1 * del_t_ch_hr, 1, 0), # HARD CODED 1umol/L/h
     per_cr_change = del_cr / cr * 100,
