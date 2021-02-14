@@ -24,7 +24,7 @@ analysis_df <- cr_ch_ts %>%
 
 measurements_df <- analysis_df %>%
   mutate(temp = is.na(cr)) %>%
-  select(-del_cr, -del_t_ch_hr:-del_t_aki_hr) %>%
+  select(-del_cr, -per_cr_change, -del_t_ch_hr:-del_t_aki_hr) %>%
   unique(.) %>%
   mutate(
     del_t_ch_hr = 0, # consider changing to median or something later

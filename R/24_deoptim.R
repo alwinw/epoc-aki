@@ -228,9 +228,9 @@ multi_model <- deoptim_search(
   outcome_var = "AKI_2or3",
   baseline_predictors = c(
     "Age + Male + APACHE_II + APACHE_III + Baseline_Cr",
-    "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease" # HT excluded
+    "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + PVD + Chronic_liver_disease" # HT excluded
   ),
-  cr_predictors = "cr",
+  cr_predictors = c("cr", "per_cr_change"), # Put this into an "alternate" model
   add_gradient_predictor = 1,
   stepwise = TRUE,
   k = "mBIC",

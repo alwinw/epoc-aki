@@ -125,7 +125,8 @@ cr_ch_ts <- rbind(
 ) %>%
   mutate(
     del_t_ch_hr = as.numeric(del_t_ch, "hours"),
-    del_t_aki_hr = as.numeric(del_t_aki, "hours")
+    del_t_aki_hr = as.numeric(del_t_aki, "hours"),
+    per_cr_change = del_cr / cr * 100
   ) %>%
   mutate(
     AKI_2or3 = if_else(AKI_stage >= 2, 1, 0, 0),
