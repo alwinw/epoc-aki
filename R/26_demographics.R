@@ -10,7 +10,7 @@ stopifnot(nrow(demographics_df) == nrow(baseline_df))
 # TODO check why there are NAs for Wt
 # TODO calculate LOS in the admission_data
 
-outcome_var <- "AKI_2or3"
+outcome_var <- "AKI_ICU"
 
 number <- demographics_df %>%
   select({{ outcome_var }}) %>%
@@ -49,10 +49,10 @@ cont_iqr <- cont_df %>%
     ),
     .groups = "drop"
   ) %>%
-  pivot_wider(names_from = AKI_2or3, values_from = text)
+  pivot_wider(names_from = {{outcome_var}}, values_from = text)
 cont_pval <- cont_df %>%
   group_by(variable) %>%
-  summarise(pval = wilcox.test(value ~ AKI_2or3)$p.value, .groups = "drop") %>% # FIXME hard coding
+  summarise(pval = wilcox.test(formula(paste0("value ~ ", outcome_var)))$p.value, .groups = "drop") %>%
   select(variable, pval)
 
 bin_df <- demographics_df %>%
