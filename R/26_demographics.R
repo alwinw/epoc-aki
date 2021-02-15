@@ -6,15 +6,20 @@ demographics_df <- left_join(
 ) %>%
   # TEMP ONLY
   mutate(Epis_cr = if_else(Event == "Both" | Event == "Cr change only", 1, 0)) %>%
-  mutate(ICU_time2AKI = as.numeric(as.duration(DateTime_AKI_Dx - DateTime_ICU_admit), "hours"))
+  mutate(
+    ICU_time2AKI = as.numeric(as.duration(DateTime_AKI_Dx - DateTime_ICU_admit), "hours"),
+    Dc_ICU_death = if_else(Dc_ICU_Alive == 1, 0, 1),
+    Dc_Hosp_death = if_else(Dc_Hosp_Alive == 1, 0, 1)
+  )
 
 stopifnot(nrow(demographics_df) == nrow(baseline_df))
 # TODO check why there are NAs for Wt
 
-meas_df <- measurements_df
+meas_df <- measurements_df %>%
+  filter(cr_before_aki == 1) ## ONLY consider post AKI measurements
 
 ts_df <- analysis_df %>%
-  filter(cr_post_aki == 1) %>%
+  filter(cr_before_aki == 1) %>%
   mutate(
     cr_gradient = if_else(del_cr >= 1 * del_t_ch_hr, 1, 0), # HARD CODED 1umol/L/h
     per_cr_change = del_cr / cr * 100,
@@ -104,12 +109,13 @@ generate_demographics_table <- function(outcome_var) {
     tabulate_cont_vars(
       outcome_var, demographics_df,
       Age, Wt, APACHE_II, APACHE_III,
-      Baseline_Cr, LOS_ICU_hr, LOS_Hosp_hr, ICU_time2AKI
+      Baseline_Cr, LOS_ICU_days, LOS_Hosp_days, ICU_time2AKI
     ),
     tabulate_bin_vars(
       outcome_var, demographics_df,
       Male, Mecvenadm, PCs_cardio, Surgadmission:PCs_metabolic,
-      Vasopressor:Chronic_liver_disease, RRT, AKI_ICU:Olig_defined_AKI_2or3
+      Vasopressor:Chronic_liver_disease, RRT, AKI_ICU:Olig_defined_AKI_2or3,
+      Dc_ICU_death, Dc_Hosp_death
     ),
     tabulate_numbers(outcome_var, meas_df, "Measurements"),
     tabulate_numbers(outcome_var, ts_df, "Creatinine_changes"),
@@ -135,5 +141,9 @@ generate_demographics_table <- function(outcome_var) {
 
 demographics_table <- generate_demographics_table("AKI_2or3")
 
-kable(demographics_table)
-write.csv(demographics_table, "demographics_table.csv")
+print(kable(demographics_table))
+write.csv(demographics_table, "demographics_table.csv", row.names = FALSE)
+
+# del_t_ch_hr should be the difference with the next measurement,
+# not ALL of them. This is to show the median time between measuremetns is 4hrs
+# add per_cr_change
