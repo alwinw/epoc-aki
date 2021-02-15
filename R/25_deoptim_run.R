@@ -18,6 +18,26 @@ grad_only_model <- deoptim_search(
   )
 )
 
+# Cr change model
+set.seed(8)
+change_only_model <- deoptim_search(
+  outcome_var = "AKI_2or3",
+  baseline_predictors = NULL,
+  cr_predictors = "del_cr",
+  add_gradient_predictor = NULL,
+  stepwise = FALSE,
+  k = "mBIC",
+  penalty_fn = heuristic_penalty,
+  itermax = 200,
+  NP = 320,
+  parallel = TRUE,
+  secondary_outcomes = c(
+    "AKI_ICU",
+    "Cr_defined_AKI_2or3", "Cr_defined_AKI",
+    "Olig_defined_AKI_2or3", "Olig_defined_AKI"
+  )
+)
+
 # Cr percentage change model
 set.seed(8)
 per_only_model <- deoptim_search(
