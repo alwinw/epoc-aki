@@ -212,7 +212,10 @@ heatmap_all <- cr_ch_ts %>%
       del_t_aki_hr < 8 ~ "t_AKI in  4-8hrs",
       del_t_aki_hr < 12 ~ "t_AKI in  8-12hrs",
       del_t_aki_hr < 16 ~ "t_AKI in 12-16hrs",
-      TRUE ~ "t_AKI in 16+hrs"
+      del_t_aki_hr < 20 ~ "t_AKI in 16-20hrs",
+      del_t_aki_hr < 24 ~ "t_AKI in 20-24hrs",
+      del_t_aki_hr < 30 ~ "t_AKI in 24-30hrs",
+      TRUE ~ "t_AKI in 30+hrs"
     ),
   )
 
@@ -226,6 +229,7 @@ heatmap_plot <- ggplot(heatmap_ts, aes(x = del_t_ch_hr, y = del_cr)) +
     aes(fill = after_stat(level_mid)),
     contour_var = "density"
   ) +
+  # geom_point() +
   scale_x_continuous(breaks = seq(0, 12, by = 2)) +
   coord_cartesian(xlim = c(0, 12), ylim = c(-25, 30), expand = FALSE) +
   facet_wrap(~heatmap) +
@@ -256,12 +260,12 @@ if (save_plots) {
   ggsave("cr_ch_heatmap_ppt.png", heatmap_plot,
     path = paste0(rel_path, "/doc/images/"),
     type = "cairo-png", bg = "transparent",
-    width = 15, height = 8, scale = 0.8
+    width = 15, height = 14, scale = 0.8
   )
 
   ggsave("cr_ch_heatmap.png", heatmap_plot,
     path = paste0(rel_path, "/doc/images/"),
-    width = 12, height = 8, scale = 0.8
+    width = 12, height = 11.5, scale = 0.8
   )
 }
 
