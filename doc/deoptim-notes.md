@@ -2105,3 +2105,288 @@ Same model with secondary outcome Olig_defined_AKI:
 | Surgadmission         | 195 (51.7%)           | 47 (69.1%)            | 148 (47.9%)           | 0.11   |
 | Vasopressor           | 136 (36.1%)           | 36 (52.9%)            | 100 (32.4%)           | <0.01  |
 ```
+
+## Cr_Only
+
+```R
+> set.seed(8)
+> grad_only_model <- deoptim_search(
++   outcome_var = "AKI_2or3",
++   baseline_predictors = NULL,
++   cr_predictors = NULL,
++   add_gradient_predictor = 1,
++   stepwise = FALSE,
++   k = "mBIC",
++   penalty_fn = heuristic_penalty,
++   itermax = 200,
++   NP = 320,
++   parallel = TRUE,
++   secondary_outcomes = c(
++     "AKI_ICU",
++     "Cr_defined_AKI_2or3", "Cr_defined_AKI",
++     "Olig_defined_AKI_2or3", "Olig_defined_AKI"
++   )
++ )
+Iteration: 1 bestvalit: 3.877713 bestmemit:    5.500000    3.500000    3.500000   34.900000
+Iteration: 2 bestvalit: 3.633137 bestmemit:    5.400000    3.100000    3.000000   34.200000
+Iteration: 3 bestvalit: 3.633137 bestmemit:    5.400000    3.100000    3.000000   34.200000
+Iteration: 4 bestvalit: 3.633137 bestmemit:    5.400000    3.100000    3.000000   34.200000
+Iteration: 5 bestvalit: 3.633137 bestmemit:    5.400000    3.100000    3.000000   34.200000
+Iteration: 6 bestvalit: 3.633137 bestmemit:    5.400000    3.100000    3.000000   34.200000
+Iteration: 7 bestvalit: 3.633137 bestmemit:    5.400000    3.100000    3.000000   34.200000
+Iteration: 8 bestvalit: 3.633137 bestmemit:    5.400000    3.100000    3.000000   34.200000
+Iteration: 9 bestvalit: 3.633137 bestmemit:    5.400000    3.100000    3.000000   34.200000
+Iteration: 10 bestvalit: 3.633137 bestmemit:    5.400000    3.100000    3.000000   34.200000
+Iteration: 11 bestvalit: 3.633137 bestmemit:    5.400000    3.100000    3.000000   34.200000
+Iteration: 12 bestvalit: 3.584861 bestmemit:    5.700000    3.200000    3.000000   41.900000
+Iteration: 13 bestvalit: 3.584861 bestmemit:    5.700000    3.200000    3.000000   41.900000
+Iteration: 14 bestvalit: 3.582760 bestmemit:    5.700000    3.200000    3.000000   32.900000
+Iteration: 15 bestvalit: 3.582760 bestmemit:    5.700000    3.200000    3.000000   32.900000
+Iteration: 16 bestvalit: 3.580397 bestmemit:    5.600000    3.200000    3.000000   37.000000
+Iteration: 17 bestvalit: 3.580397 bestmemit:    5.600000    3.200000    3.000000   37.000000
+Iteration: 18 bestvalit: 3.579789 bestmemit:    5.700000    3.200000    3.000000   33.400000
+Iteration: 19 bestvalit: 3.578713 bestmemit:    5.700000    3.200000    3.000000   35.800000
+Iteration: 20 bestvalit: 3.578713 bestmemit:    5.700000    3.200000    3.000000   35.800000
+Iteration: 21 bestvalit: 3.578713 bestmemit:    5.700000    3.200000    3.000000   35.800000
+Iteration: 22 bestvalit: 3.578625 bestmemit:    5.600000    3.200000    3.000000   34.100000
+Iteration: 23 bestvalit: 3.578625 bestmemit:    5.600000    3.200000    3.000000   34.100000
+Iteration: 24 bestvalit: 3.578625 bestmemit:    5.600000    3.200000    3.000000   34.100000
+Iteration: 25 bestvalit: 3.578625 bestmemit:    5.600000    3.200000    3.000000   34.100000
+Iteration: 26 bestvalit: 3.578625 bestmemit:    5.600000    3.200000    3.000000   34.100000
+Iteration: 27 bestvalit: 3.578625 bestmemit:    5.600000    3.200000    3.000000   34.100000
+Iteration: 28 bestvalit: 3.578625 bestmemit:    5.600000    3.200000    3.000000   34.100000
+Iteration: 29 bestvalit: 3.575679 bestmemit:    5.600000    3.200000    3.000000   34.700000
+Iteration: 30 bestvalit: 3.575679 bestmemit:    5.600000    3.200000    3.000000   34.700000
+Iteration: 31 bestvalit: 3.575679 bestmemit:    5.600000    3.200000    3.000000   34.700000
+Iteration: 32 bestvalit: 3.575679 bestmemit:    5.600000    3.200000    3.000000   34.700000
+Iteration: 33 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 34 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 35 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 36 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 37 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 38 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 39 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 40 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 41 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 42 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 43 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 44 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 45 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 46 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 47 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 48 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 49 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 50 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 51 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 52 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 53 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 54 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 55 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 56 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 57 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 58 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 59 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 60 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 61 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 62 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 63 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 64 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 65 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 66 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 67 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 68 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 69 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 70 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 71 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 72 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 73 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 74 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 75 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 76 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 77 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 78 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 79 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 80 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 81 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 82 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 83 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 84 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 85 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 86 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 87 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 88 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 89 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 90 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 91 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 92 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 93 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 94 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 95 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 96 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 97 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 98 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 99 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 100 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 101 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 102 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 103 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 104 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 105 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 106 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 107 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 108 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 109 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 110 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 111 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 112 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 113 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 114 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 115 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 116 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 117 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 118 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 119 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 120 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 121 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 122 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 123 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 124 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 125 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 126 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 127 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 128 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 129 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 130 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 131 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 132 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 133 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 134 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 135 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 136 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 137 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 138 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 139 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 140 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 141 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 142 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 143 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 144 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 145 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 146 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 147 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 148 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 149 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 150 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 151 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 152 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 153 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 154 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 155 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 156 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 157 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 158 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 159 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 160 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 161 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 162 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 163 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 164 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 165 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 166 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 167 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 168 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 169 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 170 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 171 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 172 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 173 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 174 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 175 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 176 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 177 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 178 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 179 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 180 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 181 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 182 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 183 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 184 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 185 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 186 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 187 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 188 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 189 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 190 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 191 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 192 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 193 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 194 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 195 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 196 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 197 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 198 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 199 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+Iteration: 200 bestvalit: 3.574642 bestmemit:    5.700000    3.200000    3.000000   34.700000
+
+----------------
+Optimised model found:
+
+
+| Variable    | OddsRatio |    CI.95    | p-value |
+| :---------- | --------: | :---------: | ------: |
+| cr_gradient |      3.08 | [2.35;4.04] |  <0.001 |
+
+
+|                  | Outcome: AKI_2or3      |
+| :--------------- | :--------------------- |
+| AUC              | 0.6172659              |
+| sensitivity      | 0.4335938              |
+| specificity      | 0.800938               |
+| optimal_cutpoint | 0.1556795              |
+| per_admin_in     | 0.7771883              |
+| per_admin_pos    | 0.6176471              |
+| n_admissions     | 293                    |
+| n_admissions_pos | 42                     |
+| n_admissions_neg | 251                    |
+| n_UR             | 284                    |
+| n                | 2175                   |
+| n_event_pos      | 256                    |
+| n_event_neg      | 1919                   |
+| glm_model        | AKI_2or3 ~ cr_gradient |
+| AUC_all          | 0.6172659              |
+| ch_hr_lower      | 4.1                    |
+| ch_hr_upper      | 7.3                    |
+| aki_hr_lower     | 3                      |
+| aki_hr_upper     | 37.7                   |
+
+----------------
+Optimised model with all variables:
+
+
+| Variable    | OddsRatio |    CI.95    | p-value |
+| :---------- | --------: | :---------: | ------: |
+| cr_gradient |      3.08 | [2.35;4.04] |  <0.001 |
+
+
+|                  | Outcome: AKI_2or3      |
+| :--------------- | :--------------------- |
+| AUC              | 0.6172659              |
+| sensitivity      | 0.4335938              |
+| specificity      | 0.800938               |
+| optimal_cutpoint | 0.1556795              |
+| per_admin_in     | 0.7771883              |
+| per_admin_pos    | 0.6176471              |
+| n_admissions     | 293                    |
+| n_admissions_pos | 42                     |
+| n_admissions_neg | 251                    |
+| n_UR             | 284                    |
+| n                | 2175                   |
+| n_event_pos      | 256                    |
+| n_event_neg      | 1919                   |
+| glm_model        | AKI_2or3 ~ cr_gradient |
+| AUC_all          | 0.6172659              |
+| ch_hr_lower      | 4.1                    |
+| ch_hr_upper      | 7.3                    |
+| aki_hr_lower     | 3                      |
+| aki_hr_upper     | 37.7                   |
+```

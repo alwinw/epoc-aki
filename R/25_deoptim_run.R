@@ -1,4 +1,23 @@
 set.seed(8)
+grad_only_model <- deoptim_search(
+  outcome_var = "AKI_2or3",
+  baseline_predictors = NULL,
+  cr_predictors = NULL,
+  add_gradient_predictor = 1,
+  stepwise = FALSE,
+  k = "mBIC",
+  penalty_fn = heuristic_penalty,
+  itermax = 200,
+  NP = 320,
+  parallel = TRUE,
+  secondary_outcomes = c(
+    "AKI_ICU",
+    "Cr_defined_AKI_2or3", "Cr_defined_AKI",
+    "Olig_defined_AKI_2or3", "Olig_defined_AKI"
+  )
+)
+
+set.seed(8)
 multi_model <- deoptim_search(
   outcome_var = "AKI_2or3",
   baseline_predictors = c(
