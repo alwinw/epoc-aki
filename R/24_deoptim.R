@@ -164,34 +164,37 @@ deoptim_search <- function(
   print(kable(t(optim_model_full$summary), col.names = paste("Outcome:", outcome_var)))
 
 
-  baseline_all <- aki_dev_wrapper( # Must be with baseline_df
-    outcome_var = outcome_var,
-    baseline_predictors = baseline_predictors,
-    cr_predictors = NULL,
-    add_gradient_predictor = NULL,
-    all_data = TRUE,
-    analysis_data = baseline_df
-  )
-  cat("\n----------------\nBaseline model for all admissions:\n")
-  print(kable(publish(baseline_all$model, print = FALSE, digits = c(2, 3))$regressionTable %>% select(-Units), align = c("l", "r", "c", "r")))
-  print(kable(t(baseline_all$summary), col.names = paste("Outcome:", outcome_var)))
+  if (!is.null(baseline_predictors)) {
+    baseline_all <- aki_dev_wrapper( # Must be with baseline_df
+      outcome_var = outcome_var,
+      baseline_predictors = baseline_predictors,
+      cr_predictors = NULL,
+      add_gradient_predictor = NULL,
+      all_data = TRUE,
+      analysis_data = baseline_df
+    )
+    cat("\n----------------\nBaseline model for all admissions:\n")
+    print(kable(publish(baseline_all$model, print = FALSE, digits = c(2, 3))$regressionTable %>% select(-Units), align = c("l", "r", "c", "r")))
+    print(kable(t(baseline_all$summary), col.names = paste("Outcome:", outcome_var)))
 
-  baseline_sig <- aki_dev_wrapper( # Must be with baseline_df
-    outcome_var = outcome_var,
-    baseline_predictors = baseline_predictors,
-    cr_predictors = NULL,
-    add_gradient_predictor = NULL,
-    stepwise = TRUE,
-    k = "AIC",
-    all_data = TRUE,
-    analysis_data = baseline_df
-  )
-  cat("\n----------------\nBaseline model for all admissions (sig only):\n")
-  print(kable(publish(baseline_sig$model, print = FALSE, digits = c(2, 3))$regressionTable %>% select(-Units), align = c("l", "r", "c", "r")))
-  print(kable(t(baseline_sig$summary), col.names = paste("Outcome:", outcome_var)))
+    baseline_sig <- aki_dev_wrapper( # Must be with baseline_df
+      outcome_var = outcome_var,
+      baseline_predictors = baseline_predictors,
+      cr_predictors = NULL,
+      add_gradient_predictor = NULL,
+      stepwise = TRUE,
+      k = "AIC",
+      all_data = TRUE,
+      analysis_data = baseline_df
+    )
+    cat("\n----------------\nBaseline model for all admissions (sig only):\n")
+    print(kable(publish(baseline_sig$model, print = FALSE, digits = c(2, 3))$regressionTable %>% select(-Units), align = c("l", "r", "c", "r")))
+    print(kable(t(baseline_sig$summary), col.names = paste("Outcome:", outcome_var)))
+  }
 
   # Update the predictors if it was stepwise!
   baseline_predictors <- gsub(".*~ | \\+ \\bcr\\b| \\+ \\bcr_gradient\\b", "", optim_model$summary$glm_model)
+  if ((baseline_predictors) %in% c("cr", "cr_gradient")) baseline_predictors <- NULL
   if (!grepl("\\bcr\\b", optim_model$summary$glm_model)) cr_predictors <- NULL
   if (!grepl("\\bcr_gradient\\b", optim_model$summary$glm_model)) add_gradient_predictor <- NULL
 
@@ -216,18 +219,66 @@ deoptim_search <- function(
 
   # CR ONLY models
 
-  return(list(
-    optim_value = optim_value,
-    optim_model = optim_model,
-    optim_model_full = optim_model_full,
-    baseline_models = list(baseline_all = baseline_all, baseline_sig = baseline_sig),
-    secondary_models = secondary_models
-  ))
+  if (is.null(baseline_predictors)) {
+    return(list(
+      optim_value = optim_value,
+      optim_model = optim_model,
+      optim_model_full = optim_model_full,
+      secondary_models = secondary_models
+    ))
+  } else {
+    return(baseline_predictors)
+    return(list(
+      optim_value = optim_value,
+      optim_model = optim_model,
+      optim_model_full = optim_model_full,
+      baseline_models = list(baseline_all = baseline_all, baseline_sig = baseline_sig),
+      secondary_models = secondary_models
+    ))
+  }
 }
 
-# CR model
+# Cr gradient only model
+grad_only_model <- deoptim_search(
+  outcome_var = "AKI_2or3",
+  baseline_predictors = NULL,
+  cr_predictors = NULL,
+  add_gradient_predictor = 1,
+  stepwise = FALSE,
+  k = "mBIC",
+  penalty_fn = heuristic_penalty,
+  itermax = 200,
+  NP = 320,
+  parallel = TRUE,
+  secondary_outcomes = c(
+    "AKI_ICU",
+    "Cr_defined_AKI_2or3", "Cr_defined_AKI",
+    "Olig_defined_AKI_2or3", "Olig_defined_AKI"
+  ),
+  override = c(5.7, 3.2, 3.0, 34.7)
+)
 
+# Cr percentage change model
+per_only_model <- deoptim_search(
+  outcome_var = "AKI_2or3",
+  baseline_predictors = NULL,
+  cr_predictors = "per_cr_change",
+  add_gradient_predictor = NULL,
+  stepwise = FALSE,
+  k = "mBIC",
+  penalty_fn = heuristic_penalty,
+  itermax = 200,
+  NP = 320,
+  parallel = TRUE,
+  secondary_outcomes = c(
+    "AKI_ICU",
+    "Cr_defined_AKI_2or3", "Cr_defined_AKI",
+    "Olig_defined_AKI_2or3", "Olig_defined_AKI"
+  ),
+  override = c(5.6, 3.1, 3.0, 34.7)
+)
 
+# Multivariate model
 multi_model <- deoptim_search(
   outcome_var = "AKI_2or3",
   baseline_predictors = c(
