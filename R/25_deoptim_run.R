@@ -1,4 +1,8 @@
 set.seed(8)
+
+# CR model
+
+set.seed(8)
 multi_model <- deoptim_search(
   outcome_var = "AKI_2or3",
   baseline_predictors = c(

@@ -214,6 +214,8 @@ deoptim_search <- function(
   )
   names(secondary_models) <- secondary_outcomes
 
+  # CR ONLY models
+
   return(list(
     optim_value = optim_value,
     optim_model = optim_model,
@@ -222,6 +224,8 @@ deoptim_search <- function(
     secondary_models = secondary_models
   ))
 }
+
+# CR model
 
 
 multi_model <- deoptim_search(

@@ -143,3 +143,7 @@ demographics_table <- generate_demographics_table("AKI_2or3")
 
 print(kable(demographics_table))
 write.csv(demographics_table, "demographics_table.csv", row.names = FALSE)
+
+# del_t_ch_hr should be the difference with the next measurement,
+# not ALL of them. This is to show the median time between measuremetns is 4hrs
+# add per_cr_change
