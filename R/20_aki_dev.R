@@ -84,9 +84,9 @@ aki_dev_wrapper <- function(
                             add_gradient_predictor = NULL,
                             del_t_ch_hr_range = c(-Inf, Inf),
                             del_t_aki_hr_range = c(-Inf, Inf),
+                            first_cr_only = TRUE,
                             stepwise = FALSE,
                             k = "mBIC",
-                            plot_cutpoint = FALSE,
                             all_data = FALSE,
                             analysis_data = analysis_df
                             # Consider adding pos and neg class here
@@ -116,6 +116,14 @@ aki_dev_wrapper <- function(
   summary$aki_hr_upper <- del_t_aki_hr_range[2]
   # Remove any very large jumps
   analysis_data <- filter(analysis_data, abs(del_cr) < 100) # Consider if this is reasonable or not
+  # Apply first cr_change only
+  if (first_cr_only) {
+    analysis_data <- analysis_data %>%
+      group_by(AdmissionID) %>%
+      slice_max(n = 1, desc(DateTime_Pathology_Result)) %>%
+      # TODO investigate why slice_min is soo much slower
+      slice_min(n = 1, del_t_ch_hr)
+  }
   # Check number of rows
   if (nrow(analysis_data) <= 2) {
     warning(paste0("Insufficient rows in analysis_data"))
