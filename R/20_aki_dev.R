@@ -117,7 +117,7 @@ aki_dev_wrapper <- function(
   # Remove any very large jumps
   analysis_data <- filter(analysis_data, abs(del_cr) < 100) # Consider if this is reasonable or not
   # Apply first cr_change only
-  if (first_cr_only) {
+  if (first_cr_only & "DateTime_Pathology_Result" %in% colnames(analysis_data)) {
     analysis_data <- analysis_data %>%
       group_by(AdmissionID) %>%
       slice_max(n = 1, desc(DateTime_Pathology_Result)) %>%
