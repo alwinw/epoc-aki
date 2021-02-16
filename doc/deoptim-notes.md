@@ -2675,3 +2675,16 @@ Optimised model with all variables:
 | aki_hr_lower     | 3                        |
 | aki_hr_upper     | 37.7                     |
 ```
+
+## Small notes running first Cr only
+
+```R
+# override = c(4.5, 1.0, 4.2, 36.2) # GOOD
+# override = c(4.5, 1.5, 5.2, 38) # BAD lots of extra vars, no cr_gradient
+# override = c(4.8, 1.5, 5.2, 32.1) # GOOD
+# override = c(4.8, 1.5, 5.2, 35.9) # GOOD ?best
+# override = c(4.8, 1.7, 3.0, 35.9) # BAD no cr_gradient, lots of admissions
+# override = c(5.7, 2.7, 6.3, 43.5) # ok but long t_AKI
+# override = c(5.6, 2.5, 7.0, 45.6) # 0.83 AUC, "ok"
+override = c(5.7, 2.5, 5.4, 47.1) # lower AUC...
+```
