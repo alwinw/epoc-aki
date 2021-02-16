@@ -13,38 +13,42 @@ join_data_sheets <- function(demographic, screen_log) {
 }
 
 
-# ---- screen_log_all ----
-create_screening_log <- function(cr_data, olig_data, out_data) {
-  cr_screen_log <- join_data_sheets(cr_data$demographic, cr_data$screen_log)
-  olig_screen_log <- join_data_sheets(olig_data$demographic, olig_data$screen_log)
-
-  # "_in" refers to pts that had cr or olig
-  # "_out" refers to pts that had neither cr or olig
-  merge_col_names <- setdiff(
-    intersect(colnames(cr_screen_log), colnames(olig_screen_log)),
-    c("Incl_criteria_ok", "Pt_Study_no", "Comment")
-  )
-  screen_log_in <- full_join(
-    cr_screen_log, olig_screen_log,
-    by = merge_col_names,
-    suffix = c("_crch", "_olig")
-  )
-
+remove_dup_screen_log_rows <- function(data) {
   # Fill missing NAs due to being screened in for cr and out for olig and vice versa
   # Remove issues with destination due to typos and APACHE_II, APACHE_III
-  screen_log_in %<>%
-    group_by(`UR number`, Admission) %>%
-    mutate(duplicates = n()) %>%
-    arrange(desc(duplicates), `UR number`) %>%
-    fill(-`UR number`, -Admission, .direction = "downup") %>%
+  data %>%
     mutate(
       Dc_destination = first(Dc_destination), # Could be bad if first is NA. Change to mutate if duplicates then....
       APACHE_II = max(APACHE_II, 0, na.rm = TRUE),
       APACHE_III = max(APACHE_III, 0, na.rm = TRUE),
       APACHE_II = if_else(APACHE_II == 0, NA_real_, APACHE_II),
-      APACHE_III = if_else(APACHE_III == 0, NA_real_, APACHE_III),
-      Time_ICU_dc = if_else(duplicates > 1, max(Time_ICU_dc), Time_ICU_dc) # TODO no na.rm on this one
-    ) %>%
+      APACHE_III = if_else(APACHE_III == 0, NA_real_, APACHE_III)
+    )
+}
+
+
+# ---- screen_log_all ----
+create_screening_log <- function(cr_data, olig_data, out_data, excl_UR_numbers) {
+  cr_screen_log <- join_data_sheets(cr_data$demographic, cr_data$screen_log)
+  olig_screen_log <- join_data_sheets(olig_data$demographic, olig_data$screen_log)
+
+  merge_col_names <- setdiff(
+    intersect(colnames(cr_screen_log), colnames(olig_screen_log)),
+    c("Incl_criteria_ok", "Pt_Study_no", "Comment")
+  )
+
+  # "_in" refers to pts that had cr or olig
+  screen_log_in <- full_join(
+    cr_screen_log, olig_screen_log,
+    by = merge_col_names,
+    suffix = c("_crch", "_olig")
+  ) %>%
+    group_by(`UR number`, Admission) %>%
+    mutate(duplicates = n()) %>%
+    arrange(desc(duplicates), `UR number`) %>%
+    fill(-`UR number`, -Admission, .direction = "downup") %>%
+    remove_dup_screen_log_rows() %>%
+    mutate(Time_ICU_dc = if_else(duplicates > 1, max(Time_ICU_dc), Time_ICU_dc)) %>% # TODO no na.rm on this one)
     distinct() %>%
     mutate(
       duplicates = n()
@@ -61,124 +65,95 @@ create_screening_log <- function(cr_data, olig_data, out_data) {
     all.equal(cr_data$screen_log$`UR number`, screen_log_in$`UR number`)
   )
 
-  screen_log_out <- rbind()
-}
+  # "_out" refers to pts that had neither cr or olig
+  screen_log_out <- bind_rows(out_data) %>%
+    distinct() %>%
+    rename(`UR number` = UR, Comment_out = Comment) %>%
+    group_by(`UR number`, `Date first screened`) %>%
+    remove_dup_screen_log_rows() %>%
+    distinct() %>%
+    group_by(`UR number`) %>%
+    top_n(-1, `Date first screened`) %>% # Consider not removing, then grouping by neither, arrange by date, then fill up
+    ungroup()
 
-
-
-
-
-
-
-
-screen_logs$screen_out <- rbind(
-  xlsx_data$screen_out$no_creatinine,
-  xlsx_data$screen_out$no_oliguria,
-  xlsx_data$screen_out$neither_cr_ol
-) %>%
-  distinct() %>%
-  rename(
-    `UR number` = UR,
-    Comment_out = Comment
-  ) %>%
-  group_by(`UR number`, `Date first screened`) %>%
-  mutate(
-    APACHE_II = max(APACHE_II, 0, na.rm = TRUE),
-    APACHE_III = max(APACHE_III, 0, na.rm = TRUE),
-    APACHE_II = if_else(APACHE_II == 0, NA_real_, APACHE_II),
-    APACHE_III = if_else(APACHE_III == 0, NA_real_, APACHE_III),
-  ) %>%
-  distinct() %>%
-  group_by(`UR number`) %>%
-  top_n(-1, `Date first screened`) # Consider not removing, then grouping by neither, arrange by date, then fill up
-
-screen_logs$errors_logi <- screen_logs$screen_out$`UR number` %in%
-  xlsx_data$excluded_UR_numbers
-
-screen_logs$screen_out[screen_logs$errors_logi, "Excl_criteria_ok"] <- "N"
-screen_logs$screen_out[screen_logs$errors_logi, "Already_AKI"] <- "Y"
-
-# All the URs in screen_out should be in screen_in. Remove any errors
-screen_logs$neither_UR <-
-  setdiff(
-    unique(screen_logs$screen_out$`UR number`),
-    unique(screen_logs$screen_in$`UR number`)
+  stopifnot(
+    nrow(screen_log_out) == uniqueN(screen_log_out$`UR number`)
   )
-screen_logs$screen_neither <- screen_logs$screen_out %>%
-  filter(`UR number` %in% screen_logs$neither_UR)
 
-if (FALSE) {
-  kable(
-    screen_logs$screen_neither,
-    caption = "Admissions found in screen out",
-    booktabs = TRUE
+  chrono_errors <- screen_log_out$`UR number` %in% excl_UR_numbers
+  screen_log_out[chrono_errors, "Excl_criteria_ok"] <- "N"
+  screen_log_out[chrono_errors, "Already_AKI"] <- "Y"
+
+  # All URs in screen_log_out should also appear in screen_log_in
+  extra_UR <- setdiff(
+    unique(screen_log_out$`UR number`), unique(screen_log_in$`UR number`)
   )
-}
 
-if (nrow(screen_logs$screen_out) != length(unique(screen_logs$screen_out$`UR number`))) {
-  stop(paste(
-    "Duplicate UR numbers found. Actual:", nrow(screen_logs$screen_out),
-    "Expected: ", length(unique(screen_logs$screen_out$`UR number`))
-  ))
-}
-
-screen_logs$full_merge_cols <- intersect(
-  colnames(screen_logs$screen_in),
-  colnames(screen_logs$screen_out)
-)
-screen_logs$full <- full_join(
-  screen_logs$screen_in, screen_logs$screen_out,
-  by = screen_logs$full_merge_cols
-)
-
-screen_logs$full <- screen_logs$full %>%
-  group_by(`UR number`) %>%
-  mutate(
-    Total_rows = n(),
-    duplicates = Total_admissions != Total_rows,
-    Event = if_else(Epis_olig == "Y", 1, 0, 0),
-    Event = if_else(Epis_cr_change == "Y", 2, 0, 0) + Event,
-    Event = factor(
-      Event,
-      levels = c(0, 1, 2, 3),
-      labels = c("Neither", "Olig only", "Cr change only", "Both")
-    )
+  # "_full" refers to the full screening log
+  screen_log_full <- full_join(
+    screen_log_in, screen_log_out,
+    by = intersect(colnames(screen_log_in), colnames(screen_log_out))
   ) %>%
-  group_by(`UR number`, Event) %>%
-  arrange(-Total_rows, `UR number`, Event, Admission) %>%
-  fill(-`UR number`, -Event, .direction = "updown") %>%
-  distinct() %>%
-  group_by(`UR number`) %>%
-  mutate(
-    Total_rows = n(),
-    duplicates = Total_admissions != Total_rows
-  ) %>%
-  ungroup() %>%
-  filter(!is.na(Admission)) %>%
-  select(
-    `UR number`, starts_with("Pt_Study_no"),
-    starts_with("Incl_criteria"), starts_with("Epis_"), starts_with("Total_no_"),
-    Dates_screened:Child, Age:Dc_destination,
-    Admission, Total_admissions, Event, starts_with("Comment")
-  ) %>%
-  arrange(`UR number`, Admission)
+    group_by(`UR number`) %>%
+    mutate(
+      Total_rows = n(),
+      duplicates = Total_admissions != Total_rows,
+      Event = if_else(Epis_olig == "Y", 1, 0, 0),
+      Event = if_else(Epis_cr_change == "Y", 2, 0, 0) + Event,
+      Event = factor(
+        Event,
+        levels = c(0, 1, 2, 3),
+        labels = c("Neither", "Olig only", "Cr change only", "Both")
+      )
+    ) %>%
+    group_by(`UR number`, Event) %>%
+    arrange(-Total_rows, `UR number`, Event, Admission) %>%
+    fill(-`UR number`, -Event, .direction = "updown") %>%
+    distinct() %>%
+    group_by(`UR number`) %>%
+    mutate(
+      Total_rows = n(),
+      duplicates = Total_admissions != Total_rows
+    ) %>%
+    ungroup() %>%
+    filter(!is.na(Admission)) %>% # Should also filter out extra_UR
+    select(
+      `UR number`, starts_with("Pt_Study_no"),
+      starts_with("Incl_criteria"), starts_with("Epis_"), starts_with("Total_no_"),
+      Dates_screened:Child, Age:Dc_destination,
+      Admission, Total_admissions, Event, starts_with("Comment")
+    ) %>%
+    arrange(`UR number`, Admission)
 
-if (nrow(screen_logs$full) != nrow(screen_logs$screen_in)) {
-  stop(paste(
-    "Duplicate UR numbers found. Actual:", nrow(screen_logs$full),
-    "Expected: ", nrow(screen_logs$screen_in)
-  ))
-}
-if (anyNA(screen_logs$full$`UR number`)) {
-  stop("Found NAs in merged UR numbers")
-}
-if (sum(!is.na(screen_logs$full$Pt_Study_no_crch)) !=
-  length(unique(filter(xlsx_data$creatinine$screen_log, !is.na(Pt_Study_no))$Pt_Study_no))) {
-  stop("Number of LT patients has changed")
-}
-if (sum(!is.na(screen_logs$full$Pt_Study_no_olig)) !=
-  length(unique(filter(xlsx_data$oliguria$screen_log, !is.na(Pt_Study_no))$Pt_Study_no))) {
-  stop("Number of L patients has changed")
+  stopifnot(
+    "Duplicate UR numbers found" =
+      nrow(screen_log_full) == nrow(cr_data$screen_log)
+  )
+  stopifnot(
+    "Found NAs in merged UR numbers" =
+      !anyNA(screen_log_full$`UR number`)
+  )
+  stopifnot(
+    "Number of LT patients has changed" =
+      sum(!is.na(screen_log_full$Pt_Study_no_crch)) ==
+        uniqueN(filter(cr_data$screen_log, !is.na(Pt_Study_no))$Pt_Study_no)
+  )
+  stopifnot(
+    "Number of L patients has changed" =
+      sum(!is.na(screen_log_full$Pt_Study_no_olig)) ==
+        uniqueN(filter(olig_data$screen_log, !is.na(Pt_Study_no))$Pt_Study_no)
+  )
+
+  # setdiff(
+  #   c(colnames(cr_data$demographic), colnames(cr_data$screen_log), colnames(screen_log_out)),
+  #   colnames(screen_log_full)
+  # )
+  # setdiff(
+  #   colnames(screen_log_full),
+  #   c(colnames(cr_data$demographic), colnames(cr_data$screen_log), colnames(screen_log_out))
+  # )
+
+  return(screen_log_full)
 }
 
 # ---- find_cols_function ----

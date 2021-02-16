@@ -101,6 +101,7 @@ find_data_collection_errors <- function(cr_data, olig_data) {
   cr_errors <- cr_data$screen_log[chrono_errors, ]
   olig_errors <- olig_data$screen_log[chrono_errors, ]
 
+  excl_UR_numbers <- cr_errors$`UR number`
   excl_Pt_Study_no <- discard(
     c(olig_errors$Pt_Study_no, cr_errors$Pt_Study_no),
     is.na
@@ -119,7 +120,10 @@ find_data_collection_errors <- function(cr_data, olig_data) {
     caption = "Oliguria Potential Errors",
   ))
 
-  return(excl_Pt_Study_no)
+  return(list(
+    Pt_Study_no = excl_Pt_Study_no,
+    UR_numbers = excl_UR_numbers
+  ))
 }
 
 fix_data_collection_errors <- function(xlsx_data, excl_Pt_Study_no) {
