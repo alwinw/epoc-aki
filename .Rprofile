@@ -3,4 +3,3 @@ styler::style_dir(
   style = styler::tidyverse_style, strict = TRUE,
   exclude_files = "data/Paper_analysis.R"
 )
-source("R/00_config.R")

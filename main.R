@@ -16,7 +16,7 @@
 
 file_sources <- list.files(path = "R/", pattern = "^[0-9][0-9].*.R$", full.names = TRUE)
 
-max_num <- 26
+max_num <- 1
 excl_num <- c(7, 10:19, 21:23, 25)
 file_nums <- as.numeric(gsub(".*R/(.+[0-9])_[A-Za-z].*", "\\1", file_sources))
 file_sources <- file_sources[file_nums <= max_num & !(file_nums %in% excl_num)]
@@ -31,3 +31,7 @@ sapply(
 )
 
 rm(file_sources)
+
+xlsx_data <- load_excel_data(rel_path)
+excluded_Pt_Study_no <- find_data_collection_errors(xlsx_data)
+xlsx_data <- fix_data_collection_errors(xlsx_data)

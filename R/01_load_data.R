@@ -34,21 +34,30 @@ add_admission_id <- function(df) {
     arrange(`UR number`, Dates_screened)
 }
 
+remove_excl_pt_study_no <- function(dataframe, excluded_Pt_Study_no) {
+  filter(dataframe, !(Pt_Study_no %in% excluded_Pt_Study_no))
+}
+
 # ---- Load Excel Data ----
 load_excel_data <- function(rel_path) {
   xlsx_data <- list()
 
-  oliguria <- file.path(rel_path, "data/Creatinine change in oliguria 8.7.20.xlsx")
-  creatinine <- file.path(rel_path, "data/Small changes in creatinine 8.7.20.xlsx")
-  demographics <- file.path(rel_path, "data/Demographics pts screened out.xlsx")
-  apd_extract <- file.path(rel_path, "data/COMET-Extract-APD 23 Oct 2018.xlsx")
-  creat_furo <- file.path(rel_path, "data/ED_ICU_Creatinine_Furosemide.xlsx")
+  rel_path <- file.path(rel_path, "data")
+  oliguria <- file.path(rel_path, "Creatinine change in oliguria 8.7.20.xlsx")
+  creatinine <- file.path(rel_path, "Small changes in creatinine 8.7.20.xlsx")
+  demographics <- file.path(rel_path, "Demographics pts screened out.xlsx")
+  apd_extract <- file.path(rel_path, "COMET-Extract-APD 23 Oct 2018.xlsx")
+  creat_furo <- file.path(rel_path, "ED_ICU_Creatinine_Furosemide.xlsx")
 
   xlsx_data$oliguria <- list(
     demographic = read_excel(oliguria, "Patient Demographics"),
     data_set = read_excel(oliguria, "Data set"),
-    outcomes = read_excel(oliguria, "AKI & outcomes", .name_repair = repair_as_comment),
-    screen_log = read_excel(oliguria, "Screening log", .name_repair = repair_as_comment) %>%
+    outcomes = read_excel(oliguria, "AKI & outcomes",
+      .name_repair = repair_as_comment
+    ),
+    screen_log = read_excel(oliguria, "Screening log",
+      .name_repair = repair_as_comment
+    ) %>%
       add_admission_id(.)
   )
   xlsx_data$creatinine <- list(
@@ -75,89 +84,99 @@ load_excel_data <- function(rel_path) {
   return(xlsx_data)
 }
 
+# ---- Data Collection Errors ----
+find_data_collection_errors <- function(xlsx_data) {
+  chrono_errors <-
+    (xlsx_data$creatinine$screen_log$`UR number` !=
+      xlsx_data$oliguria$screen_log$`UR number`) |
+      (xlsx_data$creatinine$screen_log$Dates_screened !=
+        xlsx_data$oliguria$screen_log$Dates_screened) |
+      (xlsx_data$creatinine$screen_log$Excl_criteria_ok !=
+        xlsx_data$oliguria$screen_log$Excl_criteria_ok)
 
-# ---- data_collection_errors ----
-errors_logi <-
-  (xlsx_data$creatinine$screen_log$`UR number` !=
-    xlsx_data$oliguria$screen_log$`UR number`) |
-    (xlsx_data$creatinine$screen_log$Dates_screened !=
-      xlsx_data$oliguria$screen_log$Dates_screened) |
-    (xlsx_data$creatinine$screen_log$Excl_criteria_ok !=
-      xlsx_data$oliguria$screen_log$Excl_criteria_ok)
+  creatinine_errors <- xlsx_data$creatinine$screen_log[chrono_errors, ]
+  oliguria_errors <- xlsx_data$oliguria$screen_log[chrono_errors, ]
 
-creatinine_errors <- xlsx_data$creatinine$screen_log[errors_logi, ]
-oliguria_errors <- xlsx_data$oliguria$screen_log[errors_logi, ]
+  excluded_Pt_Study_no <- discard(
+    c(oliguria_errors$Pt_Study_no, creatinine_errors$Pt_Study_no),
+    is.na
+  )
 
-xlsx_data$excluded_UR_numbers <- creatinine_errors$`UR number`
-xlsx_data$excluded_Pt_Study_no <- discard(
-  c(oliguria_errors$Pt_Study_no, creatinine_errors$Pt_Study_no),
-  is.na
-)
+  cat(paste(
+    "Discarded Pt Study Numbers: ",
+    paste(excluded_Pt_Study_no, collapse = ", "), "\n"
+  ))
+  print(kable(
+    creatinine_errors[, c(13, 2:4, 12, 14)],
+    caption = "Creatinine Potential Errors",
+  ))
+  print(kable(
+    oliguria_errors[, c(13, 2:4, 12, 14)],
+    caption = "Oliguria Potential Errors",
+  ))
 
-cat(paste(
-  # "Discarded UR Numbers:       ", paste(xlsx_data$excluded_UR_numbers , collapse = ", "), "\n",
-  "Discarded Pt Study Numbers: ",
-  paste(xlsx_data$excluded_Pt_Study_no, collapse = ", "), "\n"
-))
-
-kable(
-  creatinine_errors[, c(13, 2:4, 12, 14)],
-  caption = "Creatinine Potential Errors",
-  booktabs = TRUE
-)
-kable(
-  oliguria_errors[, c(13, 2:4, 12, 14)],
-  caption = "Oliguria Potential Errors",
-  booktabs = TRUE
-)
-
-# Correct data
-xlsx_data$creatinine$screen_log[errors_logi, "Dates_screened"] <-
-  xlsx_data$oliguria$screen_log[errors_logi, "Dates_screened"]
-
-xlsx_data$creatinine$screen_log$errors_logi <- errors_logi
-xlsx_data$creatinine$screen_log <- xlsx_data$creatinine$screen_log %>%
-  mutate(
-    Excl_criteria_ok = if_else(errors_logi, "N", Excl_criteria_ok),
-    Already_AKI = if_else(errors_logi, "Y", Already_AKI),
-    Incl_criteria_ok = if_else(errors_logi, NA_character_, Incl_criteria_ok),
-    Epis_cr_change = if_else(errors_logi, NA_character_, Epis_cr_change),
-    Pt_Study_no = if_else(errors_logi, NA_character_, Pt_Study_no),
-    Total_no_cr_epis = if_else(errors_logi, NA_real_, Total_no_cr_epis)
-  ) %>%
-  select(-errors_logi)
-
-xlsx_data$oliguria$screen_log$errors_logi <- errors_logi
-xlsx_data$oliguria$screen_log <- xlsx_data$oliguria$screen_log %>%
-  mutate(
-    Excl_criteria_ok = if_else(errors_logi, "N", Excl_criteria_ok),
-    Already_AKI = if_else(errors_logi, "Y", Already_AKI),
-    Incl_criteria_ok = if_else(errors_logi, NA_character_, Incl_criteria_ok),
-    Epis_olig = if_else(errors_logi, NA_character_, Epis_olig),
-    Pt_Study_no = if_else(errors_logi, NA_character_, Pt_Study_no),
-    Total_no_olig_epis = if_else(errors_logi, NA_real_, Total_no_olig_epis)
-  ) %>%
-  select(-errors_logi)
-
-kable(
-  xlsx_data$creatinine$screen_log[errors_logi, c(13, 2:4, 12, 14)],
-  caption = "Creatinine Fixed Rows",
-  booktabs = TRUE
-)
-kable(
-  xlsx_data$oliguria$screen_log[errors_logi, c(13, 2:4, 12, 14)],
-  caption = "Oliguria Fixed Rows",
-  booktabs = TRUE
-)
-
-remove_excl_pt_study_no <- function(dataframe) {
-  return(filter(dataframe, !(Pt_Study_no %in% xlsx_data$excluded_Pt_Study_no)))
+  return(excluded_Pt_Study_no)
 }
 
-xlsx_data$creatinine$demographic <- remove_excl_pt_study_no(xlsx_data$creatinine$demographic)
-xlsx_data$oliguria$demographic <- remove_excl_pt_study_no(xlsx_data$oliguria$demographic)
+fix_data_collection_errors <- function(xlsx_data) {
+  # chronology based errors
+  chrono_errors <-
+    (xlsx_data$creatinine$screen_log$`UR number` !=
+      xlsx_data$oliguria$screen_log$`UR number`) |
+      (xlsx_data$creatinine$screen_log$Dates_screened !=
+        xlsx_data$oliguria$screen_log$Dates_screened) |
+      (xlsx_data$creatinine$screen_log$Excl_criteria_ok !=
+        xlsx_data$oliguria$screen_log$Excl_criteria_ok)
 
-xlsx_data$creatinine$outcomes <- remove_excl_pt_study_no(xlsx_data$creatinine$outcomes)
-xlsx_data$oliguria$outcomes <- remove_excl_pt_study_no(xlsx_data$oliguria$outcomes)
+  excluded_Pt_Study_no <- discard(
+    c(
+      xlsx_data$oliguria$screen_log[chrono_errors, ]$Pt_Study_no,
+      xlsx_data$creatinine$screen_log[chrono_errors, ]$Pt_Study_no
+    ),
+    is.na
+  )
 
-rm(errors_logi, creatinine_errors, oliguria_errors, remove_excl_pt_study_no)
+  xlsx_data$creatinine$screen_log[chrono_errors, "Dates_screened"] <-
+    xlsx_data$oliguria$screen_log[chrono_errors, "Dates_screened"]
+
+  xlsx_data$creatinine$screen_log$chrono_errors <- chrono_errors
+  xlsx_data$creatinine$screen_log <- xlsx_data$creatinine$screen_log %>%
+    mutate(
+      Excl_criteria_ok = if_else(chrono_errors, "N", Excl_criteria_ok),
+      Already_AKI = if_else(chrono_errors, "Y", Already_AKI),
+      Incl_criteria_ok = if_else(chrono_errors, NA_character_, Incl_criteria_ok),
+      Epis_cr_change = if_else(chrono_errors, NA_character_, Epis_cr_change),
+      Pt_Study_no = if_else(chrono_errors, NA_character_, Pt_Study_no),
+      Total_no_cr_epis = if_else(chrono_errors, NA_real_, Total_no_cr_epis)
+    ) %>%
+    select(-chrono_errors)
+
+  xlsx_data$oliguria$screen_log$chrono_errors <- chrono_errors
+  xlsx_data$oliguria$screen_log <- xlsx_data$oliguria$screen_log %>%
+    mutate(
+      Excl_criteria_ok = if_else(chrono_errors, "N", Excl_criteria_ok),
+      Already_AKI = if_else(chrono_errors, "Y", Already_AKI),
+      Incl_criteria_ok = if_else(chrono_errors, NA_character_, Incl_criteria_ok),
+      Epis_olig = if_else(chrono_errors, NA_character_, Epis_olig),
+      Pt_Study_no = if_else(chrono_errors, NA_character_, Pt_Study_no),
+      Total_no_olig_epis = if_else(chrono_errors, NA_real_, Total_no_olig_epis)
+    ) %>%
+    select(-chrono_errors)
+
+  xlsx_data$creatinine$demographic <- remove_excl_pt_study_no(xlsx_data$creatinine$demographic, excluded_Pt_Study_no)
+  xlsx_data$oliguria$demographic <- remove_excl_pt_study_no(xlsx_data$oliguria$demographic, excluded_Pt_Study_no)
+
+  xlsx_data$creatinine$outcomes <- remove_excl_pt_study_no(xlsx_data$creatinine$outcomes, excluded_Pt_Study_no)
+  xlsx_data$oliguria$outcomes <- remove_excl_pt_study_no(xlsx_data$oliguria$outcomes, excluded_Pt_Study_no)
+
+  print(kable(
+    xlsx_data$creatinine$screen_log[chrono_errors, c(13, 2:4, 12, 14)],
+    caption = "Creatinine Fixed Rows",
+  ))
+  print(kable(
+    xlsx_data$oliguria$screen_log[chrono_errors, c(13, 2:4, 12, 14)],
+    caption = "Oliguria Fixed Rows",
+  ))
+
+  return(xlsx_data)
+}
