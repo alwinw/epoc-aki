@@ -1,74 +1,79 @@
-# ---- excel_date_to_character_function ----
-excel_date_to_character <- function(vector) {
-  suppressWarnings(ifelse(grepl("/", vector), vector,
-    as.character(as.Date(as.numeric(vector), origin = "1899-12-30"), format = "%d/%m/%y")
-  ))
+# ---- Conversion Functions ----
+repair_as_comment <- function(x) {
+  return(if_else(x == "", "Comment", x, NA_character_))
 }
 
+excel_col_to_date <- function(col) {
+  # Fixes cases where a column or data is read as numeric not date
+  col[!grepl("/", col)] <-
+    as.character(
+      as.Date(
+        as.numeric(col[!grepl("/", col)]),
+        origin = "1899-12-30"
+      ),
+      format = "%d/%m/%y"
+    )
+  return(col)
+}
+stopifnot(
+  excel_col_to_date(
+    c("5/2/18, 6/2/18", "43136", "11/7/18, 12/7/18", "43292")
+  ) ==
+    c("5/2/18, 6/2/18", "05/02/18", "11/7/18, 12/7/18", "11/07/18")
+)
 
-# ---- last_column_as_comment_function ----
-empty_col_as_comment <- function(x) {
-  return(if_else(x == "", "Comment", x, ))
+add_admission_id <- function(df) {
+  df %>%
+    mutate(Dates_screened = excel_col_to_date(Dates_screened)) %>%
+    group_by(`UR number`) %>%
+    mutate(
+      Admission = row_number(),
+      Total_admissions = n()
+    ) %>%
+    ungroup() %>%
+    arrange(`UR number`, Dates_screened)
 }
 
-# ---- load_excel ----
-xlsx_paths <- list(
-  oliguria = file.path(rel_path, "data/Creatinine change in oliguria 8.7.20.xlsx"),
-  creatinine = file.path(rel_path, "data/Small changes in creatinine 8.7.20.xlsx"),
-  demographics = file.path(rel_path, "data/Demographics pts screened out.xlsx"),
-  apd_extract = file.path(rel_path, "data/COMET-Extract-APD 23 Oct 2018.xlsx"),
-  creat_furo = file.path(rel_path, "data/ED_ICU_Creatinine_Furosemide.xlsx")
-)
+# ---- Load Excel Data ----
+load_excel_data <- function(rel_path) {
+  xlsx_data <- list()
 
-xlsx_data <- list()
+  oliguria <- file.path(rel_path, "data/Creatinine change in oliguria 8.7.20.xlsx")
+  creatinine <- file.path(rel_path, "data/Small changes in creatinine 8.7.20.xlsx")
+  demographics <- file.path(rel_path, "data/Demographics pts screened out.xlsx")
+  apd_extract <- file.path(rel_path, "data/COMET-Extract-APD 23 Oct 2018.xlsx")
+  creat_furo <- file.path(rel_path, "data/ED_ICU_Creatinine_Furosemide.xlsx")
 
-xlsx_data$oliguria <- list(
-  demographic = read_excel(xlsx_paths$oliguria, "Patient Demographics"),
-  data_set = read_excel(xlsx_paths$oliguria, "Data set"),
-  outcomes = read_excel(xlsx_paths$oliguria, "AKI & outcomes", .name_repair = empty_col_as_comment),
-  screen_log = read_excel(xlsx_paths$oliguria, "Screening log", .name_repair = empty_col_as_comment)
-)
-xlsx_data$creatinine <- list(
-  demographic = read_excel(xlsx_paths$creatinine, "Patient Demographics"),
-  data_set = read_excel(xlsx_paths$creatinine, "Data set"),
-  outcomes = read_excel(xlsx_paths$creatinine, "AKI & outcomes", .name_repair = empty_col_as_comment),
-  screen_log = read_excel(xlsx_paths$creatinine, "Screening log", .name_repair = empty_col_as_comment)
-)
-xlsx_data$screen_out <- list(
-  no_creatinine = read_excel(xlsx_paths$demographics, "no cr change", .name_repair = empty_col_as_comment),
-  no_oliguria = read_excel(xlsx_paths$demographics, "no oliguria", .name_repair = empty_col_as_comment),
-  neither_cr_ol = read_excel(xlsx_paths$demographics, "neither cr nor olig", .name_repair = empty_col_as_comment)
-)
-xlsx_data$apd_extract <- list(
-  apd_extract = read_excel(xlsx_paths$apd_extract, "Admissions")
-)
-xlsx_data$creat_furo <- list(
-  blood_gas = read_excel(xlsx_paths$creat_furo, "Blood Gas"),
-  bio_chem = read_excel(xlsx_paths$creat_furo, "BioChem"),
-  lowest_creat = read_excel(xlsx_paths$creat_furo, "Lowest Creatinine Level"),
-  furosemide = read_excel(xlsx_paths$creat_furo, "Medication")
-)
-
-xlsx_data$oliguria$screen_log <- xlsx_data$oliguria$screen_log %>%
-  mutate(Dates_screened = excel_date_to_character(Dates_screened)) %>%
-  group_by(`UR number`) %>%
-  mutate(
-    Admission = row_number(),
-    Total_admissions = n()
-  ) %>%
-  ungroup() %>%
-  arrange(`UR number`, Dates_screened)
-xlsx_data$creatinine$screen_log <- xlsx_data$creatinine$screen_log %>%
-  mutate(Dates_screened = excel_date_to_character(Dates_screened)) %>%
-  group_by(`UR number`) %>%
-  mutate(
-    Admission = row_number(),
-    Total_admissions = n()
-  ) %>%
-  ungroup() %>%
-  arrange(`UR number`, Dates_screened)
-
-rm(xlsx_paths, excel_date_to_character, empty_col_as_comment)
+  xlsx_data$oliguria <- list(
+    demographic = read_excel(oliguria, "Patient Demographics"),
+    data_set = read_excel(oliguria, "Data set"),
+    outcomes = read_excel(oliguria, "AKI & outcomes", .name_repair = repair_as_comment),
+    screen_log = read_excel(oliguria, "Screening log", .name_repair = repair_as_comment) %>%
+      add_admission_id(.)
+  )
+  xlsx_data$creatinine <- list(
+    demographic = read_excel(creatinine, "Patient Demographics"),
+    data_set = read_excel(creatinine, "Data set"),
+    outcomes = read_excel(creatinine, "AKI & outcomes", .name_repair = repair_as_comment),
+    screen_log = read_excel(creatinine, "Screening log", .name_repair = repair_as_comment) %>%
+      add_admission_id(.)
+  )
+  xlsx_data$screen_out <- list(
+    no_creatinine = read_excel(demographics, "no cr change", .name_repair = repair_as_comment),
+    no_oliguria = read_excel(demographics, "no oliguria", .name_repair = repair_as_comment),
+    neither_cr_ol = read_excel(demographics, "neither cr nor olig", .name_repair = repair_as_comment)
+  )
+  xlsx_data$apd_extract <- list(
+    apd_extract = read_excel(apd_extract, "Admissions")
+  )
+  xlsx_data$creat_furo <- list(
+    blood_gas = read_excel(creat_furo, "Blood Gas"),
+    bio_chem = read_excel(creat_furo, "BioChem"),
+    lowest_creat = read_excel(creat_furo, "Lowest Creatinine Level"),
+    furosemide = read_excel(creat_furo, "Medication")
+  )
+  return(xlsx_data)
+}
 
 
 # ---- data_collection_errors ----
