@@ -29,9 +29,15 @@ sapply(
     source(file, .GlobalEnv)
   }
 )
-
 rm(file_sources)
 
 xlsx_data <- load_excel_data(rel_path)
-excluded_Pt_Study_no <- find_data_collection_errors(xlsx_data)
-xlsx_data <- fix_data_collection_errors(xlsx_data)
+excl_Pt_Study_no <- find_data_collection_errors(
+  xlsx_data$creatinine,
+  xlsx_data$oliguria
+)
+xlsx_data <- fix_data_collection_errors(
+  xlsx_data$creatinine,
+  xlsx_data$oliguria,
+  excl_Pt_Study_no
+)

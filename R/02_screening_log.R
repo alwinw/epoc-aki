@@ -1,4 +1,4 @@
-# ----join_demo_screen_log_sheets_function ----
+# ----Join and Check ----
 join_demo_screen_log_sheets <- function(demographic, screen_log) {
   joint <- full_join(demographic, screen_log, by = "Pt_Study_no")
 
@@ -6,10 +6,7 @@ join_demo_screen_log_sheets <- function(demographic, screen_log) {
     stop("NA in UR number of merged excel sheets")
   }
   if (nrow(joint) != nrow(screen_log)) {
-    stop(paste(
-      "Extra rows have been added. Actual:", nrow(joint),
-      "Expected: ", nrow(screen_log)
-    ))
+    stop(paste("Extra rows have been added. Actual:", nrow(joint), "Expected: ", nrow(screen_log)))
   }
   joint %>%
     arrange(Total_admissions, `UR number`, Admission)
@@ -17,7 +14,9 @@ join_demo_screen_log_sheets <- function(demographic, screen_log) {
 
 
 # ---- screen_log_all ----
-screen_logs <- list()
+create_screening_log <- function(xlsx_data) {
+  screen_logs <- list()
+}
 
 screen_logs$creatinine <- join_demo_screen_log_sheets(
   xlsx_data$creatinine$demographic, xlsx_data$creatinine$screen_log
