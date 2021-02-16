@@ -1,5 +1,5 @@
 # ----Join and Check ----
-join_demo_screen_log_sheets <- function(demographic, screen_log) {
+join_data_sheets <- function(demographic, screen_log) {
   joint <- full_join(demographic, screen_log, by = "Pt_Study_no")
 
   if (anyNA(joint$`UR number`)) {
@@ -14,61 +14,62 @@ join_demo_screen_log_sheets <- function(demographic, screen_log) {
 
 
 # ---- screen_log_all ----
-create_screening_log <- function(xlsx_data) {
-  screen_logs <- list()
+create_screening_log <- function(cr_data, olig_data, out_data) {
+  cr_screen_log <- join_data_sheets(cr_data$demographic, cr_data$screen_log)
+  olig_screen_log <- join_data_sheets(olig_data$demographic, olig_data$screen_log)
+
+  # "_in" refers to pts that had cr or olig
+  # "_out" refers to pts that had neither cr or olig
+  merge_col_names <- setdiff(
+    intersect(colnames(cr_screen_log), colnames(olig_screen_log)),
+    c("Incl_criteria_ok", "Pt_Study_no", "Comment")
+  )
+  screen_log_in <- full_join(
+    cr_screen_log, olig_screen_log,
+    by = merge_col_names,
+    suffix = c("_crch", "_olig")
+  )
+
+  # Fill missing NAs due to being screened in for cr and out for olig and vice versa
+  # Remove issues with destination due to typos and APACHE_II, APACHE_III
+  screen_log_in %<>%
+    group_by(`UR number`, Admission) %>%
+    mutate(duplicates = n()) %>%
+    arrange(desc(duplicates), `UR number`) %>%
+    fill(-`UR number`, -Admission, .direction = "downup") %>%
+    mutate(
+      Dc_destination = first(Dc_destination), # Could be bad if first is NA. Change to mutate if duplicates then....
+      APACHE_II = max(APACHE_II, 0, na.rm = TRUE),
+      APACHE_III = max(APACHE_III, 0, na.rm = TRUE),
+      APACHE_II = if_else(APACHE_II == 0, NA_real_, APACHE_II),
+      APACHE_III = if_else(APACHE_III == 0, NA_real_, APACHE_III),
+      Time_ICU_dc = if_else(duplicates > 1, max(Time_ICU_dc), Time_ICU_dc) # TODO no na.rm on this one
+    ) %>%
+    distinct() %>%
+    mutate(
+      duplicates = n()
+    ) %>%
+    arrange(desc(duplicates), `UR number`) %>%
+    ungroup() %>%
+    select(-duplicates)
+
+  stopifnot(
+    "NA in UR number of merged screening logs" =
+      !anyNA(screen_log_in$`UR number`)
+  )
+  stopifnot(
+    all.equal(cr_data$screen_log$`UR number`, screen_log_in$`UR number`)
+  )
+
+  screen_log_out <- rbind()
 }
 
-screen_logs$creatinine <- join_demo_screen_log_sheets(
-  xlsx_data$creatinine$demographic, xlsx_data$creatinine$screen_log
-)
-screen_logs$oliguria <- join_demo_screen_log_sheets(
-  xlsx_data$oliguria$demographic, xlsx_data$oliguria$screen_log
-)
 
-screen_logs$in_merge_cols <- setdiff(
-  intersect(
-    colnames(screen_logs$creatinine),
-    colnames(screen_logs$oliguria)
-  ),
-  c("Incl_criteria_ok", "Pt_Study_no", "Comment")
-)
-screen_logs$screen_in <- full_join(
-  screen_logs$creatinine, screen_logs$oliguria,
-  by = screen_logs$in_merge_cols, suffix = c("_crch", "_olig")
-)
 
-# Fill missing NAs due to being screened in for cr and out for olig and vice versa
-# Remove issues with destination due to typos and APACHE_II, APACHE_III
-screen_logs$screen_in <- screen_logs$screen_in %>%
-  group_by(`UR number`, Admission) %>%
-  mutate(duplicates = n()) %>%
-  arrange(desc(duplicates), `UR number`) %>%
-  fill(-`UR number`, -Admission, .direction = "downup") %>%
-  mutate(
-    Dc_destination = first(Dc_destination), # Could be bad if first is NA. Change to mutate if duplicates then....
-    APACHE_II = max(APACHE_II, 0, na.rm = TRUE),
-    APACHE_III = max(APACHE_III, 0, na.rm = TRUE),
-    APACHE_II = if_else(APACHE_II == 0, NA_real_, APACHE_II),
-    APACHE_III = if_else(APACHE_III == 0, NA_real_, APACHE_III),
-    Time_ICU_dc = if_else(duplicates > 1, max(Time_ICU_dc), Time_ICU_dc) # TODO no na.rm on this one
-  ) %>%
-  distinct() %>%
-  mutate(
-    duplicates = n()
-  ) %>%
-  arrange(desc(duplicates), `UR number`) %>%
-  ungroup() %>%
-  select(-duplicates)
 
-if (anyNA(screen_logs$screen_in$`UR number`)) {
-  stop("NA in UR number of merged screening logs sheets")
-}
-if (nrow(screen_logs$creatinine) != nrow(screen_logs$screen_in)) {
-  stop(paste(
-    "Extra rows have been added. Actual:", nrow(screen_logs$screen_in),
-    "Expected: ", nrow(screen_logs$creatinine)
-  ))
-}
+
+
+
 
 screen_logs$screen_out <- rbind(
   xlsx_data$screen_out$no_creatinine,
