@@ -32,12 +32,7 @@ sapply(
 rm(file_sources)
 
 xlsx_data <- load_excel_data(rel_path)
-excl_Pt_Study_no <- find_data_collection_errors(
-  xlsx_data$creatinine,
-  xlsx_data$oliguria
-)
-xlsx_data <- fix_data_collection_errors(
-  xlsx_data$creatinine,
-  xlsx_data$oliguria,
-  excl_Pt_Study_no
-)
+excl_Pt_Study_no <- find_data_collection_errors(xlsx_data$creatinine, xlsx_data$oliguria)
+xlsx_data <- fix_data_collection_errors(xlsx_data, excl_Pt_Study_no)
+
+screen_logs <- create_screening_log(xlsx_data$creatinine, xlsx_data$oliguria)

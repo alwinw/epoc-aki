@@ -122,7 +122,10 @@ find_data_collection_errors <- function(cr_data, olig_data) {
   return(excl_Pt_Study_no)
 }
 
-fix_data_collection_errors <- function(cr_data, olig_data, excl_Pt_Study_no) {
+fix_data_collection_errors <- function(xlsx_data, excl_Pt_Study_no) {
+  cr_data <- xlsx_data$creatinine
+  olig_data <- xlsx_data$oliguria
+
   # chronology based errors
   chrono_errors <-
     (cr_data$screen_log$`UR number` !=
@@ -173,6 +176,9 @@ fix_data_collection_errors <- function(cr_data, olig_data, excl_Pt_Study_no) {
     olig_data$screen_log[chrono_errors, c(13, 2:4, 12, 14)],
     caption = "Oliguria Fixed Rows",
   ))
+
+  xlsx_data$creatinine <- cr_data
+  xlsx_data$oliguria <- olig_data
 
   return(xlsx_data)
 }
