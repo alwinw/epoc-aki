@@ -105,6 +105,7 @@ deoptim_search <- function(
                            baseline_predictors,
                            cr_predictors = NULL,
                            add_gradient_predictor = NULL,
+                           first_cr_only = TRUE,
                            stepwise = FALSE,
                            k = "mBIC",
                            # Additional arguments to send to aki_dev
@@ -143,6 +144,7 @@ deoptim_search <- function(
     baseline_predictors = baseline_predictors,
     cr_predictors = cr_predictors,
     add_gradient_predictor = add_gradient_predictor,
+    first_cr_only = first_cr_only,
     stepwise = stepwise,
     k = k,
     all_data = TRUE
@@ -227,7 +229,6 @@ deoptim_search <- function(
       secondary_models = secondary_models
     ))
   } else {
-    return(baseline_predictors)
     return(list(
       optim_value = optim_value,
       optim_model = optim_model,
@@ -307,6 +308,7 @@ multi_model <- deoptim_search(
   ),
   cr_predictors = "cr", # c("cr", "per_cr_change"), # Put this into an "alternate" model
   add_gradient_predictor = 1,
+  first_cr_only = FALSE,
   stepwise = TRUE,
   k = "mBIC",
   penalty_fn = heuristic_penalty,
