@@ -75,7 +75,8 @@ combine_date_time_cols <- function(df) {
       values_from = "datetime"
     ) %>%
     select(all_of(unique(
-      gsub("^\\btime\\b|\\btime\\b$|^\\bdate\\b|\bdate\\b$",
+      gsub(
+        "^\\btime\\b|\\btime\\b$|^\\bdate\\b|\bdate\\b$",
         "DateTime",
         colnames(.),
         ignore.case = TRUE

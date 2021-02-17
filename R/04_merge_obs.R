@@ -31,7 +31,7 @@ create_admission_data <- function(screen_log, data_set) {
       Epis_olig = if_else(grepl("L[0-9]", Pt_Study_no), "Y", NA_character_)
     ) %>%
     select(`UR number`:Pt_Study_no, Dates_screened, Event, starts_with("Epis_"))
-  
+
   stopifnot(all.equal(
     grep("L[0-9]", screening_data$Pt_Study_no, value = TRUE),
     as.vector(na.omit(screen_log$Pt_Study_no_olig))
@@ -45,11 +45,11 @@ create_admission_data <- function(screen_log, data_set) {
     filter(screen_log, Event == "Neither")$`UR number`
   ))
   stopifnot(all.equal(
-    screening_data$`UR number`,
-    c(
+    sort(screening_data$`UR number`),
+    sort(c(
       filter(screen_log, Event != "Both")$`UR number`,
       rep(filter(screen_log, Event == "Both")$`UR number`, 2)
-    )
+    ))
   ))
 }
 

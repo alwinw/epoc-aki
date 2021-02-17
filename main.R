@@ -40,7 +40,7 @@ xlsx_data <- fix_data_collection_errors(
   excl_Pt_Study_no = excl_pts$Pt_Study_no
 )
 
-screen_log <- create_screen_log(
+screen_log <- create_screening_log(
   cr_data = xlsx_data$creatinine,
   olig_data = xlsx_data$oliguria,
   out_data = xlsx_data$screen_out,
@@ -50,7 +50,7 @@ screen_log <- verify_apache(
   screen_log = screen_log,
   apd_extract = xlsx_data$apd_extract$apd_extract
 )
-overview_screen_log(screen_log)
+overview_screening_log(screen_log)
 
 data_set <- create_data_set(
   cr_data = xlsx_data$creatinine,

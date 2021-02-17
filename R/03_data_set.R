@@ -56,7 +56,8 @@ create_data_set <- function(cr_data, olig_data, excl_Pt_Study_no) {
       T_corresp_check =
         format(T0_corresp_time, format = "%H:%M:%S") == format(T0_corresp_DateTime, format = "%H:%M:%S") &
           format(`T-4_corresp_DateTime`, format = "%H:%M:%S") == format(`T-4_corresp_DateTime`, format = "%H:%M:%S")
-    )
+    ) %>%
+    filter(!(Pt_Study_no %in% xlsx_data$excluded_Pt_Study_no))
   # TODO Add time markers - not sure what I meant here...
   stopifnot(
     "Found inconsistent times in T0" =
