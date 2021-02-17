@@ -11,49 +11,48 @@ check_merge_data <- function(vector1, vector2, error_msg) {
 }
 
 
-# ---- merge-obs-data ----
-# Pivot longer to expand L and LTs into separate rows
-screening_data <- screening_log %>%
-  pivot_longer(
-    starts_with("Pt_Study_no"),
-    names_to = "Pt_Study_no_type",
-    values_to = "Pt_Study_no",
-  ) %>%
-  select(-Pt_Study_no_type) %>%
-  distinct() %>%
-  mutate(
-    duplicate = is.na(Pt_Study_no) & (Event == "Olig only" | Event == "Cr change only")
-  ) %>%
-  filter(!duplicate) %>%
-  mutate(
-    Epis_cr_change = if_else(grepl("LT[0-9]", Pt_Study_no), "Y", NA_character_),
-    Epis_olig = if_else(grepl("L[0-9]", Pt_Study_no), "Y", NA_character_)
-  ) %>%
-  select(`UR number`:Pt_Study_no, Dates_screened, Event, starts_with("Epis_"))
+# ---- Merge Screening and Obs Data ----
+create_admission_data <- function(screen_log, data_set) {
+  # Pivot longer to expand L and LTs into separate rows
+  screening_data <- screen_log %>%
+    pivot_longer(
+      starts_with("Pt_Study_no"),
+      names_to = "Pt_Study_no_type",
+      values_to = "Pt_Study_no",
+    ) %>%
+    select(-Pt_Study_no_type) %>%
+    distinct() %>%
+    mutate(
+      duplicate = is.na(Pt_Study_no) & (Event == "Olig only" | Event == "Cr change only")
+    ) %>%
+    filter(!duplicate) %>%
+    mutate(
+      Epis_cr_change = if_else(grepl("LT[0-9]", Pt_Study_no), "Y", NA_character_),
+      Epis_olig = if_else(grepl("L[0-9]", Pt_Study_no), "Y", NA_character_)
+    ) %>%
+    select(`UR number`:Pt_Study_no, Dates_screened, Event, starts_with("Epis_"))
+  
+  stopifnot(all.equal(
+    grep("L[0-9]", screening_data$Pt_Study_no, value = TRUE),
+    as.vector(na.omit(screen_log$Pt_Study_no_olig))
+  ))
+  stopifnot(all.equal(
+    grep("LT[0-9]", screening_data$Pt_Study_no, value = TRUE),
+    as.vector(na.omit(screen_log$Pt_Study_no_crch))
+  ))
+  stopifnot(all.equal(
+    filter(screening_data, is.na(Pt_Study_no))$`UR number`,
+    filter(screen_log, Event == "Neither")$`UR number`
+  ))
+  stopifnot(all.equal(
+    screening_data$`UR number`,
+    c(
+      filter(screen_log, Event != "Both")$`UR number`,
+      rep(filter(screen_log, Event == "Both")$`UR number`, 2)
+    )
+  ))
+}
 
-check_merge_data(
-  grep("L[0-9]", screening_data$Pt_Study_no, value = TRUE),
-  as.vector(na.omit(screening_log$Pt_Study_no_olig)),
-  "Number of olig events different!"
-)
-check_merge_data(
-  grep("LT[0-9]", screening_data$Pt_Study_no, value = TRUE),
-  as.vector(na.omit(screening_log$Pt_Study_no_crch)),
-  "Number of cr change events different!"
-)
-check_merge_data(
-  filter(screening_data, is.na(Pt_Study_no))$`UR number`,
-  filter(screening_log, Event == "Neither")$`UR number`,
-  "Number of neither olig or cr change events different!"
-)
-check_merge_data(
-  screening_data$`UR number`,
-  c(
-    filter(screening_log, Event != "Both")$`UR number`,
-    rep(filter(screening_log, Event == "Both")$`UR number`, 2)
-  ),
-  "Total number of events has changed!"
-)
 
 # Join in the data_set
 obs_data <- full_join(
@@ -78,7 +77,7 @@ check_merge_data(
   "Number of neither olig or cr change events different!"
 )
 
-if (nrow(obs_data) != nrow(data_set) + nrow(filter(screening_log, Event == "Neither"))) {
+if (nrow(obs_data) != nrow(data_set) + nrow(filter(screen_log, Event == "Neither"))) {
   stop("Number of total events has changed!")
 }
 
@@ -241,7 +240,7 @@ admission_data <- epoc_aki %>%
 
 check_merge_data(
   admission_data$`UR number`,
-  screening_log$`UR number`,
+  screen_log$`UR number`,
   "Number of admissions is different!"
 )
 
