@@ -54,7 +54,12 @@ combine_date_time_cols <- function(df) {
     mutate(
       DateTimeType = if_else(grepl("^time|time$", DateTimeName, ignore.case = TRUE), "Time", ""),
       DateTimeType = if_else(grepl("^date|date$", DateTimeName, ignore.case = TRUE), "Date", DateTimeType),
-      DateTimeName = gsub("^time|time$|^date|date$", "DateTime", DateTimeName, ignore.case = TRUE)
+      DateTimeName = gsub(
+        "^\\btime\\b|\\btime\\b$|^\\bdate\\b|\bdate\\b$",
+        "DateTime",
+        DateTimeName,
+        ignore.case = TRUE
+      )
     ) %>%
     pivot_wider(
       names_from = "DateTimeType",
