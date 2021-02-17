@@ -1,16 +1,3 @@
-# ---- check-merge-data-fun ----
-check_merge_data <- function(vector1, vector2, error_msg) {
-  if (!setequal(vector1, vector2) | (length(vector1) != length(vector2))) {
-    stop(paste(
-      "Error", error_msg,
-      "Actual:", length(vector1), "Expected:", length(vector2),
-      "Difference:", paste(setdiff(vector1, vector2), collapse = ", ")
-    ))
-  }
-  return(invisible(NULL))
-}
-
-
 # ---- Merge Screening and Obs Data ----
 create_admission_data <- function(screen_log, data_set) {
   # Pivot longer to expand L and LTs into separate rows
@@ -51,37 +38,36 @@ create_admission_data <- function(screen_log, data_set) {
       rep(filter(screen_log, Event == "Both")$`UR number`, 2)
     ))
   ))
+
+  # Join in the data_set
+  obs_data <- full_join(
+    screening_data,
+    data_set,
+    by = c("Pt_Study_no", "Epis_cr_change", "Epis_olig")
+  )
+  stopifnot(all.equal(
+    sort(grep("L[0-9]", obs_data$Pt_Study_no, value = TRUE)),
+    sort(grep("L[0-9]", data_set$Pt_Study_no, value = TRUE))
+  ))
+  stopifnot(all.equal(
+    sort(grep("LT[0-9]", obs_data$Pt_Study_no, value = TRUE)),
+    sort(grep("LT[0-9]", data_set$Pt_Study_no, value = TRUE))
+  ))
+  stopifnot(all.equal(
+    sort(filter(obs_data, Event == "Neither")$`UR number`),
+    sort(filter(screening_data, Event == "Neither")$`UR number`)
+  ))
+  stopifnot(
+    nrow(obs_data) == nrow(data_set) + nrow(filter(screen_log, Event == "Neither"))
+  )
+
+  return(obs_data)
 }
 
 
-# Join in the data_set
-obs_data <- full_join(
-  screening_data,
-  data_set,
-  by = c("Pt_Study_no", "Epis_cr_change", "Epis_olig")
-)
+# ---- Add Co-morbidities ----
 
-check_merge_data(
-  grep("L[0-9]", obs_data$Pt_Study_no, value = TRUE),
-  grep("L[0-9]", data_set$Pt_Study_no, value = TRUE),
-  "Number of olig events different!"
-)
-check_merge_data(
-  grep("LT[0-9]", obs_data$Pt_Study_no, value = TRUE),
-  grep("LT[0-9]", data_set$Pt_Study_no, value = TRUE),
-  "Number of cr change events different!"
-)
-check_merge_data(
-  filter(obs_data, Event == "Neither")$`UR number`,
-  filter(screening_data, Event == "Neither")$`UR number`,
-  "Number of neither olig or cr change events different!"
-)
-
-if (nrow(obs_data) != nrow(data_set) + nrow(filter(screen_log, Event == "Neither"))) {
-  stop("Number of total events has changed!")
-}
-
-# ---- add-outcomes-from-obs ----
+# ---- Add outcomes from data_set ----
 
 # Various outcomes here
 # Check individual columns next...
