@@ -26,6 +26,64 @@ remove_dup_screen_log_rows <- function(data) {
     )
 }
 
+find_cols <- function(text, replace, colnames) {
+  data.frame(
+    i = grep(paste0("^", text, "|", text, "$"), colnames, ignore.case = TRUE),
+    j = grep(paste0("^", text, "|", text, "$"), colnames, ignore.case = TRUE, value = TRUE),
+    stringsAsFactors = FALSE
+  ) %>%
+    mutate(k = gsub(text, replace, j, ignore.case = TRUE)) %>%
+    setNames(., c(paste0(text, "_i"), paste0(text), "match"))
+}
+
+
+combine_date_time_cols <- function(df) {
+  dttm_col <- inner_join(
+    find_cols("date", "DateTime", colnames(df)),
+    find_cols("time", "DateTime", colnames(df)),
+    by = "match"
+  ) %>%
+    select(date, time, match)
+
+  df %>%
+    pivot_longer(
+      all_of(c(dttm_col$date, dttm_col$time)),
+      names_to = "DateTimeName",
+      values_to = "DateTime"
+    ) %>%
+    mutate(
+      DateTimeType = if_else(grepl("^time|time$", DateTimeName, ignore.case = TRUE), "Time", ""),
+      DateTimeType = if_else(grepl("^date|date$", DateTimeName, ignore.case = TRUE), "Date", DateTimeType),
+      DateTimeName = gsub("^time|time$|^date|date$", "DateTime", DateTimeName, ignore.case = TRUE)
+    ) %>%
+    pivot_wider(
+      names_from = "DateTimeType",
+      values_from = "DateTime"
+    ) %>%
+    mutate(
+      datetime = if_else(
+        (is.na(Date) | is.na(Time)),
+        NA_character_,
+        paste(format(Date, format = "%Y-%m-%d"), format(Time, format = "%H:%M:%S"))
+      ),
+      Date = NULL,
+      Time = NULL
+    ) %>%
+    mutate(datetime = as_datetime(datetime, tz = "Australia/Melbourne")) %>%
+    pivot_wider(
+      names_from = "DateTimeName",
+      values_from = "datetime"
+    ) %>%
+    select(all_of(unique(
+      gsub("^\\btime\\b|\\btime\\b$|^\\bdate\\b|\bdate\\b$",
+        "DateTime",
+        colnames(.),
+        ignore.case = TRUE
+      )
+    )))
+}
+
+
 
 # ---- screen_log_all ----
 create_screening_log <- function(cr_data, olig_data, out_data, excl_UR_numbers) {
@@ -123,7 +181,8 @@ create_screening_log <- function(cr_data, olig_data, out_data, excl_UR_numbers) 
       Dates_screened:Child, Age:Dc_destination,
       Admission, Total_admissions, Event, starts_with("Comment")
     ) %>%
-    arrange(`UR number`, Admission)
+    arrange(`UR number`, Admission) %>%
+    combine_date_time_cols()
 
   stopifnot(
     "Duplicate UR numbers found" =
@@ -156,76 +215,8 @@ create_screening_log <- function(cr_data, olig_data, out_data, excl_UR_numbers) 
   return(screen_log_full)
 }
 
-# ---- find_cols_function ----
-find_cols <- function(text, replace, colnames) {
-  cols <- data.frame(
-    i = grep(paste0("^", text, "|", text, "$"), colnames, ignore.case = TRUE),
-    j = grep(paste0("^", text, "|", text, "$"), colnames, ignore.case = TRUE, value = TRUE),
-    stringsAsFactors = FALSE
-  ) %>%
-    mutate(k = gsub(text, replace, j, ignore.case = TRUE))
-  colnames(cols) <- c(paste0(text, "_i"), paste0(text), "match")
-  return(cols)
-}
 
-# TODO I repeat the pivot longer.. mutate.. etc twice, functionalise it!
-
-# ---- screening_log ----
-dttm_col <- inner_join(
-  find_cols("date", "DateTime", colnames(screen_logs$full)),
-  find_cols("time", "DateTime", colnames(screen_logs$full)),
-  by = "match"
-) %>%
-  select(date, time, match)
-
-screening_log <- screen_logs$full %>%
-  pivot_longer(
-    all_of(c(dttm_col$date, dttm_col$time)),
-    names_to = "DateTimeName",
-    values_to = "DateTime"
-  ) %>%
-  mutate(
-    DateTimeType = if_else(grepl("^time|time$", DateTimeName, ignore.case = TRUE), "Time", ""),
-    DateTimeType = if_else(grepl("^date|date$", DateTimeName, ignore.case = TRUE), "Date", DateTimeType),
-    DateTimeName = gsub("^time|time$|^date|date$", "DateTime", DateTimeName, ignore.case = TRUE)
-  ) %>%
-  pivot_wider(
-    names_from = "DateTimeType",
-    values_from = "DateTime"
-  ) %>%
-  mutate(
-    datetime = if_else(
-      (is.na(Date) | is.na(Time)),
-      NA_character_,
-      paste(format(Date, format = "%Y-%m-%d"), format(Time, format = "%H:%M:%S"))
-    ),
-    Date = NULL,
-    Time = NULL
-  ) %>%
-  mutate(datetime = as_datetime(datetime, tz = "Australia/Melbourne")) %>%
-  pivot_wider(
-    names_from = "DateTimeName",
-    values_from = "datetime"
-  ) %>%
-  select(all_of(unique(
-    gsub("^\\btime\\b|\\btime\\b$|^\\bdate\\b|\bdate\\b$", "DateTime",
-      colnames(.),
-      ignore.case = TRUE
-    )
-  )))
-
-if (FALSE) {
-  kable(
-    as.data.frame(t(head(screening_log))),
-    caption = "Screening Log",
-    booktabs = TRUE
-  )
-}
-
-rm(join_demo_screen_log_sheets, screen_logs)
-
-
-# ---- screen_log_apache ----
+# ---- Verify APACHE  ----
 screening_log_thin <- screening_log %>%
   select(`UR number`, Admission, Event, DateTime_ICU_admit, starts_with("APACHE")) %>%
   filter(!is.na(DateTime_ICU_admit)) %>%
