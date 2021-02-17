@@ -265,7 +265,8 @@ verify_apache <- function(screen_log, apd_extract) {
       APACHE_II = if_else(AP_replace, AP2score, APACHE_II, missing = APACHE_II),
       APACHE_III = if_else(AP_replace, AP3score, APACHE_III, missing = APACHE_III)
     ) %>%
-    select(-AP2score:-AP_replace)
+    select(-AP2score:-AP_replace) %>%
+    arrange(`UR number`, Admission)
 
   stopifnot(all.equal(screen_log_replaced$`UR number`, screen_log$`UR number`))
 
@@ -273,75 +274,75 @@ verify_apache <- function(screen_log, apd_extract) {
 }
 
 
-# ---- screen_log_overview ----
-screening_log %>%
-  summarise(
-    Admissions = n(),
-    `Unique Patients` = n_distinct(`UR number`, na.rm = TRUE),
-    .groups = "drop"
-  ) %>%
-  kable(., caption = "Total Admissions", booktabs = TRUE)
+# ---- Overview of Screening log ----
+if (FALSE) {
+  screening_log %>%
+    summarise(
+      Admissions = n(),
+      `Unique Patients` = n_distinct(`UR number`, na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    kable(., caption = "Total Admissions", booktabs = TRUE)
 
-screening_log %>%
-  group_by(Excl_criteria_ok) %>%
-  # Due to multiple admissions, 1 UR could have ok on one admission and not on another
-  summarise(Admissions = n(), .groups = "drop") %>%
-  arrange(desc(Excl_criteria_ok)) %>%
-  adorn_percentages("all") %>%
-  adorn_pct_formatting() %>%
-  adorn_ns(position = "front") %>%
-  kable(., caption = "Patients included and excluded", booktabs = TRUE)
+  screening_log %>%
+    group_by(Excl_criteria_ok) %>%
+    # Due to multiple admissions, 1 UR could have ok on one admission and not on another
+    summarise(Admissions = n(), .groups = "drop") %>%
+    arrange(desc(Excl_criteria_ok)) %>%
+    adorn_percentages("all") %>%
+    adorn_pct_formatting() %>%
+    adorn_ns(position = "front") %>%
+    kable(., caption = "Patients included and excluded", booktabs = TRUE)
 
-screening_log %>%
-  filter(Excl_criteria_ok == "Y") %>%
-  select(`UR number`, starts_with("Epis")) %>%
-  replace_na(list(
-    Epis_cr_change = "N",
-    Epis_olig = "N"
-  )) %>%
-  group_by(Epis_cr_change, Epis_olig) %>%
-  summarise(Admissions = n(), .groups = "drop") %>%
-  pivot_wider(names_from = Epis_olig, values_from = Admissions) %>%
-  adorn_totals(c("row", "col")) %>%
-  adorn_percentages("all") %>%
-  adorn_pct_formatting() %>%
-  adorn_ns(position = "front") %>%
-  adorn_title("top", row_name = "Epis_Cr", col_name = "Epis_Olig") %>%
-  kable(., caption = "Creatinine change and Oliguria Epis Total Admissions")
+  screening_log %>%
+    filter(Excl_criteria_ok == "Y") %>%
+    select(`UR number`, starts_with("Epis")) %>%
+    replace_na(list(
+      Epis_cr_change = "N",
+      Epis_olig = "N"
+    )) %>%
+    group_by(Epis_cr_change, Epis_olig) %>%
+    summarise(Admissions = n(), .groups = "drop") %>%
+    pivot_wider(names_from = Epis_olig, values_from = Admissions) %>%
+    adorn_totals(c("row", "col")) %>%
+    adorn_percentages("all") %>%
+    adorn_pct_formatting() %>%
+    adorn_ns(position = "front") %>%
+    adorn_title("top", row_name = "Epis_Cr", col_name = "Epis_Olig") %>%
+    kable(., caption = "Creatinine change and Oliguria Epis Total Admissions")
 
-screening_log %>%
-  filter(Excl_criteria_ok == "Y") %>% # Fine with and without
-  select(`UR number`, starts_with("Total_no_")) %>%
-  mutate(
-    Total_no_cr_epis = if_else(
-      is.na(Total_no_cr_epis), " 0 cr epis", sprintf("%2d cr epis", Total_no_cr_epis)
-    ),
-    Total_no_olig_epis = if_else(
-      is.na(Total_no_olig_epis), " 0 olig epis", sprintf("%2d olig epis", Total_no_olig_epis)
-    ),
-  ) %>%
-  group_by(Total_no_cr_epis, Total_no_olig_epis) %>%
-  summarise(Admissions = n(), .groups = "drop") %>%
-  pivot_wider(names_from = Total_no_olig_epis, values_from = Admissions) %>%
-  adorn_totals(c("row", "col")) %>%
-  rename(Epis = Total_no_cr_epis) %>%
-  kable(., caption = "Creatinine change and Oliguria Episodes per Admission (Incl. criteria ok only)", booktabs = TRUE)
+  screening_log %>%
+    filter(Excl_criteria_ok == "Y") %>% # Fine with and without
+    select(`UR number`, starts_with("Total_no_")) %>%
+    mutate(
+      Total_no_cr_epis = if_else(
+        is.na(Total_no_cr_epis), " 0 cr epis", sprintf("%2d cr epis", Total_no_cr_epis)
+      ),
+      Total_no_olig_epis = if_else(
+        is.na(Total_no_olig_epis), " 0 olig epis", sprintf("%2d olig epis", Total_no_olig_epis)
+      ),
+    ) %>%
+    group_by(Total_no_cr_epis, Total_no_olig_epis) %>%
+    summarise(Admissions = n(), .groups = "drop") %>%
+    pivot_wider(names_from = Total_no_olig_epis, values_from = Admissions) %>%
+    adorn_totals(c("row", "col")) %>%
+    rename(Epis = Total_no_cr_epis) %>%
+    kable(., caption = "Creatinine change and Oliguria Episodes per Admission (Incl. criteria ok only)", booktabs = TRUE)
 
-screening_log %>%
-  filter(Excl_criteria_ok == "N") %>%
-  select(`UR number`, Already_AKI:Child) %>%
-  pivot_longer(-`UR number`, names_to = "Excl_reason", values_to = "Excluded") %>%
-  # Single UR can have multiple exclusion reasons
-  group_by(Excl_reason) %>%
-  summarise(
-    Admissions = sum(Excluded == "Y", na.rm = TRUE),
-    `Unique Patients` = n_distinct((`UR number`[Excluded == "Y"]), na.rm = TRUE),
-    .groups = "drop"
-  ) %>%
-  arrange(-Admissions) %>%
-  adorn_totals("row") %>%
-  kable(., caption = "Excluded Admissions (multi per admission possible)", booktabs = TRUE)
+  screening_log %>%
+    filter(Excl_criteria_ok == "N") %>%
+    select(`UR number`, Already_AKI:Child) %>%
+    pivot_longer(-`UR number`, names_to = "Excl_reason", values_to = "Excluded") %>%
+    # Single UR can have multiple exclusion reasons
+    group_by(Excl_reason) %>%
+    summarise(
+      Admissions = sum(Excluded == "Y", na.rm = TRUE),
+      `Unique Patients` = n_distinct((`UR number`[Excluded == "Y"]), na.rm = TRUE),
+      .groups = "drop"
+    ) %>%
+    arrange(-Admissions) %>%
+    adorn_totals("row") %>%
+    kable(., caption = "Excluded Admissions (multi per admission possible)", booktabs = TRUE)
 
-unique_comorbidities <- unique(gsub(",", "", unlist(strsplit(paste0(screening_log$Comorbidities, collapse = ", "), ", "))))
-
-rm(unique_comorbidities)
+  unique_comorbidities <- unique(gsub(",", "", unlist(strsplit(paste0(screening_log$Comorbidities, collapse = ", "), ", "))))
+}
