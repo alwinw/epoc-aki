@@ -62,7 +62,8 @@ create_data_set <- function(cr_data, olig_data, excl_Pt_Study_no) {
     "Found inconsistent times in T0" =
       data_set$T_corresp_check
   )
-  # TODO additional validation of the number of rows, e.g. total epis count?
+  # TODO additional validation of the number of rows, e.g. total epis count
+  # all.equal for 1 ep, 2 ep, 3, etc for cr and olig
 
   return(data_set)
 }
