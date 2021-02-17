@@ -62,13 +62,14 @@ create_data_set <- function(cr_data, olig_data, excl_Pt_Study_no) {
     "Found inconsistent times in T0" =
       data_set$T_corresp_check
   )
+  # TODO additional validation of the number of rows, e.g. total epis count?
 
   return(data_set)
 }
 
 
 # ---- Episode Overview ----
-if (FALSE) {
+overview_data_set <- function(data_set) {
   data_set %>%
     group_by(Epis_cr_change, Epis_olig) %>%
     summarise(Episodes = n(), .groups = "drop") %>%
@@ -79,7 +80,8 @@ if (FALSE) {
     ) %>%
     filter(!is.na(EpisValue)) %>%
     select(Epis, Episodes) %>%
-    kable(., caption = "All Episodes", booktabs = TRUE)
+    kable(., caption = "All Episodes") %>%
+    print(.)
 
   data_set %>%
     group_by(Epis_cr_change, Epis_olig, Pt_Study_no) %>%
@@ -93,5 +95,6 @@ if (FALSE) {
     ) %>%
     filter(!is.na(EpisValue)) %>%
     select(Epis, Epis_no, Episodes) %>%
-    kable(., caption = "Number of Episodes", booktabs = TRUE)
+    kable(., caption = "Number of Episodes") %>%
+    print(.)
 }

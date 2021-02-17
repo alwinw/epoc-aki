@@ -280,14 +280,15 @@ verify_apache <- function(screen_log, apd_extract) {
 
 
 # ---- Overview of Screening log ----
-if (FALSE) {
+overview_screening_log <- function(screening_log) {
   screening_log %>%
     summarise(
       Admissions = n(),
       `Unique Patients` = n_distinct(`UR number`, na.rm = TRUE),
       .groups = "drop"
     ) %>%
-    kable(., caption = "Total Admissions", booktabs = TRUE)
+    kable(., caption = "Total Admissions") %>%
+    print(.)
 
   screening_log %>%
     group_by(Excl_criteria_ok) %>%
@@ -297,7 +298,8 @@ if (FALSE) {
     adorn_percentages("all") %>%
     adorn_pct_formatting() %>%
     adorn_ns(position = "front") %>%
-    kable(., caption = "Patients included and excluded", booktabs = TRUE)
+    kable(., caption = "Patients included and excluded") %>%
+    print(.)
 
   screening_log %>%
     filter(Excl_criteria_ok == "Y") %>%
@@ -314,7 +316,8 @@ if (FALSE) {
     adorn_pct_formatting() %>%
     adorn_ns(position = "front") %>%
     adorn_title("top", row_name = "Epis_Cr", col_name = "Epis_Olig") %>%
-    kable(., caption = "Creatinine change and Oliguria Epis Total Admissions")
+    kable(., caption = "Creatinine change and Oliguria Epis Total Admissions") %>%
+    print(.)
 
   screening_log %>%
     filter(Excl_criteria_ok == "Y") %>% # Fine with and without
@@ -332,7 +335,8 @@ if (FALSE) {
     pivot_wider(names_from = Total_no_olig_epis, values_from = Admissions) %>%
     adorn_totals(c("row", "col")) %>%
     rename(Epis = Total_no_cr_epis) %>%
-    kable(., caption = "Creatinine change and Oliguria Episodes per Admission (Incl. criteria ok only)", booktabs = TRUE)
+    kable(., caption = "Creatinine change and Oliguria Episodes per Admission (Incl. criteria ok only)") %>%
+    print(.)
 
   screening_log %>%
     filter(Excl_criteria_ok == "N") %>%
@@ -347,7 +351,8 @@ if (FALSE) {
     ) %>%
     arrange(-Admissions) %>%
     adorn_totals("row") %>%
-    kable(., caption = "Excluded Admissions (multi per admission possible)", booktabs = TRUE)
+    kable(., caption = "Excluded Admissions (multi per admission possible)") %>%
+    print(.)
 
   unique_comorbidities <- unique(gsub(",", "", unlist(strsplit(paste0(screening_log$Comorbidities, collapse = ", "), ", "))))
 }

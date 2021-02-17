@@ -50,9 +50,11 @@ screening_log <- verify_apache(
   screen_log = screening_log,
   apd_extract = xlsx_data$apd_extract$apd_extract
 )
+overview_screening_log(screening_log)
 
 data_set <- create_data_set(
   cr_data = xlsx_data$creatinine,
   olig_data = xlsx_data$oliguria,
   excl_Pt_Study_no = excl_pts$Pt_Study_no
 )
+overview_data_set(data_set)
