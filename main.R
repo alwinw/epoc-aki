@@ -46,3 +46,7 @@ screening_log <- create_screening_log(
   out_data = xlsx_data$screen_out,
   excl_UR_numbers = excl_pts$UR_numbers
 )
+screening_log <- verify_apache(
+  screen_log = screening_log,
+  apd_extract = xlsx_data$apd_extract$apd_extract
+)

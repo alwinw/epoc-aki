@@ -217,56 +217,60 @@ create_screening_log <- function(cr_data, olig_data, out_data, excl_UR_numbers) 
 
 
 # ---- Verify APACHE  ----
-screening_log_thin <- screening_log %>%
-  select(`UR number`, Admission, Event, DateTime_ICU_admit, starts_with("APACHE")) %>%
-  filter(!is.na(DateTime_ICU_admit)) %>%
-  mutate(
-    DT_start = DateTime_ICU_admit - hours(26),
-    DT_end   = DateTime_ICU_admit + hours(26)
-  )
+verify_apache <- function(screen_log, apd_extract) {
+  # "Thin" screening log for quicker matching
+  screen_log_thin <- screen_log %>%
+    select(`UR number`, Admission, Event, DateTime_ICU_admit, starts_with("APACHE")) %>%
+    filter(!is.na(DateTime_ICU_admit)) %>%
+    mutate(
+      DT_start = DateTime_ICU_admit - hours(26),
+      DT_end = DateTime_ICU_admit + hours(26)
+    )
 
-apd_extract <- xlsx_data$apd_extract$apd_extract %>%
-  select(
-    `HRN/NIH`, # DOB, Sex,
-    HOSP_ADM_DTM, ICU_ADM_DTM,
-    AP2score, AP3score
+  # Match only on UR number and DTTM, but could also use DOB, Sex, etc.
+  # Override if error > 100 (arbitrarily chosen)
+  apache_replace <- apd_extract %>%
+    select(
+      `HRN/NIH`,
+      HOSP_ADM_DTM, ICU_ADM_DTM,
+      AP2score, AP3score
+    ) %>%
+    mutate(
+      AP2score = as.numeric(AP2score),
+      AP3score = as.numeric(AP3score)
+    ) %>%
+    fuzzy_left_join(
+      screen_log_thin, .,
+      by = c(
+        "UR number" = "HRN/NIH",
+        "DT_start"  = "ICU_ADM_DTM",
+        "DT_end"    = "ICU_ADM_DTM"
+      ),
+      match_fun = list(`==`, `<=`, `>=`)
+    ) %>%
+    mutate(
+      AP_error = abs(AP2score - APACHE_II) + abs(AP3score - APACHE_III),
+      AP_replace = AP_error > 100 | !is.na(AP2score) & is.na(APACHE_II)
+    ) %>%
+    arrange(desc(AP_replace), desc(AP_error)) %>%
+    filter(AP_replace) %>%
+    select(`UR number`:`DateTime_ICU_admit`, AP2score:AP3score, AP_replace)
+
+  screen_log_replaced <- left_join(
+    screen_log, apache_replace,
+    by = c("UR number", "DateTime_ICU_admit", "Admission", "Event")
   ) %>%
-  mutate(
-    AP2score = as.numeric(AP2score),
-    AP3score = as.numeric(AP3score)
-  )
+    arrange(-AP_replace) %>%
+    mutate(
+      APACHE_II = if_else(AP_replace, AP2score, APACHE_II, missing = APACHE_II),
+      APACHE_III = if_else(AP_replace, AP3score, APACHE_III, missing = APACHE_III)
+    ) %>%
+    select(-AP2score:-AP_replace)
 
-apache_replace <- fuzzy_left_join(
-  screening_log_thin, apd_extract,
-  by = c(
-    "UR number" = "HRN/NIH",
-    "DT_start"  = "ICU_ADM_DTM",
-    "DT_end"    = "ICU_ADM_DTM"
-  ),
-  match_fun = list(`==`, `<=`, `>=`)
-) %>%
-  mutate(
-    AP_error = abs(AP2score - APACHE_II) + abs(AP3score - APACHE_III),
-    AP_replace = AP_error > 100 | !is.na(AP2score) & is.na(APACHE_II) # Values arbitrarily chosen
-  ) %>%
-  arrange(desc(AP_replace), desc(AP_error)) %>%
-  filter(AP_replace) %>% # Only keep rows of interest
-  select(`UR number`:`DateTime_ICU_admit`, AP2score:AP3score, AP_replace)
+  stopifnot(all.equal(screen_log_replaced$`UR number`, screen_log$`UR number`))
 
-screening_log <- left_join(
-  screening_log, apache_replace,
-  by = c("UR number", "DateTime_ICU_admit", "Admission", "Event")
-) %>%
-  arrange(-AP_replace) %>%
-  mutate(
-    APACHE_II = if_else(AP_replace, AP2score, APACHE_II, missing = APACHE_II),
-    APACHE_III = if_else(AP_replace, AP3score, APACHE_III, missing = APACHE_III)
-  ) %>%
-  select(-AP2score:-AP_replace)
-
-# TODO Add some checks here
-
-rm(screening_log_thin, apd_extract, apache_replace)
+  return(screen_log_replaced)
+}
 
 
 # ---- screen_log_overview ----
