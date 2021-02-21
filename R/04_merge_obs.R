@@ -65,8 +65,6 @@ create_admission_data <- function(screen_log, data_set) {
 }
 
 
-# ---- Add Co-morbidities ----
-
 # ---- Add outcomes from data_set ----
 
 # Various outcomes here
@@ -74,33 +72,37 @@ create_admission_data <- function(screen_log, data_set) {
 # Sort columns by UR, PTSn, Admission, Event Type, etc
 
 
+# ---- Clean Admission Data ----
+tidy_admission_data <- function(obs_data) {
+  admin_data <- obs_data %>%
+    mutate(AdmissionID = paste(`UR number`, Admission, sep = ".")) %>%
+    group_by(`UR number`, Pt_Study_no) %>%
+    mutate(
+      Epis_cr_change_no = cumsum(Epis_cr_change == "Y"),
+      Epis_olig_no = cumsum(Epis_olig == "Y")
+    ) %>%
+    rowwise() %>%
+    mutate(Comment = paste(unique(na.omit(c(Comment_crch, Comment_olig, Comment_out, Comment))), collapse = ", ")) %>%
+    ungroup() %>%
+    group_by(AdmissionID) %>%
+    mutate(
+      Vasopressor = case_when(
+        `T-4_Norad` > 0 ~ 1,
+        `T-4_Metaraminol` > 0 ~ 1,
+        T0_Norad > 0 ~ 1,
+        T0_Metaraminol > 0 ~ 1,
+        grepl("Vasopressors", Mx_other) ~ 1,
+        TRUE ~ NA_real_
+      ),
+      Vasopressor = max(Vasopressor, 0, na.rm = TRUE),
+      Pt_Study_nos = paste(unique(na.omit(Pt_Study_no)), collapse = ", ")
+    ) %>%
+    ungroup()
+}
+
+
 # ---- clean-obs-binary-columns ----
 epoc_aki <- obs_data %>%
-  mutate(AdmissionID = paste(`UR number`, Admission, sep = ".")) %>%
-  group_by(`UR number`) %>%
-  group_by(Pt_Study_no) %>%
-  mutate(
-    Epis_cr_change_no = cumsum(Epis_cr_change == "Y"),
-    Epis_olig_no = cumsum(Epis_olig == "Y")
-  ) %>%
-  ungroup() %>%
-  rowwise() %>%
-  mutate(Comment = paste(unique(na.omit(c(Comment_crch, Comment_olig, Comment_out, Comment))), collapse = ", ")) %>%
-  ungroup() %>%
-  group_by(AdmissionID) %>%
-  mutate(
-    Vasopressor = case_when(
-      `T-4_Norad` > 0 ~ 1,
-      `T-4_Metaraminol` > 0 ~ 1,
-      T0_Norad > 0 ~ 1,
-      T0_Metaraminol > 0 ~ 1,
-      grepl("Vasopressors", Mx_other) ~ 1,
-      TRUE ~ NA_real_
-    ),
-    Vasopressor = max(Vasopressor, 0, na.rm = TRUE),
-    Pt_Study_nos = paste(unique(na.omit(Pt_Study_no)), collapse = ", ")
-  ) %>%
-  ungroup() %>%
   mutate_at(
     vars(
       contains("criteria"),

@@ -63,3 +63,6 @@ admission_data <- create_admission_data(
   screen_log = screen_log,
   data_set = data_set
 )
+admission_data <- tidy_admission_data(
+  obs_data = admission_data
+)
