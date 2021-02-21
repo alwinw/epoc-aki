@@ -178,66 +178,62 @@ tidy_admission_data <- function(obs_data) {
         c(colnames(tidy_data), "UR number")
       )) == 0
   )
+
+  factored_data <- tidy_data %>%
+    mutate(across(
+      c(
+        Dc_ICU_Alive, Dc_Hosp_Alive, Excl_criteria_ok,
+        Incl_criteria_ok_crch, Incl_criteria_ok_olig, 
+        Epis_cr_change, Epis_olig,
+        Already_AKI, EOLC, ESKD, No_IDC, Kidney_transplant, Admit_weekend,
+        Child, Male, Wtmeasured, Mecvenadm, 
+        Surgadmission, starts_with("PCs_"), starts_with("PCm_"),
+        HT, Diabetes, AF, IHD, HF, PVD, Chronic_liver_disease, Vasopressor,
+        RRT, ICU_readmit,
+        AKI_ICU, AKI_Dx_Cr_1.5_times,  AKI_Dx_oliguria, CrdxAKIUEC, 
+        Cr_defined_AKI, Mx_diuretics, Mx_IVF, Mx_other, ICU_dc_RRT, 
+        AKI_ward_48h
+      ),
+      function(x) {
+        b = case_when(
+          tolower(x) == "y" | tolower(x) == "1" ~ 1,
+          tolower(x) == "n" | tolower(x) == "0" ~ 0,
+          is.na(x) ~ NA_real_,
+          TRUE ~ NaN
+        )
+        factor(b, c(0, 1), paste0(c("Not_", ""), cur_column()), ordered=TRUE)
+      }
+    ))
+  
+  stopifnot(
+    "Unusual entry data found" = 
+      !any(is.nan(as.matrix(factored_data)))
+  )
+  stopifnot(!any(is.na(factored_data$UR_number)))
+  
+  # factored_data %>%
+  #   select(
+  #     UR_number, AdmissionID, Pt_Study_nos,
+  #     Max_Cr_ICU, Highest_Cr_UEC, Max_Cr_DateTime, Baseline_Cr,
+  #     Mx_diuretics, Mx_IVF
+  #   ) %>%
+  #   distinct() %>%
+  #   group_by(AdmissionID) %>%
+  #   mutate(duplicates = n()) %>%
+  #   filter(duplicates > 1) %>%
+  #   arrange(desc(duplicates)) %>%
+  #   ungroup() %>%
+  #   select(-UR_number, -AdmissionID) %>%
+  #   kable(., caption = "Errors between L and LT obs data", booktabs = TRUE)
+  # # Reason: Cr and Olig epis happen at different times
+  # # If there is a large enough difference, then the obs data will be different
+  
+  
   
   
 }
 
 
-# ---- clean-obs-binary-columns ----
-epoc_aki <- obs_data %>%
-  mutate_at(
-    vars(
-      contains("criteria"),
-      "Epis_cr_change", "Epis_olig", "Already_AKI", "EOLC",
-      "ESKD", "No_IDC", "Kidney_transplant", "Admit_weekend", "Child",
-      "Rx_limited", "Rx_withdrawn"
-    ),
-    function(x) {
-      case_when(
-        x == "Y" | x == "y" | x == "1" ~ 1, # Should really change to a factor of the column name
-        x == "N" | x == "n" | x == "0" ~ 0,
-        is.na(x) ~ NA_real_,
-        TRUE ~ NaN # TODO check if any NaN later
-      )
-    }
-  )
-
-# glimpse(epoc_aki)
-# setdiff(colnames(obs_data), colnames(epoc_aki))
-
-
-# ---- admission-data-errors ----
-# FIXME Add additional checks
-epoc_aki_check <- epoc_aki %>%
-  select(`UR number`:AdmissionID, Pt_Study_no:Total_no_olig_epis) %>%
-  # Check incl / excl criteria
-  group_by(AdmissionID)
-
-any(is.nan(epoc_aki$Rx_withdrawn))
-any(is.nan(epoc_aki$`Criteria for stage of AKI`)) # FIXME check original data
-
-epoc_aki_check
-any(is.na(epoc_aki_check$`UR number`))
-
-
-epoc_aki %>%
-  select(
-    `UR number`, AdmissionID, Pt_Study_nos,
-    Max_Cr_ICU, `Highest Cr UEC`, Max_Cr_DateTime, Baseline_Cr,
-    Mx_diuretics, Mx_IVF
-  ) %>%
-  distinct() %>%
-  group_by(AdmissionID) %>%
-  mutate(duplicates = n()) %>%
-  filter(duplicates > 1) %>%
-  arrange(desc(duplicates)) %>%
-  ungroup() %>%
-  select(-`UR number`, -AdmissionID) %>%
-  kable(., caption = "Errors between L and LT obs data", booktabs = TRUE)
-# Reason: Cr and Olig epis happen at different times
-# If there is a large enough difference, then the obs data will be different
-
-rm(epoc_aki_check)
 
 # ---- admission-data ----
 admission_data <- epoc_aki %>%
