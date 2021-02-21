@@ -66,3 +66,9 @@ obs_data <- create_obs_data(
 obs_data <- tidy_obs_data(
   obs_data = obs_data
 )
+
+creatinine_ts <- create_creatinine_ts(
+  creat_furo_data = xlsx_data$creat_furo,
+  UR_numbers = unique(obs_data$UR_number), # TODO change to admission data
+  blood_gas_adjust = 0
+)
