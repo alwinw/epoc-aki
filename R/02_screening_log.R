@@ -38,16 +38,25 @@ find_cols <- function(text, replace, colnames) {
 
 
 combine_date_time_cols <- function(df) {
+  # Find matching col names and save them before pivoting df
   dttm_col <- inner_join(
     find_cols("date", "DateTime", colnames(df)),
     find_cols("time", "DateTime", colnames(df)),
     by = "match"
   ) %>%
-    select(date, time, match)
+    select(date, time, match) %>%
+    pivot_longer(-match, values_to = "raw") %>%
+    select(-name)
+
+  new_col_names <- data.frame(raw = colnames(df)) %>%
+    left_join(., dttm_col, by = "raw") %>%
+    mutate(match = if_else(is.na(match), raw, match)) %>%
+    pull(match) %>%
+    unique(.)
 
   df %>%
     pivot_longer(
-      all_of(c(dttm_col$date, dttm_col$time)),
+      all_of(dttm_col$raw),
       names_to = "DateTimeName",
       values_to = "DateTime"
     ) %>%
@@ -74,16 +83,8 @@ combine_date_time_cols <- function(df) {
       names_from = "DateTimeName",
       values_from = "datetime"
     ) %>%
-    select(all_of(unique(
-      gsub(
-        "^\\btime\\b|\\btime\\b$|^\\bdate\\b|\bdate\\b$",
-        "DateTime",
-        colnames(.),
-        ignore.case = TRUE
-      )
-    )))
+    select(all_of(new_col_names))
 }
-
 
 
 # ---- screen_log_all ----
