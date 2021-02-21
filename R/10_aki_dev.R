@@ -1,3 +1,6 @@
+# Filter for given cr and aki
+# Generic function
+
 # ---- analysis_ts ----
 # consider having col for ABG vs BioChem here and apply a filter !!IMPORTANT
 analysis_df <- cr_ch_ts %>%
