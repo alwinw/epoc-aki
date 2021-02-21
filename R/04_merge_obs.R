@@ -74,7 +74,8 @@ create_admission_data <- function(screen_log, data_set) {
 
 # ---- Clean Admission Data ----
 tidy_admission_data <- function(obs_data) {
-  admin_data <- obs_data %>%
+  raw_data <- obs_data %>%
+    # Create Admission data
     mutate(AdmissionID = paste(`UR number`, Admission, sep = ".")) %>%
     group_by(`UR number`, Pt_Study_no) %>%
     mutate(
@@ -82,8 +83,11 @@ tidy_admission_data <- function(obs_data) {
       Epis_olig_no = cumsum(Epis_olig == "Y")
     ) %>%
     rowwise() %>%
-    mutate(Comment = paste(unique(na.omit(c(Comment_crch, Comment_olig, Comment_out, Comment))), collapse = ", ")) %>%
-    ungroup() %>%
+    mutate(Comment = paste(
+      unique(na.omit(c(Comment_crch, Comment_olig, Comment_out, Comment))),
+      collapse = ", "
+    )) %>%
+    # Add vasopressor variable
     group_by(AdmissionID) %>%
     mutate(
       Vasopressor = case_when(
@@ -97,7 +101,38 @@ tidy_admission_data <- function(obs_data) {
       Vasopressor = max(Vasopressor, 0, na.rm = TRUE),
       Pt_Study_nos = paste(unique(na.omit(Pt_Study_no)), collapse = ", ")
     ) %>%
-    ungroup()
+    ungroup() %>%
+    # Add other co-morbidities
+    mutate(
+      Diabetes = grepl("T2DM|T1DM|IDDM|insulin", Comorbidities),
+      AF = grepl("AF|pAF", Comorbidities),
+      IHD = grepl("IHD|CABG|CAD|CAGS|NSTEMI", Comorbidities),
+      HF = grepl("\\bHF\\b|hypertrophy|CCF|cardiomyopathy|heart failure|LVH", Comorbidities),
+      HT = grepl("^(?=.*\\bHT\\b)(?!.*portal)(?!.*pulm)", Comorbidities, perl = TRUE),
+      PVD = grepl("PVD|arteritis|pop bypass|id steno|stents", Comorbidities),
+      Chronic_liver_disease = grepl(paste0(
+        "chronic liver disease|portal HT|varice|ETOH|",
+        "HCC|NASH|CLD|ESLD|awaiting OLTx|SMV|ascites|SBP|HCC|cirrho|",
+        "Hepatosplenomegaly|Cirrho|hepatic encephalopathy"
+      ), Comorbidities)
+    ) %>%
+    mutate_at(vars(Diabetes:Chronic_liver_disease), as.double) %>%
+    # Add discharge information
+    mutate(
+      Dc_ICU_Alive = case_when(
+        Dc_ICU_Alive == 1 ~ 1,
+        DateTime_ICU_dc == DateTime_death ~ 0,
+        DateTime_ICU_dc == DateTime_hosp_dc & grepl("Mortuary", Dc_destination) ~ 0,
+        TRUE ~ Dc_ICU_Alive
+      ),
+      Dc_Hosp_Alive = case_when(
+        Dc_Hosp_Alive == 1 ~ 1,
+        grepl("Mortuary", Dc_destination) ~ 0,
+        TRUE ~ Dc_Hosp_Alive
+      ),
+      LOS_ICU_days = as.numeric(as.duration(DateTime_ICU_dc - DateTime_ICU_admit), "days"),
+      LOS_Hosp_days = as.numeric(as.duration(DateTime_hosp_dc - DateTime_hosp_admit), "days"),
+    )
 }
 
 
@@ -118,35 +153,6 @@ epoc_aki <- obs_data %>%
         TRUE ~ NaN # TODO check if any NaN later
       )
     }
-  ) %>%
-  mutate(
-    Diabetes = grepl("T2DM|T1DM|IDDM|insulin", Comorbidities),
-    AF = grepl("AF|pAF", Comorbidities),
-    IHD = grepl("IHD|CABG|CAD|CAGS|NSTEMI", Comorbidities),
-    HF = grepl("\\bHF\\b|hypertrophy|CCF|cardiomyopathy|heart failure|LVH", Comorbidities),
-    HT = grepl("^(?=.*\\bHT\\b)(?!.*portal)(?!.*pulm)", Comorbidities, perl = TRUE),
-    PVD = grepl("PVD|arteritis|pop bypass|id steno|stents", Comorbidities),
-    Chronic_liver_disease = grepl(paste0(
-      "chronic liver disease|portal HT|varice|ETOH|",
-      "HCC|NASH|CLD|ESLD|awaiting OLTx|SMV|ascites|SBP|HCC|cirrho|",
-      "Hepatosplenomegaly|Cirrho|hepatic encephalopathy"
-    ), Comorbidities)
-  ) %>%
-  mutate_at(vars(Diabetes:Chronic_liver_disease), as.double) %>%
-  mutate(
-    Dc_ICU_Alive = case_when(
-      Dc_ICU_Alive == 1 ~ 1,
-      DateTime_ICU_dc == DateTime_death ~ 0,
-      DateTime_ICU_dc == DateTime_hosp_dc & grepl("Mortuary", Dc_destination) ~ 0,
-      TRUE ~ Dc_ICU_Alive
-    ),
-    Dc_Hosp_Alive = case_when(
-      Dc_Hosp_Alive == 1 ~ 1,
-      grepl("Mortuary", Dc_destination) ~ 0,
-      TRUE ~ Dc_Hosp_Alive
-    ),
-    LOS_ICU_days = as.numeric(as.duration(DateTime_ICU_dc - DateTime_ICU_admit), "days"),
-    LOS_Hosp_days = as.numeric(as.duration(DateTime_hosp_dc - DateTime_hosp_admit), "days"),
   ) %>%
   select(
     # PT INFO
