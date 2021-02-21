@@ -193,13 +193,14 @@ tidy_obs_data <- function(obs_data) {
         AKI_ward_48h, Rx_withdrawn
       ),
       function(x) {
-        b <- case_when(
+        case_when(
           tolower(x) == "y" | tolower(x) == "1" ~ 1,
           tolower(x) == "n" | tolower(x) == "0" ~ 0,
           is.na(x) ~ NA_real_,
           TRUE ~ NaN
         )
-        factor(b, c(0, 1), paste0(c("Not_", ""), cur_column()), ordered = TRUE)
+        # Makes later stages computationally intensive
+        # factor(b, c(0, 1), paste0(c("Not_", ""), cur_column()), ordered = TRUE)
       }
     ))
 

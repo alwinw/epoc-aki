@@ -1,5 +1,5 @@
-# ---- combine_blood_gas_bio_chem ----
-create_creatinine_ts <- function(creat_furo_data, UR_numbers, blood_gas_adjust) {
+# ---- Combine Blood Gas and Bio Chem Data ----
+create_cr_data <- function(creat_furo_data, UR_numbers, blood_gas_adjust) {
   # FIXME blood_gas_adjust estimated!! Would need something that matches the mean AND the variance
   # blood_gas_adjust <- 2 seemed to be a good fit
   blood_gas_adjust <- 0 # 2
@@ -26,7 +26,7 @@ create_creatinine_ts <- function(creat_furo_data, UR_numbers, blood_gas_adjust) 
       Creatinine_level = if_else(Pathology == "Bio Chem", `Bio Chem Creatinine`, `Blood Gas Creatinine` + blood_gas_adjust)
     ) %>%
     filter(!is.na(Creatinine_level)) %>%
-    filter(Pathology == "Blood Gas") %>%
+    filter(Pathology == "Blood Gas") %>% # FIXME think of a better way to not hard code this
     mutate_at(
       vars(ends_with("DTTM")),
       force_tz,
@@ -34,13 +34,14 @@ create_creatinine_ts <- function(creat_furo_data, UR_numbers, blood_gas_adjust) 
     ) %>%
     group_by(`UR number`) %>%
     mutate(ICU_Admission = cumsum(TC_ICU_ADMISSION_DTTM != lag(TC_ICU_ADMISSION_DTTM, default = as.POSIXct("1990-01-01")))) %>% # Arbitrarily chosen
-    arrange(`UR number`, Pathology_Result_DTTM)
+    arrange(`UR number`, Pathology_Result_DTTM) %>%
+    rename(UR_number = `UR number`)
 }
 
 
-# ---- example_creatinine_plot ----
+# ---- Example Cr Pt Plot ----
 if (FALSE) {
-  UR_number <- creatinine_ts %>%
+  UR_number <- cr_data %>%
     arrange(-ICU_Admission) %>%
     select(`UR number`) %>%
     unique(.) %>%
@@ -49,7 +50,7 @@ if (FALSE) {
     filter(`UR number` == UR_number) %>%
     select(Baseline_Cr) %>%
     .[[1, 1]]
-  example_cr_plot <- filter(creatinine_ts, `UR number` == UR_number) %>% mutate(ICU_Admission = paste0("ICU Admission ", ICU_Admission))
+  example_cr_plot <- filter(cr_data, `UR number` == UR_number) %>% mutate(ICU_Admission = paste0("ICU Admission ", ICU_Admission))
 
   ggplot(
     example_cr_plot,
@@ -76,9 +77,9 @@ if (FALSE) {
 }
 
 
-# ---- plot_blood_gas_vs_bio_chem ----
+# ---- Comparison between Measurements ----
 if (FALSE) {
-  bio_chem_blood_gas <- creatinine_ts %>%
+  bio_chem_blood_gas <- cr_data %>%
     select(-TC_ICU_ADMISSION_DTTM, -TC_ICU_DISCHARGE_DTTM, -`Blood Gas Creatinine`, -`Bio Chem Creatinine`) %>%
     group_by(`UR number`, ICU_Admission) %>%
     mutate(
