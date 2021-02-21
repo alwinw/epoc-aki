@@ -183,79 +183,75 @@ tidy_admission_data <- function(obs_data) {
     mutate(across(
       c(
         Dc_ICU_Alive, Dc_Hosp_Alive, Excl_criteria_ok,
-        Incl_criteria_ok_crch, Incl_criteria_ok_olig, 
+        Incl_criteria_ok_crch, Incl_criteria_ok_olig,
         Epis_cr_change, Epis_olig,
         Already_AKI, EOLC, ESKD, No_IDC, Kidney_transplant, Admit_weekend,
-        Child, Male, Wtmeasured, Mecvenadm, 
+        Child, Male, Wtmeasured, Mecvenadm,
         Surgadmission, starts_with("PCs_"), starts_with("PCm_"),
         HT, Diabetes, AF, IHD, HF, PVD, Chronic_liver_disease, Vasopressor,
         RRT, ICU_readmit,
-        AKI_ICU, AKI_Dx_Cr_1.5_times,  AKI_Dx_oliguria, CrdxAKIUEC, 
-        Cr_defined_AKI, Mx_diuretics, Mx_IVF, Mx_other, ICU_dc_RRT, 
+        AKI_ICU, AKI_Dx_Cr_1.5_times, AKI_Dx_oliguria, CrdxAKIUEC,
+        Cr_defined_AKI, Mx_diuretics, Mx_IVF, Mx_other, ICU_dc_RRT,
         AKI_ward_48h
       ),
       function(x) {
-        b = case_when(
+        b <- case_when(
           tolower(x) == "y" | tolower(x) == "1" ~ 1,
           tolower(x) == "n" | tolower(x) == "0" ~ 0,
           is.na(x) ~ NA_real_,
           TRUE ~ NaN
         )
-        factor(b, c(0, 1), paste0(c("Not_", ""), cur_column()), ordered=TRUE)
+        factor(b, c(0, 1), paste0(c("Not_", ""), cur_column()), ordered = TRUE)
       }
     ))
-  
+
   stopifnot(
-    "Unusual entry data found" = 
+    "Unusual entry data found" =
       !any(is.nan(as.matrix(factored_data)))
   )
   stopifnot(!any(is.na(factored_data$UR_number)))
-  
-  # factored_data %>%
-  #   select(
-  #     UR_number, AdmissionID, Pt_Study_nos,
-  #     Max_Cr_ICU, Highest_Cr_UEC, Max_Cr_DateTime, Baseline_Cr,
-  #     Mx_diuretics, Mx_IVF
-  #   ) %>%
-  #   distinct() %>%
-  #   group_by(AdmissionID) %>%
-  #   mutate(duplicates = n()) %>%
-  #   filter(duplicates > 1) %>%
-  #   arrange(desc(duplicates)) %>%
-  #   ungroup() %>%
-  #   select(-UR_number, -AdmissionID) %>%
-  #   kable(., caption = "Errors between L and LT obs data", booktabs = TRUE)
-  # # Reason: Cr and Olig epis happen at different times
-  # # If there is a large enough difference, then the obs data will be different
-  
-  
-  
-  
+
+  factored_data %>%
+    # select(
+    #   UR_number, AdmissionID, Pt_Study_nos,
+    #   Max_Cr_ICU, Highest_Cr_UEC, Max_Cr_DateTime, Baseline_Cr,
+    #   Mx_diuretics, Mx_IVF
+    # ) %>%
+    distinct() %>%
+    group_by(AdmissionID) %>%
+    mutate(duplicates = n()) %>%
+    filter(duplicates > 1) %>%
+    arrange(desc(duplicates)) %>%
+    ungroup() %>%
+    select(-UR_number, -AdmissionID) %>%
+    View(.)
+
+  kable(., caption = "Errors between L and LT obs data", booktabs = TRUE)
+  # Reason: Cr and Olig epis happen at different times
+  # If there is a large enough difference, then the obs data will be different
+
+  # TODO think about a better solution
+  admin_data <- factored_data %>%
+    # select(
+    #   -Pt_Study_no:-Total_no_olig_epis,
+    #   -DateTime_epis:-T0_Metaraminol,
+    # ) %>%
+    group_by(AdmissionID) %>%
+    # TODO think of a more generic way to solve the duplicates problem
+    mutate(
+      Mx_diuretics = max(Mx_diuretics), # No rm.na
+      Mx_IVF = max(Mx_IVF),
+      Baseline_Cr = min(Baseline_Cr)
+    ) %>%
+    distinct() %>%
+    top_n(1, if_else(is.na(Max_Cr_ICU), 0, Max_Cr_ICU)) %>% # TODO replace with slice_max() in the future
+    ungroup()
+  # What about Admission ID?
+
+  stopifnot(all.equal(
+    sort(unique(obs_data$`UR number`)),
+    sort(unique(admin_data$UR_number))
+  ))
+
+  return(admin_data)
 }
-
-
-
-# ---- admission-data ----
-admission_data <- epoc_aki %>%
-  select(
-    -Pt_Study_no:-Total_no_olig_epis,
-    -DateTime_epis:-T0_Metaraminol,
-  ) %>%
-  group_by(AdmissionID) %>%
-  # TODO think of a more generic way to solve the duplicates problem
-  mutate(
-    Mx_diuretics = max(Mx_diuretics), # No rm.na
-    Mx_IVF = max(Mx_IVF),
-    Baseline_Cr = min(Baseline_Cr)
-  ) %>%
-  distinct() %>%
-  top_n(1, if_else(is.na(Max_Cr_ICU), 0, Max_Cr_ICU)) %>% # TODO replace with slice_max() in the future
-  ungroup()
-
-check_merge_data(
-  admission_data$`UR number`,
-  screen_log$`UR number`,
-  "Number of admissions is different!"
-)
-
-rm(check_merge_data)
