@@ -1,5 +1,5 @@
 # ---- Merge Screening and Obs Data ----
-create_admission_data <- function(screen_log, data_set) {
+create_obs_data <- function(screen_log, data_set) {
   # Pivot longer to expand L and LTs into separate rows
   screening_data <- screen_log %>%
     pivot_longer(
@@ -72,10 +72,10 @@ create_admission_data <- function(screen_log, data_set) {
 # Sort columns by UR, PTSn, Admission, Event Type, etc
 
 
-# ---- Clean Admission Data ----
-tidy_admission_data <- function(obs_data) {
+# ---- Clean Observation Data ----
+tidy_obs_data <- function(obs_data) {
   raw_data <- obs_data %>%
-    # Create Admission data
+    # Create Observation data
     mutate(AdmissionID = paste(`UR number`, Admission, sep = ".")) %>%
     group_by(`UR number`, Pt_Study_no) %>%
     mutate(
@@ -211,24 +211,27 @@ tidy_admission_data <- function(obs_data) {
   )
   stopifnot(!any(is.na(factored_data$UR_number)))
 
-  factored_data %>%
-    # select(
-    #   UR_number, AdmissionID, Pt_Study_nos,
-    #   Max_Cr_ICU, Highest_Cr_UEC, Max_Cr_DateTime, Baseline_Cr,
-    #   Mx_diuretics, Mx_IVF
-    # ) %>%
-    distinct() %>%
-    group_by(AdmissionID) %>%
-    mutate(duplicates = n()) %>%
-    filter(duplicates > 1) %>%
-    arrange(desc(duplicates)) %>%
-    ungroup() %>%
-    select(-UR_number, -AdmissionID) %>%
-    View(.)
+  return(factored_data)
+}
 
-  kable(., caption = "Errors between L and LT obs data", booktabs = TRUE)
-  # Reason: Cr and Olig epis happen at different times
-  # If there is a large enough difference, then the obs data will be different
+if (FALSE) {
+  # factored_data %>%
+  #   # select(
+  #   #   UR_number, AdmissionID, Pt_Study_nos,
+  #   #   Max_Cr_ICU, Highest_Cr_UEC, Max_Cr_DateTime, Baseline_Cr,
+  #   #   Mx_diuretics, Mx_IVF
+  #   # ) %>%
+  #   distinct() %>%
+  #   group_by(AdmissionID) %>%
+  #   mutate(duplicates = n()) %>%
+  #   filter(duplicates > 1) %>%
+  #   arrange(desc(duplicates)) %>%
+  #   ungroup() %>%
+  #   select(-UR_number, -AdmissionID) %>%
+  #   kable(., caption = "Errors between L and LT obs data", booktabs = TRUE)
+  # # Reason: Cr and Olig epis happen at different times
+  # # If there is a large enough difference, then the obs data will be different
+
 
   # TODO think about a better solution
   admin_data <- factored_data %>%

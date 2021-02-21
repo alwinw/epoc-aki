@@ -59,10 +59,10 @@ data_set <- create_data_set(
 )
 overview_data_set(data_set)
 
-admission_data <- create_admission_data(
+obs_data <- create_obs_data(
   screen_log = screen_log,
   data_set = data_set
 )
-admission_data <- tidy_admission_data(
-  obs_data = admission_data
+obs_data <- tidy_obs_data(
+  obs_data = obs_data
 )
