@@ -165,15 +165,21 @@ tidy_admission_data <- function(obs_data) {
       ICU_readmit, DateTime_epis,
       starts_with("T-4"), starts_with("T0"),
       T_corresp_check,
-
-      # Baseline_Cr, Baseline_Cr_DateTime, Base_Cr_UEC,
-      # Outcomes
-
+      # All others
+      Baseline_Cr:Cause_death,
       # Comments
       Dates_screened, Comment
     )
 
-  setdiff(colnames(raw_data), colnames(tidy_data))
+  stopifnot(
+    "Missing column names" =
+      length(setdiff(
+        gsub(" ", "_", colnames(raw_data)),
+        c(colnames(tidy_data), "UR number")
+      )) == 0
+  )
+  
+  
 }
 
 
@@ -194,30 +200,7 @@ epoc_aki <- obs_data %>%
         TRUE ~ NaN # TODO check if any NaN later
       )
     }
-  ) %>%
-  select(
-    # PT INFO
-    `UR number`,
-    AdmissionID, Admission, Total_admissions,
-    DateTime_hosp_admit:DateTime_hosp_dc, Dc_destination, LOS_ICU_days:LOS_Hosp_days,
-    Excl_criteria_ok, Event,
-    # EPIS
-    Pt_Study_nos, Pt_Study_no,
-    Incl_criteria_ok_crch, Incl_criteria_ok_olig,
-    Epis_cr_change, Epis_olig,
-    Epis_cr_change_no, Epis_olig_no, Epis_no,
-    Total_no_cr_epis, Total_no_olig_epis,
-    # SCREENING LOG
-    APACHE_II:APACHE_III,
-    Already_AKI:Mecvenadm,
-    Vasopressor, Diabetes:Chronic_liver_disease,
-    # DATA SET
-    DateTime_epis:Cause_death,
-    # COMMENTS
-    Dates_screened,
-    Comment
-  ) %>%
-  arrange(AdmissionID)
+  )
 
 # glimpse(epoc_aki)
 # setdiff(colnames(obs_data), colnames(epoc_aki))
