@@ -145,9 +145,9 @@ tidy_obs_data <- function(obs_data) {
       DateTime_ICU_admit, DateTime_ICU_dc, DateTime_hosp_admit, DateTime_hosp_dc,
       Dc_destination, Dc_ICU_Alive, Dc_Hosp_Alive,
       LOS_ICU_days, LOS_Hosp_days,
-      Excl_criteria_ok, Event,
+      Excl_criteria_ok, Event, Pt_Study_nos, ICU_readmit,
       # Episode Information
-      Pt_Study_nos, Pt_Study_no,
+      Pt_Study_no,
       Incl_criteria_ok_crch, Incl_criteria_ok_olig,
       Epis_cr_change, Epis_olig,
       Epis_cr_change_no, Epis_olig_no, Epis_no,
@@ -162,9 +162,7 @@ tidy_obs_data <- function(obs_data) {
       Comorbidities, HT, Diabetes, AF, IHD, HF, PVD, Chronic_liver_disease,
       Vasopressor, RRT,
       # Obs Data
-      ICU_readmit, DateTime_epis,
-      starts_with("T-4"), starts_with("T0"),
-      T_corresp_check,
+      DateTime_epis, starts_with("T-4"), starts_with("T0"),
       # All others
       Baseline_Cr:Cause_death,
       # Comments
@@ -175,7 +173,7 @@ tidy_obs_data <- function(obs_data) {
     "Missing column names" =
       length(setdiff(
         gsub(" ", "_", colnames(raw_data)),
-        c(colnames(tidy_data), "UR number")
+        c(colnames(tidy_data), "T_corresp_check")
       )) == 0
   )
 
@@ -192,7 +190,7 @@ tidy_obs_data <- function(obs_data) {
         RRT, ICU_readmit,
         AKI_ICU, AKI_Dx_Cr_1.5_times, AKI_Dx_oliguria, CrdxAKIUEC,
         Cr_defined_AKI, Mx_diuretics, Mx_IVF, Mx_other, ICU_dc_RRT,
-        AKI_ward_48h
+        AKI_ward_48h, Rx_withdrawn
       ),
       function(x) {
         b <- case_when(
@@ -212,49 +210,4 @@ tidy_obs_data <- function(obs_data) {
   stopifnot(!any(is.na(factored_data$UR_number)))
 
   return(factored_data)
-}
-
-if (FALSE) {
-  # factored_data %>%
-  #   # select(
-  #   #   UR_number, AdmissionID, Pt_Study_nos,
-  #   #   Max_Cr_ICU, Highest_Cr_UEC, Max_Cr_DateTime, Baseline_Cr,
-  #   #   Mx_diuretics, Mx_IVF
-  #   # ) %>%
-  #   distinct() %>%
-  #   group_by(AdmissionID) %>%
-  #   mutate(duplicates = n()) %>%
-  #   filter(duplicates > 1) %>%
-  #   arrange(desc(duplicates)) %>%
-  #   ungroup() %>%
-  #   select(-UR_number, -AdmissionID) %>%
-  #   kable(., caption = "Errors between L and LT obs data", booktabs = TRUE)
-  # # Reason: Cr and Olig epis happen at different times
-  # # If there is a large enough difference, then the obs data will be different
-
-
-  # TODO think about a better solution
-  admin_data <- factored_data %>%
-    # select(
-    #   -Pt_Study_no:-Total_no_olig_epis,
-    #   -DateTime_epis:-T0_Metaraminol,
-    # ) %>%
-    group_by(AdmissionID) %>%
-    # TODO think of a more generic way to solve the duplicates problem
-    mutate(
-      Mx_diuretics = max(Mx_diuretics), # No rm.na
-      Mx_IVF = max(Mx_IVF),
-      Baseline_Cr = min(Baseline_Cr)
-    ) %>%
-    distinct() %>%
-    top_n(1, if_else(is.na(Max_Cr_ICU), 0, Max_Cr_ICU)) %>% # TODO replace with slice_max() in the future
-    ungroup()
-  # What about Admission ID?
-
-  stopifnot(all.equal(
-    sort(unique(obs_data$`UR number`)),
-    sort(unique(admin_data$UR_number))
-  ))
-
-  return(admin_data)
 }
