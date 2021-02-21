@@ -87,6 +87,7 @@ tidy_admission_data <- function(obs_data) {
       unique(na.omit(c(Comment_crch, Comment_olig, Comment_out, Comment))),
       collapse = ", "
     )) %>%
+    select(-starts_with("Comment_")) %>%
     # Add vasopressor variable
     group_by(AdmissionID) %>%
     mutate(
@@ -133,6 +134,46 @@ tidy_admission_data <- function(obs_data) {
       LOS_ICU_days = as.numeric(as.duration(DateTime_ICU_dc - DateTime_ICU_admit), "days"),
       LOS_Hosp_days = as.numeric(as.duration(DateTime_hosp_dc - DateTime_hosp_admit), "days"),
     )
+
+  tidy_data <- raw_data %>%
+    # Clean names
+    rename_with(~ gsub(" ", "_", .x, )) %>%
+    select(
+      # Patient Information
+      UR_number,
+      AdmissionID, Admission, Total_admissions,
+      DateTime_ICU_admit, DateTime_ICU_dc, DateTime_hosp_admit, DateTime_hosp_dc,
+      Dc_destination, Dc_ICU_Alive, Dc_Hosp_Alive,
+      LOS_ICU_days, LOS_Hosp_days,
+      Excl_criteria_ok, Event,
+      # Episode Information
+      Pt_Study_nos, Pt_Study_no,
+      Incl_criteria_ok_crch, Incl_criteria_ok_olig,
+      Epis_cr_change, Epis_olig,
+      Epis_cr_change_no, Epis_olig_no, Epis_no,
+      Total_no_cr_epis, Total_no_olig_epis,
+      # Demographics
+      Already_AKI, EOLC, ESKD, No_IDC, Kidney_transplant,
+      Admit_weekend, Child, Age, Male, Wt, Wtmeasured, HOPC,
+      Mecvenadm, APACHE_II, APACHE_III,
+      # Admission
+      Surgadmission, starts_with("PCs_"), starts_with("PCm_"),
+      # Comorbidities
+      Comorbidities, HT, Diabetes, AF, IHD, HF, PVD, Chronic_liver_disease,
+      Vasopressor, RRT,
+      # Obs Data
+      ICU_readmit, DateTime_epis,
+      starts_with("T-4"), starts_with("T0"),
+      T_corresp_check,
+
+      # Baseline_Cr, Baseline_Cr_DateTime, Base_Cr_UEC,
+      # Outcomes
+
+      # Comments
+      Dates_screened, Comment
+    )
+
+  setdiff(colnames(raw_data), colnames(tidy_data))
 }
 
 
