@@ -17,7 +17,7 @@
 # ---- Load Functions ----
 file_sources <- list.files(path = "R/", pattern = "^[0-9][0-9].*.R$", full.names = TRUE)
 
-max_num <- 5
+max_num <- 7
 excl_num <- c()
 file_nums <- as.numeric(gsub(".*R/(.+[0-9])_[A-Za-z].*", "\\1", file_sources))
 file_sources <- file_sources[file_nums <= max_num & !(file_nums %in% excl_num)]
@@ -77,8 +77,13 @@ admission_data <- create_admin_data(
 )
 
 # Creatinine Data
-cr_data <- create_creatinine_ts(
+cr_data <- create_cr_data(
   creat_furo_data = xlsx_data$creat_furo,
-  UR_numbers = unique(obs_data$UR_number), # TODO change to admission data
+  UR_numbers = unique(admission_data$UR_number),
   blood_gas_adjust = 0
+)
+
+cr_ch_ts <- generate_cr_changes(
+  admission_data = admission_data,
+  cr_data = cr_data
 )
