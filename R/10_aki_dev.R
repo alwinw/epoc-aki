@@ -59,8 +59,8 @@ logit_cut <- cutpointr(
 )
 summary(logit_cut)
 
-glm(formula = AKI_2or3 ~ APACHE_II + APACHE_III + PCs_cardio + Vasopressor + Chronic_liver_disease, family = "binomial", data = analysis_data)
-
+temp2 <- glm(formula = AKI_2or3 ~ APACHE_II + APACHE_III + PCs_cardio + Vasopressor + Chronic_liver_disease, family = "binomial", data = analysis_data)
+summary(temp2)
 
 # ---- aki_dev_wrapper ----
 aki_dev_wrapper <- function(
