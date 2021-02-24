@@ -1,92 +1,75 @@
 # Filter for given cr and aki
 # Generic function
 
-# ---- analysis_ts ----
-# consider having col for ABG vs BioChem here and apply a filter !!IMPORTANT
-analysis_df <- cr_ch_ts %>%
-  select(
-    `UR number`:Admission, Pt_Study_nos, Event,
-    Age:Chronic_liver_disease,
-    AKI_ICU,
-    DateTime_Pathology_Result:AKI_2or3,
-    Cr_defined_AKI, Cr_defined_AKI_2or3, Olig_defined_AKI, Olig_defined_AKI_2or3
-  ) %>%
-  mutate(
-    APACHE_II = if_else(APACHE_II == 0, NA_real_, APACHE_II),
-    APACHE_III = if_else(APACHE_III == 0, NA_real_, APACHE_III)
-  ) %>%
-  group_by(AKI_ICU) %>%
-  mutate(
-    APACHE_II = if_else(is.na(APACHE_II), median(APACHE_II, na.rm = TRUE), APACHE_II),
-    APACHE_III = if_else(is.na(APACHE_III), median(APACHE_III, na.rm = TRUE), APACHE_III)
-  ) %>% # FIXME Replace with REAL data
-  mutate(
-    cr_before_aki = if_else(is.na(del_t_aki_hr) | del_t_aki_hr >= 0, 1, 0)
-  ) %>%
-  ungroup()
+# ---- Create Outcomes ----
+create_outcomes <- function(outcome_var,
+                            ch_hr_lim,
+                            aki_hr_lim,
+                            analysis_data) {
+  ch_hr_lim <- sort(ch_hr_lim)
+  aki_hr_lim <- sort(aki_hr_lim)
+  analysis_data %>%
+    filter(del_t_ch_hr >= ch_hr_lim[1], del_t_ch_hr <= ch_hr_lim[2]) %>%
+    mutate(
+      {{ outcome_var }} := case_when(
+        is.na(del_t_aki_hr) ~ 0,
+        del_t_aki_hr < aki_hr_lim[1] ~ .data[[outcome_var]],
+        del_t_aki_hr >= aki_hr_lim[1] & del_t_aki_hr <= aki_hr_lim[2] ~ .data[[outcome_var]],
+        del_t_aki_hr > aki_hr_lim[2] ~ 0,
+        TRUE ~ NA_real_
+      )
+    )
+}
 
-measurements_df <- analysis_df %>%
-  mutate(temp = is.na(cr)) %>%
-  select(-del_cr, -per_cr_change, -del_t_ch_hr:-del_t_aki_hr) %>%
-  unique(.) %>%
-  mutate(
-    del_t_ch_hr = 0, # consider changing to median or something later
-    del_t_aki_hr = 0,
-    del_cr = temp
-  ) %>%
-  group_by(AdmissionID, cr_before_aki) %>%
-  mutate(
-    n_measurements = n()
-  ) %>%
-  ungroup() %>%
-  select(-temp)
+if (FALSE) {
+  create_outcomes(
+    outcome_var = "AKI_2or3",
+    ch_hr_lim = c(5, 6),
+    aki_hr_lim = c(12, 24),
+    analysis_data =
+      tribble(
+        ~del_t_ch_hr, ~del_t_aki_hr, ~AKI_2or3,
+        4, 3, 0, # should be filtered out
+        5, 6, 0, # should be 0
+        5, 6, 1, # should be 1
+        5, NA, 0, # should be 0
+        5, 15, 0, # should be 0
+        5, 15, 1, # should be 1
+        5, NA, 0, # should be 0
+        5, 30, 0, # should be 0
+        5, 30, 1 # should be 0
+      )
+  )
+}
 
-baseline_df <- measurements_df %>%
-  select(-DateTime_Pathology_Result:-cr) %>%
-  group_by(AdmissionID) %>%
-  mutate(n_measurements = if_else(cr_before_aki == 1, n_measurements, NA_integer_)) %>%
-  fill(n_measurements, .direction = "updown") %>%
-  # mutate(n_measurements = if_else(is.na(n_measurements), as.integer(0), n_measurements)) %>%
-  select(-cr_before_aki) %>%
-  ungroup() %>%
-  unique(.)
+test_df <- create_outcomes(
+  outcome_var = "AKI_2or3",
+  ch_hr_lim = c(4, 5.8),
+  aki_hr_lim = c(8.7, 25.6),
+  analysis_data = analysis_df
+)
 
-# if (anyNA(baseline_df)) stop("There is missing data in baseline_df")
-stopifnot(length(unique(baseline_df$AdmissionID)) == nrow(baseline_df))
-stopifnot(baseline_df %>% filter(AKI_ICU == 0, Cr_defined_AKI == 1) %>% nrow(.) == 0)
+temp <- lmer(AKI_2or3 ~ APACHE_II + APACHE_III + PCs_cardio + Vasopressor + Chronic_liver_disease + (1 | AdmissionID), test_df)
+summary(temp)
+test_df$predict <- predict(temp, type = "response")
+logit_cut <- cutpointr(
+  test_df, predict, {{ outcome_var }},
+  use_midpoints = TRUE, direction = ">=", pos_class = 1, neg_class = 0,
+  method = maximize_metric, metric = youden
+)
+summary(logit_cut)
 
-# Compare with admissions data
-stopifnot(nrow(filter(baseline_df, AKI_ICU == 1)) >= nrow(filter(admission_data, AKI_ICU == 1)))
-stopifnot(nrow(filter(baseline_df, Cr_defined_AKI == 1)) >= nrow(filter(admission_data, Cr_defined_AKI == 1)))
-stopifnot(nrow(filter(baseline_df, Olig_defined_AKI == 1)) >= nrow(filter(admission_data, `AKI Dx oliguria` == 1)))
-
-baseline_df <- filter(baseline_df, !del_cr)
-analysis_df <- filter(analysis_df, !is.na(del_cr))
-
-# --- time_to_aki_plot ----
-# analysis_df %>%
-#   filter(AKI_ICU == 1) %>%
-#   group_by(AdmissionID) %>%
-#   summarise(max_t_aki = max(del_t_aki_hr)) %>%
-#   ggplot(., aes(max_t_aki)) +
-#   geom_histogram() +
-#   xlim(0, 30)
-#
-# analysis_df %>%
-#   group_by(AdmissionID) %>%
-#   summarise(min_t_ch = min(del_t_ch_hr), max_t_ch = max(del_t_ch_hr)) %>%
-#   ggplot(., aes(max_t_aki)) +
-#   geom_histogram() +
-#   xlim(0, 30)
+temp2 <- glm(formula = AKI_2or3 ~ APACHE_II + APACHE_III + PCs_cardio + Vasopressor + Chronic_liver_disease, family = "binomial", data = analysis_data)
+summary(temp2)
 
 # ---- aki_dev_wrapper ----
 aki_dev_wrapper <- function(
-                            outcome_var = "AKI_ICU",
-                            baseline_predictors = c("Age"),
-                            cr_predictors = NULL,
-                            add_gradient_predictor = NULL,
-                            del_t_ch_hr_range = c(-Inf, Inf),
-                            del_t_aki_hr_range = c(-Inf, Inf),
+                            outcome_var,
+                            baseline_predictors,
+                            cr_predictors,
+                            add_gradient_predictor,
+                            ch_hr_lim,
+                            aki_hr_lim,
                             first_cr_only = TRUE,
                             stepwise = FALSE,
                             k = "mBIC",
@@ -108,15 +91,15 @@ aki_dev_wrapper <- function(
   )
 
   # Apply ch_hr filter
-  del_t_ch_hr_range <- sort(del_t_ch_hr_range)
-  analysis_data <- filter(analysis_data, del_t_ch_hr >= del_t_ch_hr_range[1], del_t_ch_hr <= del_t_ch_hr_range[2])
-  summary$ch_hr_lower <- del_t_ch_hr_range[1]
-  summary$ch_hr_upper <- del_t_ch_hr_range[2]
+  ch_hr_lim <- sort(ch_hr_lim)
+  analysis_data <- filter(analysis_data, del_t_ch_hr >= ch_hr_lim[1], del_t_ch_hr <= ch_hr_lim[2])
+  summary$ch_hr_lower <- ch_hr_lim[1]
+  summary$ch_hr_upper <- ch_hr_lim[2]
   # Apply aki_hr filter
-  del_t_aki_hr_range <- sort(del_t_aki_hr_range)
-  analysis_data <- filter(analysis_data, is.na(del_t_aki_hr) | del_t_aki_hr >= del_t_aki_hr_range[1] & del_t_aki_hr <= del_t_aki_hr_range[2])
-  summary$aki_hr_lower <- del_t_aki_hr_range[1]
-  summary$aki_hr_upper <- del_t_aki_hr_range[2]
+  aki_hr_lim <- sort(aki_hr_lim)
+  analysis_data <- filter(analysis_data, is.na(del_t_aki_hr) | del_t_aki_hr >= aki_hr_lim[1] & del_t_aki_hr <= aki_hr_lim[2])
+  summary$aki_hr_lower <- aki_hr_lim[1]
+  summary$aki_hr_upper <- aki_hr_lim[2]
   # Remove any very large jumps
   analysis_data <- filter(analysis_data, abs(del_cr) < 100) # Consider if this is reasonable or not
   # Apply first cr_change only
@@ -233,8 +216,8 @@ aki_dev_wrapper <- function(
 #   outcome_var = "AKI_2or3",
 #   baseline_predictors = NULL,
 #   add_gradient_predictor = 1,
-#   del_t_ch_hr_range = c(6, 7),
-#   del_t_aki_hr_range = c(8, 48)
+#   ch_hr_lim = c(6, 7),
+#   aki_hr_lim = c(8, 48)
 # )
 # test2logit <- glm(
 #   AKI_ICU ~ cr_gradient,
@@ -254,8 +237,8 @@ aki_dev_wrapper <- function(
 #   ),
 #   cr_predictors = "cr",
 #   add_gradient_predictor = 1, # umol/L/h
-#   del_t_ch_hr_range = c(6, 7),
-#   del_t_aki_hr_range = c(8, 48),
+#   ch_hr_lim = c(6, 7),
+#   aki_hr_lim = c(8, 48),
 #   stepwise = TRUE,
 #   k = "mBIC"
 # )
@@ -282,8 +265,8 @@ aki_dev_wrapper <- function(
 #     "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
 #   ),
 #   cr_predictors = "cr",
-#   del_t_ch_hr_range = c(6.0, 8.33),
-#   del_t_aki_hr_range = c(9.25, 47.33),
+#   ch_hr_lim = c(6.0, 8.33),
+#   aki_hr_lim = c(9.25, 47.33),
 #   add_gradient_predictor = 1,
 #   stepwise = TRUE,
 #   k = "BIC",

@@ -30,6 +30,7 @@ generate_cr_ch <- function(
   if (AKI_ICU == 0 | is.na(AKI_ICU)) {
     del_t_aki <- rep(as.duration(NA_real_), nrow(Ti))
   } else {
+    # Start of AKI to end of Cr ch ep
     del_t_aki <- as.duration(DateTime_AKI_Dx - Ti$Pathology_Result_DTTM)
   }
 

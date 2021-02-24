@@ -19,3 +19,4 @@ tinytex
 servr
 formatR
 kableExtra
+lme4
