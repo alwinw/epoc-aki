@@ -207,7 +207,7 @@ if (FALSE) {
 #   coord_cartesian(expand = FALSE) +
 #   scale_fill_viridis_c()
 
-# ---- heatmap_plot ----
+# ---- Heatmap Plot ----
 if (FALSE) {
   heatmap_all <- cr_ch_ts %>%
     filter(is.na(del_t_aki_hr) | del_t_aki_hr > 0) %>%
