@@ -1,34 +1,48 @@
 # Summaries
-analysis_df %>%
-  select(AdmissionID, DateTime_Pathology_Result) %>%
-  distinct() %>%
-  nrow()
-analysis_df %>%
-  nrow()
+summarise_analysis <- function(analysis_df, measurements_df) {
+  # TODO tidy this all up so it returns a dataframe of results
+  # maybe use n_disctinct and sum or something
+  analysis_df %>%
+    select(AdmissionID, DateTime_Pathology_Result) %>%
+    distinct() %>%
+    nrow() %>%
+    print(.)
+  analysis_df %>%
+    nrow() %>%
+    print(.)
 
-analysis_df %>%
-  filter(del_t_aki_hr < 0) %>%
-  select(AdmissionID, DateTime_Pathology_Result) %>%
-  distinct() %>%
-  nrow()
-measurements_df %>%
-  filter(cr_before_aki == 0) %>%
-  nrow()
-analysis_df %>%
-  filter(del_t_aki_hr < 0) %>%
-  nrow()
+  analysis_df %>%
+    filter(del_t_aki_hr < 0) %>%
+    select(AdmissionID, DateTime_Pathology_Result) %>%
+    distinct() %>%
+    nrow() %>%
+    print(.)
+  measurements_df %>%
+    filter(cr_before_aki == 0) %>%
+    nrow() %>%
+    print(.)
+  analysis_df %>%
+    filter(del_t_aki_hr < 0) %>%
+    nrow() %>%
+    print(.)
 
-analysis_df %>%
-  filter(is.na(del_t_aki_hr) | del_t_aki_hr >= 0) %>%
-  select(AdmissionID, DateTime_Pathology_Result) %>%
-  distinct() %>%
-  nrow()
-measurements_df %>%
-  filter(cr_before_aki == 1) %>%
-  nrow() - 10 # DIFFERENT because the 10pts were NOT removed due to <2 cr measurements
-analysis_df %>%
-  filter(is.na(del_t_aki_hr) | del_t_aki_hr >= 0) %>%
-  nrow()
+  analysis_df %>%
+    filter(is.na(del_t_aki_hr) | del_t_aki_hr >= 0) %>%
+    select(AdmissionID, DateTime_Pathology_Result) %>%
+    distinct() %>%
+    nrow() %>%
+    print(.)
+  measurements_df %>%
+    filter(cr_before_aki == 1) %>%
+    (nrow() - 10) %>% # DIFFERENT because the 10pts were NOT removed due to <2 cr measurements
+    print(.)
+  analysis_df %>%
+    filter(is.na(del_t_aki_hr) | del_t_aki_hr >= 0) %>%
+    nrow() %>%
+    print(.)
+  return(NULL)
+}
+
 
 # ---- Heatmap Plot ----
 if (FALSE) {

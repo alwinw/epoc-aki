@@ -17,7 +17,7 @@
 # ---- Load Functions ----
 file_sources <- list.files(path = "R/", pattern = "^[0-9][0-9].*.R$", full.names = TRUE)
 
-max_num <- 7
+max_num <- 9
 excl_num <- c()
 file_nums <- as.numeric(gsub(".*R/(.+[0-9])_[A-Za-z].*", "\\1", file_sources))
 file_sources <- file_sources[file_nums <= max_num & !(file_nums %in% excl_num)]
@@ -86,4 +86,12 @@ cr_data <- create_cr_data(
 cr_ch_ts <- generate_cr_changes(
   admission_data = admission_data,
   cr_data = cr_data
+)
+
+# Analysis Data
+epoc_aki <- create_analysis_data(cr_ch_ts)
+
+summarise_analysis(
+  analysis_df = epoc_aki$analysis,
+  measurements_df = epoc_aki$measurements
 )
