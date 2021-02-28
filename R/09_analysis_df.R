@@ -76,35 +76,3 @@ analysis_df <- filter(analysis_df, !is.na(del_cr))
 #   ggplot(., aes(max_t_aki)) +
 #   geom_histogram() +
 #   xlim(0, 30)
-
-# Summaries
-analysis_df %>%
-  select(AdmissionID, DateTime_Pathology_Result) %>%
-  distinct() %>%
-  nrow()
-analysis_df %>%
-  nrow()
-
-analysis_df %>%
-  filter(del_t_aki_hr < 0) %>%
-  select(AdmissionID, DateTime_Pathology_Result) %>%
-  distinct() %>%
-  nrow()
-measurements_df %>%
-  filter(cr_before_aki == 0) %>%
-  nrow()
-analysis_df %>%
-  filter(del_t_aki_hr < 0) %>%
-  nrow()
-
-analysis_df %>%
-  filter(is.na(del_t_aki_hr) | del_t_aki_hr >= 0) %>%
-  select(AdmissionID, DateTime_Pathology_Result) %>%
-  distinct() %>%
-  nrow()
-measurements_df %>%
-  filter(cr_before_aki == 1) %>%
-  nrow() - 10 # DIFFERENT because the 10pts were NOT removed due to <2 cr measurements
-analysis_df %>%
-  filter(is.na(del_t_aki_hr) | del_t_aki_hr >= 0) %>%
-  nrow()
