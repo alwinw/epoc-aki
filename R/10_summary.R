@@ -34,7 +34,7 @@ summarise_analysis <- function(analysis_df, measurements_df) {
     print(.)
   measurements_df %>%
     filter(cr_before_aki == 1) %>%
-    (nrow(.) - 10) %>% # DIFFERENT because the 10pts were NOT removed due to <2 cr measurements
+    nrow(.) - 10 %>% # DIFFERENT because the 10pts were NOT removed due to <2 cr measurements
     print(.)
   analysis_df %>%
     filter(is.na(del_t_aki_hr) | del_t_aki_hr >= 0) %>%
@@ -111,4 +111,6 @@ plot_cr_ch_heatmap <- function(analysis_df, save_plots) {
       width = 12, height = 11.5, scale = 0.8
     )
   }
+
+  return(heatmap_plot)
 }
