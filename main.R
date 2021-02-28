@@ -95,3 +95,8 @@ summarise_analysis(
   analysis_df = epoc_aki$analysis,
   measurements_df = epoc_aki$measurements
 )
+
+plot_cr_ch_heatmap(
+  analysis_df = epoc_aki$analysis,
+  save_plots = FALSE
+)

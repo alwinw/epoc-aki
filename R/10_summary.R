@@ -34,7 +34,7 @@ summarise_analysis <- function(analysis_df, measurements_df) {
     print(.)
   measurements_df %>%
     filter(cr_before_aki == 1) %>%
-    (nrow() - 10) %>% # DIFFERENT because the 10pts were NOT removed due to <2 cr measurements
+    (nrow(.) - 10) %>% # DIFFERENT because the 10pts were NOT removed due to <2 cr measurements
     print(.)
   analysis_df %>%
     filter(is.na(del_t_aki_hr) | del_t_aki_hr >= 0) %>%
@@ -45,8 +45,8 @@ summarise_analysis <- function(analysis_df, measurements_df) {
 
 
 # ---- Heatmap Plot ----
-if (FALSE) {
-  heatmap_all <- cr_ch_ts %>%
+plot_cr_ch_heatmap <- function(analysis_df, save_plots) {
+  heatmap_all <- analysis_df %>%
     filter(is.na(del_t_aki_hr) | del_t_aki_hr > 0) %>%
     mutate(
       heatmap = case_when(
@@ -72,7 +72,6 @@ if (FALSE) {
       aes(fill = after_stat(level_mid)),
       contour_var = "density"
     ) +
-    # geom_point() +
     scale_x_continuous(breaks = seq(0, 12, by = 2)) +
     coord_cartesian(xlim = c(0, 12), ylim = c(-25, 30), expand = FALSE) +
     facet_wrap(~heatmap) +
@@ -97,9 +96,10 @@ if (FALSE) {
     )
   print(heatmap_plot)
 
-  png(bg = "transparent")
 
   if (save_plots) {
+    png(bg = "transparent")
+
     ggsave("cr_ch_heatmap_ppt.png", heatmap_plot,
       path = paste0(rel_path, "/doc/images/"),
       type = "cairo-png", bg = "transparent",
