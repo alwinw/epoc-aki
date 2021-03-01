@@ -45,20 +45,20 @@ summarise_analysis <- function(analysis_df, measurements_df) {
 
 
 # ---- Heatmap Plot ----
-plot_cr_ch_heatmap <- function(analysis_df, save_plots) {
+plot_cr_ch_heatmap <- function(analysis_df, outcome_var, save_plots) {
   heatmap_all <- analysis_df %>%
     filter(is.na(del_t_aki_hr) | del_t_aki_hr > 0) %>%
     mutate(
       heatmap = case_when(
-        is.na(del_t_aki_hr) ~ " No AKI",
-        del_t_aki_hr < 4 ~ "AKI in  0-4hrs",
-        del_t_aki_hr < 8 ~ "AKI in  4-8hrs",
-        del_t_aki_hr < 12 ~ "AKI in  8-12hrs",
-        del_t_aki_hr < 16 ~ "AKI in 12-16hrs",
-        del_t_aki_hr < 20 ~ "AKI in 16-20hrs",
-        del_t_aki_hr < 24 ~ "AKI in 20-24hrs",
-        del_t_aki_hr < 30 ~ "AKI in 24-30hrs",
-        TRUE ~ "AKI in 30+hrs"
+        is.na(del_t_aki_hr) ~ paste(" No", outcome_var),
+        del_t_aki_hr < 4 & .data[[outcome_var]] == 1 ~ paste(outcome_var, "in  0-4hrs"),
+        del_t_aki_hr < 8 & .data[[outcome_var]] == 1 ~ paste(outcome_var, "in  4-8hrs"),
+        del_t_aki_hr < 12 & .data[[outcome_var]] == 1 ~ paste(outcome_var, "in  8-12hrs"),
+        del_t_aki_hr < 16 & .data[[outcome_var]] == 1 ~ paste(outcome_var, "in 12-16hrs"),
+        del_t_aki_hr < 20 & .data[[outcome_var]] == 1 ~ paste(outcome_var, "in 16-20hrs"),
+        del_t_aki_hr < 24 & .data[[outcome_var]] == 1 ~ paste(outcome_var, "in 20-24hrs"),
+        del_t_aki_hr < 30 & .data[[outcome_var]] == 1 ~ paste(outcome_var, "in 24-30hrs"),
+        TRUE ~ paste(outcome_var, "in 30+hrs")
       ),
     )
 
@@ -80,12 +80,12 @@ plot_cr_ch_heatmap <- function(analysis_df, save_plots) {
     geom_vline(xintercept = seq(0, 16, by = 4), colour = "white", linetype = "dotted") +
     geom_abline(slope = 1, intercept = 0, colour = "white", linetype = "solid") +
     annotate("text", x = 10, y = 17, label = "1\u03BCmol/L/h", colour = "white", vjust = 1.3, angle = 10) +
-    # geom_text(
-    #   data = heatmap_count,
-    #   aes(x = 0.2, y = -23, label = paste0("n(Admissions): ", n_admission, "\nn(Cr_ch epis): ", n_cr)),
-    #   colour = "white", hjust = 0, vjust = 0
-    # ) +
-    ggtitle("The frequency at which small, short-term changes in creatinine predict imminent AKI") +
+    geom_text(
+      data = heatmap_count,
+      aes(x = 0.2, y = -23, label = paste0("n(Admissions): ", n_admission, "\nn(Cr_ch epis): ", n_cr)),
+      colour = "white", hjust = 0, vjust = 0
+    ) +
+    ggtitle(paste("The frequency at which small, short-term changes in creatinine predict imminent", outcome_var)) +
     xlab(expression("Duration of short-term Cr change episode: " * Delta * "t" * " (hours)")) +
     ylab(expression("Change in Cr during episode:     " * Delta * "cr" * " (" * mu * "mol/L)")) +
     theme(panel.spacing = unit(0.8, "lines")) +

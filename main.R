@@ -98,5 +98,12 @@ summarise_analysis(
 
 plot_cr_ch_heatmap(
   analysis_df = epoc_aki$analysis,
+  outcome_var = "AKI_ICU",
+  save_plots = FALSE
+)
+
+plot_cr_ch_heatmap(
+  analysis_df = epoc_aki$analysis,
+  outcome_var = "AKI_2or3",
   save_plots = FALSE
 )
