@@ -10,8 +10,8 @@ bibliography:
   - "../bib/R-references.bib"
 biblio-style: apalike
 link-citations: yes
-editor_options: 
-  markdown: 
+editor_options:
+  markdown:
     wrap: 72
 ---
 
@@ -116,11 +116,11 @@ rapid method of predicting AKI in critically ill patients.
 
 ```{r copy_cr_ch_heatmap, opts.label='silent'}
 dir.create("images/", showWarnings = FALSE)
-file.copy("../images/cr_ch_heatmap.png", "images/")
+file.copy("../images/heatmap_AKI_ICU.png", "images/")
 ```
 
 ![Distribution of Cr ch epis for patients with and without
-AKI](images/cr_ch_heatmap.png)
+AKI](images/heatmap_AKI_ICU.png)
 
 -   Aim to develop a model that uses short term changes in serum cr and
     clinical info to improve predictive values
