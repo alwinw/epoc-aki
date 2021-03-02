@@ -96,14 +96,16 @@ summarise_analysis(
   measurements_df = epoc_aki$measurements
 )
 
-plot_cr_ch_heatmap(
-  analysis_df = epoc_aki$analysis,
-  outcome_var = "AKI_ICU",
-  save_plots = TRUE
-)
+if (.Platform$OS.type == "windows") {
+  plot_cr_ch_heatmap(
+    analysis_df = epoc_aki$analysis,
+    outcome_var = "AKI_ICU",
+    save_plots = TRUE
+  )
 
-plot_cr_ch_heatmap(
-  analysis_df = epoc_aki$analysis,
-  outcome_var = "AKI_2or3",
-  save_plots = TRUE
-)
+  plot_cr_ch_heatmap(
+    analysis_df = epoc_aki$analysis,
+    outcome_var = "AKI_2or3",
+    save_plots = TRUE
+  )
+}
