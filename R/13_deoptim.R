@@ -1,5 +1,7 @@
-# ---- wrapper functions ----
-tanh_penalty <- function(x, c, d, s) 1 / 2 + 1 / 2 * tanh(s / d * atanh(0.8) * (x - c))
+# ---- Heuristic Search Functions ----
+tanh_penalty <- function(x, c, d, s) {
+  1 / 2 + 1 / 2 * tanh(s / d * atanh(0.8) * (x - c))
+}
 
 heuristic_penalty <- function(summary) {
   0 +
@@ -24,8 +26,8 @@ heuristic_wrapper <- function(
                               return_fn = function(x) x,
                               ...) {
   summary <- aki_dev_wrapper(
-    del_t_ch_hr_range = c(x[1] - x[2] / 2, x[1] + x[2] / 2),
-    del_t_aki_hr_range = c(x[3], x[3] + x[4]),
+    ch_hr_lim = c(x[1] - x[2] / 2, x[1] + x[2] / 2),
+    aki_hr_lim = c(x[3], x[3] + x[4]),
     ...
   )
   summary$penalty <- penalty_fn(summary)
@@ -78,6 +80,7 @@ deoptim_wrapper <- function(
 #   upper = c(6, 6, 12, 72),
 #   itermax = 3, # 20 brief test
 #   NP = 32,
+#   analysis_data = epoc_aki$analysis,
 #   outcome_var = "AKI_2or3",
 #   baseline_predictors = NULL,
 #   cr_predictors = NULL,
@@ -101,18 +104,21 @@ deoptim_wrapper <- function(
 
 # ---- deoptim functions ----
 deoptim_search <- function(
+                           # aki_dev_wrapper
+                           analysis_data,
                            outcome_var,
                            baseline_predictors,
-                           cr_predictors = NULL,
-                           add_gradient_predictor = NULL,
-                           first_cr_only = TRUE,
+                           cr_predictors,
+                           add_gradient_predictor,
+                           first_cr_only,
                            stepwise = FALSE,
                            k = "mBIC",
-                           # Additional arguments to send to aki_dev
+                           # de_optim
                            penalty_fn = heuristic_penalty,
                            itermax = 200,
                            NP = 320,
                            parallel = TRUE,
+                           # extra
                            secondary_outcomes = c(
                              "AKI_ICU",
                              "Cr_defined_AKI_2or3", "Cr_defined_AKI",
@@ -123,6 +129,7 @@ deoptim_search <- function(
     optim_value <- deoptim_wrapper(
       lower = c(4, 0.5, 3, 1),
       upper = c(6, 6, 12, 72),
+      analysis_data = analysis_data,
       outcome_var = outcome_var,
       baseline_predictors = baseline_predictors,
       cr_predictors = cr_predictors,

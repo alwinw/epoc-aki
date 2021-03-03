@@ -7,8 +7,8 @@ cr_ch_prev_study_cont <- analysis_wrapper(
   outcome_var = "AKI_ICU",
   baseline_predictors = "",
   cr_predictors = c("del_cr"),
-  del_t_ch_hr_range = c(3, 4),
-  del_t_aki_hr_range = c(8, 16),
+  ch_hr_lim = c(3, 4),
+  aki_hr_lim = c(8, 16),
   add_gradient_predictor = NULL,
   all_data = TRUE,
   analysis_data = analysis_df
@@ -25,8 +25,8 @@ cr_ch_prev_study_bin <- analysis_wrapper(
   outcome_var = "AKI_ICU",
   baseline_predictors = "",
   cr_predictors = "",
-  del_t_ch_hr_range = c(3, 4),
-  del_t_aki_hr_range = c(8, 16),
+  ch_hr_lim = c(3, 4),
+  aki_hr_lim = c(8, 16),
   add_gradient_predictor = 1,
   all_data = TRUE,
   analysis_data = analysis_df
@@ -51,8 +51,8 @@ range_cr_ch_only_cont <- tibble(
       outcome_var = "AKI_ICU",
       baseline_predictors = "",
       cr_predictors = "del_cr",
-      del_t_ch_hr_range = c(.$del_t_ch_hr_lower, .$del_t_ch_hr_upper),
-      del_t_aki_hr_range = c(8, 16),
+      ch_hr_lim = c(.$del_t_ch_hr_lower, .$del_t_ch_hr_upper),
+      aki_hr_lim = c(8, 16),
       add_gradient_predictor = NULL,
       heuristic_only = TRUE,
       analysis_data = analysis_df
@@ -108,8 +108,8 @@ range_cr_ch_only_bin <- tibble(
       outcome_var = "AKI_ICU",
       baseline_predictors = "",
       cr_predictors = "",
-      del_t_ch_hr_range = c(.$del_t_ch_hr_lower, .$del_t_ch_hr_upper),
-      del_t_aki_hr_range = c(8, 16),
+      ch_hr_lim = c(.$del_t_ch_hr_lower, .$del_t_ch_hr_upper),
+      aki_hr_lim = c(8, 16),
       add_gradient_predictor = 1,
       heuristic_only = TRUE,
       analysis_data = analysis_df
