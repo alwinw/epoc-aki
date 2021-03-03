@@ -1,3 +1,7 @@
+# Want a bar chart showing how AUC changes with cr_ch range
+# Consider faceted bar charts, each row showing a different
+# t_AKI range
+
 # ---- prev_study_cont ----
 cr_ch_prev_study_cont <- analysis_wrapper(
   outcome_var = "AKI_ICU",

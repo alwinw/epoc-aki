@@ -1,5 +1,4 @@
 rel_path <- "."
-save_plots <- FALSE
 
 # ---- Load Library Function ----
 load_library <- function(req_file = "requirements.txt", bib_file = NULL) {
@@ -23,8 +22,16 @@ load_library(
   file.path(rel_path, "requirements.txt"),
   file.path(rel_path, "doc/bib/R-references.bib")
 )
-theme_set(theme_bw())
+
+if (.Platform$OS.type == "windows") {
+  withAutoprint({
+    windowsFonts(serif = windowsFont("Times New Roman"))
+  })
+}
+
+theme_set(theme_bw() + theme(text = element_text(family = "serif")))
 options(knitr.table.format = "pipe")
+
 
 rm(load_library)
 

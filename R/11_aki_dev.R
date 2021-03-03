@@ -10,6 +10,7 @@ create_outcomes <- function(outcome_var,
   aki_hr_lim <- sort(aki_hr_lim)
   analysis_data %>%
     filter(del_t_ch_hr >= ch_hr_lim[1], del_t_ch_hr <= ch_hr_lim[2]) %>%
+    # Lookahead
     mutate(
       {{ outcome_var }} := case_when(
         is.na(del_t_aki_hr) ~ 0,
@@ -41,26 +42,6 @@ if (FALSE) {
       )
   )
 }
-
-test_df <- create_outcomes(
-  outcome_var = "AKI_2or3",
-  ch_hr_lim = c(4, 5.8),
-  aki_hr_lim = c(8.7, 25.6),
-  analysis_data = analysis_df
-)
-
-temp <- lmer(AKI_2or3 ~ APACHE_II + APACHE_III + PCs_cardio + Vasopressor + Chronic_liver_disease + (1 | AdmissionID), test_df)
-summary(temp)
-test_df$predict <- predict(temp, type = "response")
-logit_cut <- cutpointr(
-  test_df, predict, {{ outcome_var }},
-  use_midpoints = TRUE, direction = ">=", pos_class = 1, neg_class = 0,
-  method = maximize_metric, metric = youden
-)
-summary(logit_cut)
-
-temp2 <- glm(formula = AKI_2or3 ~ APACHE_II + APACHE_III + PCs_cardio + Vasopressor + Chronic_liver_disease, family = "binomial", data = analysis_data)
-summary(temp2)
 
 # ---- aki_dev_wrapper ----
 aki_dev_wrapper <- function(
@@ -294,4 +275,26 @@ summarise_cutpoint <- function(model) {
     data.frame(.) %>%
     rownames_to_column() %>%
     set_names(c("Model Attribute", "Value"))
+}
+
+if (FALSE) {
+  test_df <- create_outcomes(
+    outcome_var = "AKI_2or3",
+    ch_hr_lim = c(4, 5.8),
+    aki_hr_lim = c(8.7, 25.6),
+    analysis_data = analysis_df
+  )
+
+  temp <- lmer(AKI_2or3 ~ APACHE_II + APACHE_III + PCs_cardio + Vasopressor + Chronic_liver_disease + (1 | AdmissionID), test_df)
+  summary(temp)
+  test_df$predict <- predict(temp, type = "response")
+  logit_cut <- cutpointr(
+    test_df, predict, {{ outcome_var }},
+    use_midpoints = TRUE, direction = ">=", pos_class = 1, neg_class = 0,
+    method = maximize_metric, metric = youden
+  )
+  summary(logit_cut)
+
+  temp2 <- glm(formula = AKI_2or3 ~ APACHE_II + APACHE_III + PCs_cardio + Vasopressor + Chronic_liver_disease, family = "binomial", data = analysis_data)
+  summary(temp2)
 }

@@ -17,9 +17,9 @@
 # ---- Load Functions ----
 file_sources <- list.files(path = "R/", pattern = "^[0-9][0-9].*.R$", full.names = TRUE)
 
-max_num <- 7
-excl_num <- c()
-file_nums <- as.numeric(gsub(".*R/(.+[0-9])_[A-Za-z].*", "\\1", file_sources))
+max_num <- 13
+excl_num <- c(12, 14)
+file_nums <- as.numeric(gsub(".*([0-9]{2})_[A-Za-z].*", "\\1", file_sources))
 file_sources <- file_sources[file_nums <= max_num & !(file_nums %in% excl_num)]
 rm(max_num, excl_num, file_nums)
 
@@ -87,3 +87,25 @@ cr_ch_ts <- generate_cr_changes(
   admission_data = admission_data,
   cr_data = cr_data
 )
+
+# Analysis Data
+epoc_aki <- create_analysis_data(cr_ch_ts)
+
+summarise_analysis(
+  analysis_df = epoc_aki$analysis,
+  measurements_df = epoc_aki$measurements
+)
+
+if (.Platform$OS.type == "windows") {
+  plot_cr_ch_heatmap(
+    analysis_df = epoc_aki$analysis,
+    outcome_var = "AKI_ICU",
+    save_plots = TRUE
+  )
+
+  plot_cr_ch_heatmap(
+    analysis_df = epoc_aki$analysis,
+    outcome_var = "AKI_2or3",
+    save_plots = TRUE
+  )
+}

@@ -22,101 +22,101 @@
     </g>
     <g text-rendering="geometricPrecision" stroke-miterlimit="1.45" shape-rendering="geometricPrecision" transform="matrix(2,0,0,2,50,-20)" stroke-linecap="butt">
       <rect fill="none" x="-20" width="180" height="40" y="195" clip-path="url(#clipPath2)"/>
-      <text x="5.6348" xml:space="preserve" y="212.3633" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">387 (47%) Patients met </text>
-      <text x="0.9678" xml:space="preserve" y="227.0645" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">the study inclusion criteria</text>
+      <text x="7.1772" font-size="13px" y="212.4641" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">387 (47%) Patients met </text>
+      <text x="0.8645" font-size="13px" y="226.8606" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">the study inclusion criteria</text>
     </g>
     <g fill="white" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" transform="matrix(2,0,0,2,50,-20)" stroke="white">
       <rect x="50" width="315" height="25" y="245" clip-path="url(#clipPath2)" stroke="none"/>
     </g>
     <g text-rendering="geometricPrecision" stroke-miterlimit="1.45" shape-rendering="geometricPrecision" transform="matrix(2,0,0,2,50,-20)" stroke-linecap="butt">
       <rect fill="none" x="50" width="315" height="25" y="245" clip-path="url(#clipPath2)"/>
-      <text x="56.9287" xml:space="preserve" y="262.2139" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">10 (2.6%) Patients had &lt;2 Cr measurements prior to AKI</text>
+      <text x="58.6982" font-size="13px" y="262.1624" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">10 (2.6%) Patients had &lt;2 Cr measurements prior to AKI</text>
     </g>
     <g fill="white" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" transform="matrix(2,0,0,2,50,-20)" stroke="white">
       <rect x="-20" width="180" height="40" y="280" clip-path="url(#clipPath2)" stroke="none"/>
     </g>
     <g text-rendering="geometricPrecision" stroke-miterlimit="1.45" shape-rendering="geometricPrecision" transform="matrix(2,0,0,2,50,-20)" stroke-linecap="butt">
       <rect fill="none" x="-20" width="180" height="40" y="280" clip-path="url(#clipPath2)"/>
-      <text x="2.2891" xml:space="preserve" y="297.3633" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">377 (97.4%) Patients had</text>
-      <text x="12.543" xml:space="preserve" y="312.0645" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">≥2 Cr measurements</text>
+      <text x="4.2891" font-size="13px" y="297.4641" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">377 (97.4%) Patients had</text>
+      <text x="16.2512" font-size="13px" y="311.8606" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">≥2 Cr measurements</text>
     </g>
     <g fill="white" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" transform="matrix(2,0,0,2,50,-20)" stroke="white">
       <rect x="-20" width="180" height="25" y="15" clip-path="url(#clipPath2)" stroke="none"/>
     </g>
     <g text-rendering="geometricPrecision" stroke-miterlimit="1.45" shape-rendering="geometricPrecision" transform="matrix(2,0,0,2,50,-20)" stroke-linecap="butt">
       <rect fill="none" x="-20" width="180" height="25" y="15" clip-path="url(#clipPath2)"/>
-      <text x="9.291" xml:space="preserve" y="32.2139" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">830 Patients Screened</text>
+      <text x="12.5981" font-size="13px" y="32.1624" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">830 Patients Screened</text>
     </g>
     <g fill="white" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" transform="matrix(2,0,0,2,50,-20)" stroke="white">
       <rect x="77.5" width="260" height="25" y="50" clip-path="url(#clipPath2)" stroke="none"/>
     </g>
     <g text-rendering="geometricPrecision" stroke-miterlimit="1.45" shape-rendering="geometricPrecision" transform="matrix(2,0,0,2,50,-20)" stroke-linecap="butt">
       <rect fill="none" x="77.5" width="260" height="25" y="50" clip-path="url(#clipPath2)"/>
-      <text x="114.4473" xml:space="preserve" y="67.2139" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">443 (53%) Patients were excluded:</text>
+      <text x="116.5286" font-size="13px" y="67.1624" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">443 (53%) Patients were excluded:</text>
     </g>
     <g fill="white" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" transform="matrix(2,0,0,2,50,-20)" stroke="white">
       <rect x="77.5" width="45" height="110" y="75" clip-path="url(#clipPath2)" stroke="none"/>
     </g>
     <g text-rendering="geometricPrecision" stroke-miterlimit="1.45" shape-rendering="geometricPrecision" transform="matrix(2,0,0,2,50,-20)" stroke-linecap="butt">
       <rect fill="none" x="77.5" width="45" height="110" y="75" clip-path="url(#clipPath2)"/>
-      <text x="89.9893" xml:space="preserve" y="90.6104" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">208</text>
-      <text x="96.6631" xml:space="preserve" y="105.3115" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">91</text>
-      <text x="96.6631" xml:space="preserve" y="120.0127" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">87</text>
-      <text x="96.6631" xml:space="preserve" y="134.7139" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">30</text>
-      <text x="96.6631" xml:space="preserve" y="149.415" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">17</text>
-      <text x="100.0029" xml:space="preserve" y="164.1162" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none"> 9</text>
-      <text x="100.0029" xml:space="preserve" y="178.8174" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none"> 1</text>
+      <text x="90.25" font-size="13px" y="91.4729" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">208</text>
+      <text x="96.75" font-size="13px" y="105.8694" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">91</text>
+      <text x="96.75" font-size="13px" y="120.2659" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">87</text>
+      <text x="96.75" font-size="13px" y="134.6624" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">30</text>
+      <text x="96.75" font-size="13px" y="149.0588" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">17</text>
+      <text x="100" font-size="13px" y="163.4553" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve"> 9</text>
+      <text x="100" font-size="13px" y="177.8518" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve"> 1</text>
     </g>
     <g fill="white" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" transform="matrix(2,0,0,2,50,-20)" stroke="white">
       <rect x="122.5" width="55" height="110" y="75" clip-path="url(#clipPath2)" stroke="none"/>
     </g>
     <g text-rendering="geometricPrecision" stroke-miterlimit="1.45" shape-rendering="geometricPrecision" transform="matrix(2,0,0,2,50,-20)" stroke-linecap="butt">
       <rect fill="none" x="122.5" width="55" height="110" y="75" clip-path="url(#clipPath2)"/>
-      <text x="133.9951" xml:space="preserve" y="90.6104" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">(47%)</text>
-      <text x="133.9951" xml:space="preserve" y="105.3115" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">(21%)</text>
-      <text x="133.9951" xml:space="preserve" y="120.0127" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">(20%)</text>
-      <text x="137.332" xml:space="preserve" y="134.7139" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">(7%)</text>
-      <text x="137.332" xml:space="preserve" y="149.415" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">(4%)</text>
-      <text x="137.332" xml:space="preserve" y="164.1162" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">(2%)</text>
-      <text x="137.332" xml:space="preserve" y="178.8174" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">(1%)</text>
+      <text x="133.7563" font-size="13px" y="91.4729" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">(47%)</text>
+      <text x="133.7563" font-size="13px" y="105.8694" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">(21%)</text>
+      <text x="133.7563" font-size="13px" y="120.2659" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">(20%)</text>
+      <text x="137.0063" font-size="13px" y="134.6624" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">(7%)</text>
+      <text x="137.0063" font-size="13px" y="149.0588" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">(4%)</text>
+      <text x="137.0063" font-size="13px" y="163.4553" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">(2%)</text>
+      <text x="137.0063" font-size="13px" y="177.8518" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">(1%)</text>
     </g>
     <g fill="white" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" transform="matrix(2,0,0,2,50,-20)" stroke="white">
       <rect x="177.5" width="160" height="110" y="75" clip-path="url(#clipPath2)" stroke="none"/>
     </g>
     <g text-rendering="geometricPrecision" stroke-miterlimit="1.45" shape-rendering="geometricPrecision" transform="matrix(2,0,0,2,50,-20)" stroke-linecap="butt">
       <rect fill="none" x="177.5" width="160" height="110" y="75" clip-path="url(#clipPath2)"/>
-      <text x="189.4551" xml:space="preserve" y="90.6104" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">AKI on ICU admission</text>
-      <text x="189.4551" xml:space="preserve" y="105.3115" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">weekend admission</text>
-      <text x="189.4551" xml:space="preserve" y="120.0127" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">no indwelling catheter</text>
-      <text x="189.4551" xml:space="preserve" y="134.7139" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">end-stage kidney disease</text>
-      <text x="189.4551" xml:space="preserve" y="149.415" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">end-of-life care</text>
-      <text x="189.4551" xml:space="preserve" y="164.1162" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">kidney transplant</text>
-      <text x="189.4551" xml:space="preserve" y="178.8174" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">child</text>
+      <text x="192.884" font-size="13px" y="91.4729" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">AKI on ICU admission</text>
+      <text x="192.884" font-size="13px" y="105.8694" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">weekend admission</text>
+      <text x="192.884" font-size="13px" y="120.2659" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">no indwelling catheter</text>
+      <text x="192.884" font-size="13px" y="134.6624" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">end-stage kidney disease</text>
+      <text x="192.884" font-size="13px" y="149.0588" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">end-of-life care</text>
+      <text x="192.884" font-size="13px" y="163.4553" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">kidney transplant</text>
+      <text x="192.884" font-size="13px" y="177.8518" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">child</text>
     </g>
     <g fill="white" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" transform="matrix(2,0,0,2,50,-20)" stroke="white">
       <rect x="-20" width="180" height="40" y="350" clip-path="url(#clipPath2)" stroke="none"/>
     </g>
     <g text-rendering="geometricPrecision" stroke-miterlimit="1.45" shape-rendering="geometricPrecision" transform="matrix(2,0,0,2,50,-20)" stroke-linecap="butt">
       <rect fill="none" x="-20" width="180" height="40" y="350" clip-path="url(#clipPath2)"/>
-      <text x="5.6377" xml:space="preserve" y="367.3633" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">6,938 Cr measurements</text>
-      <text x="-6.7227" xml:space="preserve" y="382.0645" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">183,672 Cr change episodes</text>
+      <text x="8.4436" font-size="13px" y="367.4641" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">6,938 Cr measurements</text>
+      <text x="-3.29" font-size="13px" y="381.8606" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">183,672 Cr change episodes</text>
     </g>
     <g fill="white" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" transform="matrix(2,0,0,2,50,-20)" stroke="white">
       <rect x="50" width="315" height="40" y="400" clip-path="url(#clipPath2)" stroke="none"/>
     </g>
     <g text-rendering="geometricPrecision" stroke-miterlimit="1.45" shape-rendering="geometricPrecision" transform="matrix(2,0,0,2,50,-20)" stroke-linecap="butt">
       <rect fill="none" x="50" width="315" height="40" y="400" clip-path="url(#clipPath2)"/>
-      <text x="72.4385" xml:space="preserve" y="417.3633" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">3,703 (53.4%) Cr measurements occured after AKI</text>
-      <text x="58.0801" xml:space="preserve" y="432.0645" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">133,498 (72.7%) Cr change episodes occurred after AKI</text>
+      <text x="74.2976" font-size="13px" y="417.4641" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">3,703 (53.4%) Cr measurements occured after AKI</text>
+      <text x="60.3994" font-size="13px" y="431.8606" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">133,498 (72.7%) Cr change episodes occurred after AKI</text>
     </g>
     <g fill="white" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" transform="matrix(2,0,0,2,50,-20)" stroke="white">
       <rect x="-20" width="180" height="55" y="450" clip-path="url(#clipPath2)" stroke="none"/>
     </g>
     <g text-rendering="geometricPrecision" stroke-miterlimit="1.45" shape-rendering="geometricPrecision" transform="matrix(2,0,0,2,50,-20)" stroke-linecap="butt">
       <rect fill="none" x="-20" width="180" height="55" y="450" clip-path="url(#clipPath2)"/>
-      <text x="-3.7051" xml:space="preserve" y="467.5127" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">Final Analysis: 377 Patients</text>
-      <text x="3.9707" xml:space="preserve" y="482.2139" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">3,235 Cr measurements </text>
-      <text x="-3.3857" xml:space="preserve" y="496.915" clip-path="url(#clipPath2)" font-family="sans-serif" stroke="none">50,174 Cr change episodes</text>
+      <text x="-3.125" font-size="13px" y="467.7659" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">Final Analysis: 377 Patients</text>
+      <text x="6.8186" font-size="13px" y="482.1624" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">3,235 Cr measurements </text>
+      <text x="-0.04" font-size="13px" y="496.5588" clip-path="url(#clipPath2)" font-family="'Times New Roman'" stroke="none" xml:space="preserve">50,174 Cr change episodes</text>
       <path fill="none" d="M20 257.5 L42 257.5" clip-path="url(#clipPath2)"/>
       <path d="M50 257.5 L38 252.5 L41 257.5 L38 262.5 Z" clip-path="url(#clipPath2)" stroke="none"/>
       <path fill="none" d="M20 235 L20 271.9889" clip-path="url(#clipPath2)"/>

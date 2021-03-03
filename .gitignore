@@ -11,6 +11,7 @@ resources/
 *.tex
 *.csv
 *.bib.bak
+*.bib.sav
 prelim_doc.RData
 main.RData
 Rplot*.png
