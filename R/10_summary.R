@@ -48,13 +48,14 @@ summarise_analysis <- function(analysis_df, measurements_df) {
 plot_cr_ch_heatmap <- function(analysis_df, outcome_var, save_plots) {
   heatmap_var <- case_when(
     outcome_var == "AKI_ICU" ~ "AKI",
+    outcome_var == "AKI_2or3" ~ "AKI Stages 2 or 3",
     TRUE ~ gsub("_", " ", outcome_var)
   )
   heatmap_all <- analysis_df %>%
     filter(is.na(del_t_aki_hr) | del_t_aki_hr >= 0) %>%
     mutate(
       heatmap = case_when(
-        is.na(del_t_aki_hr) ~ paste(" No", heatmap_var),
+        is.na(del_t_aki_hr) | .data[[outcome_var]] == 0 ~ paste(" No", heatmap_var),
         del_t_aki_hr < 4 & .data[[outcome_var]] == 1 ~ paste(heatmap_var, "in  0-4hrs"),
         del_t_aki_hr < 8 & .data[[outcome_var]] == 1 ~ paste(heatmap_var, "in  4-8hrs"),
         del_t_aki_hr < 12 & .data[[outcome_var]] == 1 ~ paste(heatmap_var, "in  8-12hrs"),
@@ -62,7 +63,8 @@ plot_cr_ch_heatmap <- function(analysis_df, outcome_var, save_plots) {
         del_t_aki_hr < 20 & .data[[outcome_var]] == 1 ~ paste(heatmap_var, "in 16-20hrs"),
         del_t_aki_hr < 24 & .data[[outcome_var]] == 1 ~ paste(heatmap_var, "in 20-24hrs"),
         del_t_aki_hr < 30 & .data[[outcome_var]] == 1 ~ paste(heatmap_var, "in 24-30hrs"),
-        TRUE ~ paste(heatmap_var, "in 30+hrs")
+        del_t_aki_hr >= 30 & .data[[outcome_var]] == 1 ~ paste(heatmap_var, "in 30+hrs"),
+        TRUE ~ paste("Unknown case")
       ),
     )
 
@@ -109,7 +111,7 @@ plot_cr_ch_heatmap <- function(analysis_df, outcome_var, save_plots) {
     # Theme
     ggtitle(paste("The frequency at which small, short-term changes in creatinine predict imminent", heatmap_var)) +
     xlab(expression("Duration of short-term Cr change episode: " * Delta * "t" * " (hours)")) +
-    ylab(expression("Change in Cr during episode:     " * Delta * "cr" * " (" * mu * "mol/L)")) +
+    ylab(expression("Change in Cr during episode: " * Delta * "cr" * " (" * mu * "mol/L)")) +
     theme(panel.spacing = unit(0.85, "lines")) +
     theme(
       plot.background = element_rect(fill = "transparent", colour = NA),
@@ -124,7 +126,7 @@ plot_cr_ch_heatmap <- function(analysis_df, outcome_var, save_plots) {
     png(bg = "transparent")
     ggsave(paste0("heatmap_", outcome_var, ".png"), heatmap_plot,
       path = paste0(rel_path, "/doc/images/"),
-      width = 13, height = 11, scale = 0.8
+      width = 13.5, height = 11, scale = 0.8
     )
   }
 
