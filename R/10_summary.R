@@ -128,7 +128,7 @@ plot_cr_ch_heatmap <- function(analysis_df, outcome_var, save_plots) {
 
 
   if (save_plots) {
-    png(bg = "transparent")
+    # png(bg = "transparent")
     ggsave(paste0("heatmap_", outcome_var, ".png"), heatmap_plot,
       path = paste0(rel_path, "/doc/images/"),
       width = 13.5, height = 11, scale = 0.8
