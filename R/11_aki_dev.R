@@ -45,7 +45,7 @@ if (FALSE) {
 
 # ---- aki_dev_wrapper ----
 aki_dev_wrapper <- function(
-                            analysis_data = analysis_df,
+                            analysis_data,
                             outcome_var,
                             baseline_predictors,
                             cr_predictors,
@@ -106,7 +106,7 @@ aki_dev_wrapper <- function(
   # Create cr_gradient
   if (!is.null(add_gradient_predictor)) {
     analysis_data <- mutate(analysis_data, cr_gradient = if_else(del_cr >= add_gradient_predictor * del_t_ch_hr, 1, 0))
-    predictors <- c(predictors, "cr_gradient")
+    predictors <- c(predictors, "cr_gradient") # TODO should be a paste0("cr_gradient", add_gradient_predictor)
   }
 
   # Run glm
