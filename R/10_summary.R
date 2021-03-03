@@ -55,17 +55,22 @@ plot_cr_ch_heatmap <- function(analysis_df, outcome_var, save_plots) {
     filter(is.na(del_t_aki_hr) | del_t_aki_hr >= 0) %>%
     mutate(
       heatmap = case_when(
-        is.na(del_t_aki_hr) | .data[[outcome_var]] == 0 ~ paste(" No", heatmap_var),
-        del_t_aki_hr < 4 & .data[[outcome_var]] == 1 ~ paste(heatmap_var, "in  0-4hrs"),
-        del_t_aki_hr < 8 & .data[[outcome_var]] == 1 ~ paste(heatmap_var, "in  4-8hrs"),
-        del_t_aki_hr < 12 & .data[[outcome_var]] == 1 ~ paste(heatmap_var, "in  8-12hrs"),
-        del_t_aki_hr < 16 & .data[[outcome_var]] == 1 ~ paste(heatmap_var, "in 12-16hrs"),
-        del_t_aki_hr < 20 & .data[[outcome_var]] == 1 ~ paste(heatmap_var, "in 16-20hrs"),
-        del_t_aki_hr < 24 & .data[[outcome_var]] == 1 ~ paste(heatmap_var, "in 20-24hrs"),
-        del_t_aki_hr < 30 & .data[[outcome_var]] == 1 ~ paste(heatmap_var, "in 24-30hrs"),
-        del_t_aki_hr >= 30 & .data[[outcome_var]] == 1 ~ paste(heatmap_var, "in 30+hrs"),
-        TRUE ~ paste("Unknown case")
+        is.na(del_t_aki_hr) ~ 0,
+        .data[[outcome_var]] == 0 ~ 0,
+        .data[[outcome_var]] == 1 & del_t_aki_hr > 28 ~ 8,
+        .data[[outcome_var]] == 1 ~ del_t_aki_hr %/% 4 + 1,
+        TRUE ~ NA_real_
       ),
+      heatmap = factor(
+        heatmap,
+        levels = 0:8,
+        labels = c(
+          paste0("No ", heatmap_var),
+          paste0(heatmap_var, " in ", (0:6) * 4, "-", (1:7) * 4, "hrs"),
+          paste0(heatmap_var, " in 28+hrs")
+        ),
+        ordered = TRUE
+      )
     )
 
   heatmap_count <- heatmap_all %>%
