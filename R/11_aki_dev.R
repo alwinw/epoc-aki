@@ -277,6 +277,22 @@ summarise_cutpoint <- function(model) {
     set_names(c("Model Attribute", "Value"))
 }
 
+print_model_summary <- function(model, print = TRUE) {
+  # TODO add option to print custom message at the top
+  if (!print) {
+    return(NULL)
+  }
+  print(kable(
+    publish(model$model, print = FALSE, digits = c(2, 3))$regressionTable %>%
+      select(-Units),
+    align = c("l", "r", "c", "r")
+  ))
+  print(kable(
+    t(model$summary),
+    col.names = paste("Outcome:", gsub(" ~.*", "", model$summary$glm_model))
+  ))
+}
+
 if (FALSE) {
   test_df <- create_outcomes(
     outcome_var = "AKI_2or3",

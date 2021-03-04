@@ -110,9 +110,6 @@ if (.Platform$OS.type == "windows") {
   )
 }
 
-
-
-
 # Cr gradient only model
 grad_only_model <- deoptim_search(
   analysis_data = epoc_aki$analysis,

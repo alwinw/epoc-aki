@@ -158,8 +158,7 @@ deoptim_search <- function(
     all_data = TRUE
   )
   cat("\n----------------\nOptimised model found:\n")
-  print(kable(publish(optim_model$model, print = FALSE, digits = c(2, 3))$regressionTable %>% select(-Units), align = c("l", "r", "c", "r")))
-  print(kable(t(optim_model$summary), col.names = paste("Outcome:", outcome_var)))
+  print_model_summary(optim_model)
 
   optim_model_full <- heuristic_wrapper(
     optim_value$result$optim$bestmem,
@@ -171,9 +170,7 @@ deoptim_search <- function(
     all_data = TRUE,
   )
   cat("\n----------------\nOptimised model with all variables:\n")
-  print(kable(publish(optim_model_full$model, print = FALSE, digits = c(2, 3))$regressionTable %>% select(-Units), align = c("l", "r", "c", "r")))
-  print(kable(t(optim_model_full$summary), col.names = paste("Outcome:", outcome_var)))
-
+  print_model_summary(optim_model_full)
 
   if (!is.null(baseline_predictors)) {
     baseline_all <- aki_dev_wrapper( # Must be with baseline_df
@@ -186,8 +183,7 @@ deoptim_search <- function(
       analysis_data = baseline_df
     )
     cat("\n----------------\nBaseline model for all admissions:\n")
-    print(kable(publish(baseline_all$model, print = FALSE, digits = c(2, 3))$regressionTable %>% select(-Units), align = c("l", "r", "c", "r")))
-    print(kable(t(baseline_all$summary), col.names = paste("Outcome:", outcome_var)))
+    print_model_summary(baseline_all)
 
     baseline_sig <- aki_dev_wrapper( # Must be with baseline_df
       analysis_data = analysis_data,
@@ -201,8 +197,7 @@ deoptim_search <- function(
       analysis_data = baseline_df
     )
     cat("\n----------------\nBaseline model for all admissions (sig only):\n")
-    print(kable(publish(baseline_sig$model, print = FALSE, digits = c(2, 3))$regressionTable %>% select(-Units), align = c("l", "r", "c", "r")))
-    print(kable(t(baseline_sig$summary), col.names = paste("Outcome:", outcome_var)))
+    print_model_summary(baseline_sig)
   }
 
   # Update the predictors if it was stepwise!
@@ -225,8 +220,7 @@ deoptim_search <- function(
         all_data = TRUE
       )
       cat(paste0("\n----------------\nSame model with secondary outcome ", outcome_var, ":\n"))
-      print(kable(publish(secondary_model$model, print = FALSE, digits = c(2, 3))$regressionTable %>% select(-Units), align = c("l", "r", "c", "r")))
-      print(kable(t(secondary_model$summary), col.names = paste("Outcome:", outcome_var)))
+      print_model_summary(secondary_model)
       return(secondary_model)
     }
   )

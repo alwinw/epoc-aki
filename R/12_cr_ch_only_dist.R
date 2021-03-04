@@ -3,25 +3,22 @@
 # t_AKI range
 
 # ---- prev_study_cont ----
-cr_ch_prev_study_cont <- analysis_wrapper(
+cr_ch_prev_study_cont <- aki_dev_wrapper(
+  analysis_data = epoc_aki$analysis,
   outcome_var = "AKI_ICU",
   baseline_predictors = "",
   cr_predictors = c("del_cr"),
   ch_hr_lim = c(3, 4),
   aki_hr_lim = c(8, 16),
   add_gradient_predictor = NULL,
-  all_data = TRUE,
-  analysis_data = analysis_df
+  all_data = TRUE
 )
-kable(publish(cr_ch_prev_study_cont$model, print = FALSE, digits = c(2, 3))$regressionTable,
-  align = c("l", "c", "c", "c", "c")
-)
-kable(summarise_cutpoint(cr_ch_prev_study_cont), align = c("l", "r"))
-rm(cr_ch_prev_study_cont)
+print_model_summary(cr_ch_prev_study_cont)
 
 
 # ---- prev_study_bin ----
-cr_ch_prev_study_bin <- analysis_wrapper(
+cr_ch_prev_study_bin <- aki_dev_wrapper(
+  analysis_data = epoc_aki$analysis,
   outcome_var = "AKI_ICU",
   baseline_predictors = "",
   cr_predictors = "",
@@ -29,12 +26,8 @@ cr_ch_prev_study_bin <- analysis_wrapper(
   aki_hr_lim = c(8, 16),
   add_gradient_predictor = 1,
   all_data = TRUE,
-  analysis_data = analysis_df
 )
-kable(publish(cr_ch_prev_study_bin$model, print = FALSE, digits = c(2, 3))$regressionTable,
-  align = c("l", "c", "c", "c", "c")
-)
-kable(summarise_cutpoint(cr_ch_prev_study_bin), align = c("l", "r"))
+print_model_summary(cr_ch_prev_study_bin)
 
 
 # ---- range_cr_ch_cont_only ----
@@ -47,7 +40,7 @@ range_cr_ch_only_cont <- tibble(
   rowwise() %>%
   do(data.frame(
     .,
-    analysis_wrapper(
+    aki_dev_wrapper(
       outcome_var = "AKI_ICU",
       baseline_predictors = "",
       cr_predictors = "del_cr",
@@ -104,7 +97,7 @@ range_cr_ch_only_bin <- tibble(
   rowwise() %>%
   do(data.frame(
     .,
-    analysis_wrapper(
+    aki_dev_wrapper(
       outcome_var = "AKI_ICU",
       baseline_predictors = "",
       cr_predictors = "",
