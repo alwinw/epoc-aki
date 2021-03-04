@@ -2,7 +2,7 @@
 # Consider faceted bar charts, each row showing a different
 # t_AKI range
 
-# ---- prev_study_cont ----
+# ---- Previous Study Cont ----
 cr_ch_prev_study_cont <- aki_dev_wrapper(
   analysis_data = epoc_aki$analysis,
   outcome_var = "AKI_ICU",
@@ -16,7 +16,7 @@ cr_ch_prev_study_cont <- aki_dev_wrapper(
 print_model_summary(cr_ch_prev_study_cont)
 
 
-# ---- prev_study_bin ----
+# ---- Previous Study Bin ----
 cr_ch_prev_study_bin <- aki_dev_wrapper(
   analysis_data = epoc_aki$analysis,
   outcome_var = "AKI_ICU",
@@ -28,6 +28,15 @@ cr_ch_prev_study_bin <- aki_dev_wrapper(
   all_data = TRUE,
 )
 print_model_summary(cr_ch_prev_study_bin)
+
+
+# ---- Uni AUC Distribution ----
+uni_auc_dist <- function(
+                         outcome_var,
+                         del_t_ch_hr_lower,
+                         del_t_aki_upper) {
+
+}
 
 
 # ---- range_cr_ch_cont_only ----
