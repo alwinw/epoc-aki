@@ -127,7 +127,8 @@ grad_only_model <- deoptim_search(
     "Cr_defined_AKI_2or3", "Cr_defined_AKI",
     "Olig_defined_AKI_2or3", "Olig_defined_AKI"
   ),
-  override = c(5.7, 3.2, 3.0, 34.7)
+  override = c(5.7, 3.2, 3.0, 34.7),
+  print = FALSE
 )
 
 # Cr change model
@@ -148,7 +149,8 @@ change_only_model <- deoptim_search(
     "Cr_defined_AKI_2or3", "Cr_defined_AKI",
     "Olig_defined_AKI_2or3", "Olig_defined_AKI"
   ),
-  override = c(5.6, 3.1, 3.0, 34.7)
+  override = c(5.6, 3.1, 3.0, 34.7),
+  print = FALSE
 )
 
 # Cr percentage change model
@@ -169,7 +171,8 @@ per_only_model <- deoptim_search(
     "Cr_defined_AKI_2or3", "Cr_defined_AKI",
     "Olig_defined_AKI_2or3", "Olig_defined_AKI"
   ),
-  override = c(5.6, 3.1, 3.0, 34.7)
+  override = c(5.6, 3.1, 3.0, 34.7),
+  print = FALSE
 )
 
 # Multivariate model
@@ -194,5 +197,6 @@ multi_model <- deoptim_search(
     "Cr_defined_AKI_2or3", "Cr_defined_AKI",
     "Olig_defined_AKI_2or3", "Olig_defined_AKI"
   ),
-  override = c(4.9, 1.8, 8.7, 16.9)
+  override = c(4.9, 1.8, 8.7, 16.9),
+  print = FALSE
 )

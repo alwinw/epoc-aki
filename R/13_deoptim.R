@@ -124,7 +124,8 @@ deoptim_search <- function(
                              "Cr_defined_AKI_2or3", "Cr_defined_AKI",
                              "Olig_defined_AKI_2or3", "Olig_defined_AKI"
                            ),
-                           override = NULL) {
+                           override = NULL,
+                           print = TRUE) {
   if (is.null(override)) {
     optim_value <- deoptim_wrapper(
       lower = c(4, 0.5, 3, 1),
@@ -158,7 +159,7 @@ deoptim_search <- function(
     all_data = TRUE
   )
   cat("\n----------------\nOptimised model found:\n")
-  print_model_summary(optim_model)
+  print_model_summary(optim_model, print = print)
 
   optim_model_full <- heuristic_wrapper(
     optim_value$result$optim$bestmem,
@@ -170,7 +171,7 @@ deoptim_search <- function(
     all_data = TRUE,
   )
   cat("\n----------------\nOptimised model with all variables:\n")
-  print_model_summary(optim_model_full)
+  print_model_summary(optim_model_full, print = print)
 
   if (!is.null(baseline_predictors)) {
     baseline_all <- aki_dev_wrapper( # Must be with baseline_df
@@ -183,7 +184,7 @@ deoptim_search <- function(
       analysis_data = baseline_df
     )
     cat("\n----------------\nBaseline model for all admissions:\n")
-    print_model_summary(baseline_all)
+    print_model_summary(baseline_all, print = print)
 
     baseline_sig <- aki_dev_wrapper( # Must be with baseline_df
       analysis_data = analysis_data,
@@ -197,12 +198,15 @@ deoptim_search <- function(
       analysis_data = baseline_df
     )
     cat("\n----------------\nBaseline model for all admissions (sig only):\n")
-    print_model_summary(baseline_sig)
+    print_model_summary(baseline_sig, print = print)
   }
 
   # Update the predictors if it was stepwise!
   baseline_predictors <- gsub(".*~ | \\+ \\bcr\\b| \\+ \\bcr_gradient\\b", "", optim_model$summary$glm_model)
-  if ((baseline_predictors) %in% c("cr", "cr_gradient")) baseline_predictors <- NULL # should be a subset comparison, e.g. cr + cr_grad should become NULL
+  print(baseline_predictors)
+  if (str_split(baseline_predictors, " \\+ ") %in% cr_predictors) {
+    baseline_predictors <- NULL
+  }
   # if (nchar(baseline_predictors) == 0) baseline_predictors <- NULL
   if (!grepl("\\bcr\\b", optim_model$summary$glm_model)) cr_predictors <- NULL
   if (!grepl("\\bcr_gradient\\b", optim_model$summary$glm_model)) add_gradient_predictor <- NULL
@@ -220,7 +224,7 @@ deoptim_search <- function(
         all_data = TRUE
       )
       cat(paste0("\n----------------\nSame model with secondary outcome ", outcome_var, ":\n"))
-      print_model_summary(secondary_model)
+      print_model_summary(secondary_model, print = print)
       return(secondary_model)
     }
   )
