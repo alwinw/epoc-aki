@@ -45,17 +45,17 @@ if (FALSE) {
 
 # ---- aki_dev_wrapper ----
 aki_dev_wrapper <- function(
+                            analysis_data,
                             outcome_var,
                             baseline_predictors,
                             cr_predictors,
                             add_gradient_predictor,
                             ch_hr_lim,
                             aki_hr_lim,
-                            first_cr_only = TRUE,
+                            first_cr_only = FALSE,
                             stepwise = FALSE,
                             k = "mBIC",
-                            all_data = FALSE,
-                            analysis_data = analysis_df
+                            all_data = FALSE
                             # Consider adding pos and neg class here
 ) {
   # Defaults
@@ -106,7 +106,7 @@ aki_dev_wrapper <- function(
   # Create cr_gradient
   if (!is.null(add_gradient_predictor)) {
     analysis_data <- mutate(analysis_data, cr_gradient = if_else(del_cr >= add_gradient_predictor * del_t_ch_hr, 1, 0))
-    predictors <- c(predictors, "cr_gradient")
+    predictors <- c(predictors, "cr_gradient") # TODO should be a paste0("cr_gradient", add_gradient_predictor)
   }
 
   # Run glm
@@ -153,7 +153,7 @@ aki_dev_wrapper <- function(
   summary$n_admissions_pos <- length(unique(analysis_data$AdmissionID[analysis_data[outcome_var] == logit_cut$pos_class]))
   summary$n_admissions_neg <- length(unique(analysis_data$AdmissionID[analysis_data[outcome_var] == logit_cut$neg_class]))
   summary$per_admin_pos <- summary$n_admissions_pos / n_analysis_data_pos
-  summary$n_UR <- length(unique(analysis_data$`UR number`))
+  summary$n_UR <- length(unique(analysis_data$UR_number))
   summary$n <- nrow(analysis_data)
   summary$n_event_pos <- sum(analysis_data[outcome_var] == logit_cut$pos_class)
   summary$n_event_neg <- sum(analysis_data[outcome_var] == logit_cut$neg_class)
@@ -275,6 +275,22 @@ summarise_cutpoint <- function(model) {
     data.frame(.) %>%
     rownames_to_column() %>%
     set_names(c("Model Attribute", "Value"))
+}
+
+print_model_summary <- function(model, print = TRUE) {
+  # TODO add option to print custom message at the top
+  if (!print) {
+    return(NULL)
+  }
+  print(kable(
+    publish(model$model, print = FALSE, digits = c(2, 3))$regressionTable %>%
+      select(-Units),
+    align = c("l", "r", "c", "r")
+  ))
+  print(kable(
+    t(model$summary),
+    col.names = paste("Outcome:", gsub(" ~.*", "", model$summary$glm_model))
+  ))
 }
 
 if (FALSE) {

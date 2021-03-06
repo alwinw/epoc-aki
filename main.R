@@ -17,7 +17,7 @@
 # ---- Load Functions ----
 file_sources <- list.files(path = "R/", pattern = "^[0-9][0-9].*.R$", full.names = TRUE)
 
-max_num <- 13
+max_num <- 12
 excl_num <- c(12, 14)
 file_nums <- as.numeric(gsub(".*([0-9]{2})_[A-Za-z].*", "\\1", file_sources))
 file_sources <- file_sources[file_nums <= max_num & !(file_nums %in% excl_num)]
@@ -109,3 +109,94 @@ if (.Platform$OS.type == "windows") {
     save_plots = TRUE
   )
 }
+
+# Cr gradient only model
+grad_only_model <- deoptim_search(
+  analysis_data = epoc_aki$analysis,
+  outcome_var = "AKI_2or3",
+  baseline_predictors = NULL,
+  cr_predictors = NULL,
+  add_gradient_predictor = 1,
+  stepwise = FALSE,
+  penalty_fn = heuristic_penalty,
+  itermax = 200,
+  NP = 320,
+  parallel = TRUE,
+  secondary_outcomes = c(
+    "AKI_ICU",
+    "Cr_defined_AKI_2or3", "Cr_defined_AKI",
+    "Olig_defined_AKI_2or3", "Olig_defined_AKI"
+  ),
+  override = c(5.7, 3.2, 3.0, 34.7),
+  print = FALSE
+)
+
+# Cr change model
+change_only_model <- deoptim_search(
+  analysis_data = epoc_aki$analysis,
+  outcome_var = "AKI_2or3",
+  baseline_predictors = NULL,
+  cr_predictors = "del_cr",
+  add_gradient_predictor = NULL,
+  stepwise = FALSE,
+  k = "mBIC",
+  penalty_fn = heuristic_penalty,
+  itermax = 200,
+  NP = 320,
+  parallel = TRUE,
+  secondary_outcomes = c(
+    "AKI_ICU",
+    "Cr_defined_AKI_2or3", "Cr_defined_AKI",
+    "Olig_defined_AKI_2or3", "Olig_defined_AKI"
+  ),
+  override = c(5.6, 3.1, 3.0, 34.7),
+  print = FALSE
+)
+
+# Cr percentage change model
+per_only_model <- deoptim_search(
+  analysis_data = epoc_aki$analysis,
+  outcome_var = "AKI_2or3",
+  baseline_predictors = NULL,
+  cr_predictors = "per_cr_change",
+  add_gradient_predictor = NULL,
+  stepwise = FALSE,
+  k = "mBIC",
+  penalty_fn = heuristic_penalty,
+  itermax = 200,
+  NP = 320,
+  parallel = TRUE,
+  secondary_outcomes = c(
+    "AKI_ICU",
+    "Cr_defined_AKI_2or3", "Cr_defined_AKI",
+    "Olig_defined_AKI_2or3", "Olig_defined_AKI"
+  ),
+  override = c(5.6, 3.1, 3.0, 34.7),
+  print = FALSE
+)
+
+# Multivariate model
+multi_model <- deoptim_search(
+  analysis_data = epoc_aki$analysis,
+  outcome_var = "AKI_2or3",
+  baseline_predictors = c(
+    "Age + Male + APACHE_II + APACHE_III + Baseline_Cr",
+    "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + PVD + Chronic_liver_disease" # HT excluded
+  ),
+  cr_predictors = "cr", # c("cr", "per_cr_change"), # Put this into an "alternate" model
+  add_gradient_predictor = 1,
+  first_cr_only = FALSE,
+  stepwise = TRUE,
+  k = "mBIC",
+  penalty_fn = heuristic_penalty,
+  itermax = 200,
+  NP = 320,
+  parallel = TRUE,
+  secondary_outcomes = c(
+    "AKI_ICU",
+    "Cr_defined_AKI_2or3", "Cr_defined_AKI",
+    "Olig_defined_AKI_2or3", "Olig_defined_AKI"
+  ),
+  override = c(4.9, 1.8, 8.7, 16.9),
+  print = FALSE
+)
