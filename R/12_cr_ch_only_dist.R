@@ -31,8 +31,7 @@ print_model_summary(cr_ch_prev_study_bin)
 
 
 # ---- Uni AUC Distribution ----
-uni_auc_dist <- function(
-                         outcome_var,
+uni_auc_dist <- function(outcome_var,
                          del_t_ch_hr_lower,
                          del_t_aki_upper) {
 

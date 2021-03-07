@@ -1,6 +1,5 @@
 # ---- Combinations ----
-generate_cr_ch <- function(
-                           UR_number_, DateTime_ICU_admit, DateTime_ICU_dc,
+generate_cr_ch <- function(UR_number_, DateTime_ICU_admit, DateTime_ICU_dc,
                            AKI_ICU, DateTime_AKI_Dx, cr_data) {
   cr_ts <- cr_data %>%
     ungroup() %>%
@@ -45,8 +44,7 @@ generate_cr_ch <- function(
 
 
 # ---- Generate Cr Change ----
-generate_cr_changes <- function(
-                                admission_data, cr_data) {
+generate_cr_changes <- function(admission_data, cr_data) {
   cr_ch_ts_all <- admission_data %>%
     filter(
       Excl_criteria_ok == 1,

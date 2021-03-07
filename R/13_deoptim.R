@@ -20,8 +20,7 @@ heuristic_penalty <- function(summary) {
     (1 - grepl("cr_gradient", summary$glm_model)) * 6
 }
 
-heuristic_wrapper <- function(
-                              x,
+heuristic_wrapper <- function(x,
                               penalty_fn = function(x) x$penalty,
                               return_fn = function(x) x,
                               ...) {
@@ -34,8 +33,7 @@ heuristic_wrapper <- function(
   return(return_fn(summary))
 }
 
-deoptim_wrapper <- function(
-                            lower, upper,
+deoptim_wrapper <- function(lower, upper,
                             itermax,
                             NP = 320,
                             ...,
@@ -103,8 +101,7 @@ deoptim_wrapper <- function(
 
 
 # ---- deoptim functions ----
-deoptim_search <- function(
-                           # aki_dev_wrapper
+deoptim_search <- function( # aki_dev_wrapper
                            analysis_data,
                            outcome_var,
                            baseline_predictors,
