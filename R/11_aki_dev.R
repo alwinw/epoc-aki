@@ -44,8 +44,7 @@ if (FALSE) {
 }
 
 # ---- aki_dev_wrapper ----
-aki_dev_wrapper <- function(
-                            analysis_data,
+aki_dev_wrapper <- function(analysis_data,
                             outcome_var,
                             baseline_predictors,
                             cr_predictors,
