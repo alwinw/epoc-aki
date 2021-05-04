@@ -17,7 +17,7 @@
 # ---- Load Functions ----
 file_sources <- list.files(path = "R/", pattern = "^[0-9][0-9].*.R$", full.names = TRUE)
 
-max_num <- 12
+max_num <- 14
 excl_num <- c(12, 14)
 file_nums <- as.numeric(gsub(".*([0-9]{2})_[A-Za-z].*", "\\1", file_sources))
 file_sources <- file_sources[file_nums <= max_num & !(file_nums %in% excl_num)]
@@ -128,7 +128,7 @@ grad_only_model <- deoptim_search(
     "Olig_defined_AKI_2or3", "Olig_defined_AKI"
   ),
   override = c(5.7, 3.2, 3.0, 34.7),
-  print = FALSE
+  print = TRUE
 )
 
 # Cr change model
@@ -197,6 +197,7 @@ multi_model <- deoptim_search(
     "Cr_defined_AKI_2or3", "Cr_defined_AKI",
     "Olig_defined_AKI_2or3", "Olig_defined_AKI"
   ),
+  baseline_data = epoc_aki$baseline,
   override = c(4.9, 1.8, 8.7, 16.9),
-  print = FALSE
+  print = TRUE
 )

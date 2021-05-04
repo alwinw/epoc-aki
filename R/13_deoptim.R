@@ -121,6 +121,7 @@ deoptim_search <- function( # aki_dev_wrapper
                              "Cr_defined_AKI_2or3", "Cr_defined_AKI",
                              "Olig_defined_AKI_2or3", "Olig_defined_AKI"
                            ),
+                           baseline_data = NULL,
                            override = NULL,
                            print = TRUE) {
   if (is.null(override)) {
@@ -170,29 +171,31 @@ deoptim_search <- function( # aki_dev_wrapper
   cat("\n----------------\nOptimised model with all variables:\n")
   print_model_summary(optim_model_full, print = print)
 
-  if (!is.null(baseline_predictors)) {
-    baseline_all <- aki_dev_wrapper( # Must be with baseline_df
-      analysis_data = analysis_data,
+  if (!is.null(baseline_data)) {
+    baseline_all <- aki_dev_wrapper(
+      analysis_data = baseline_data,
       outcome_var = outcome_var,
       baseline_predictors = baseline_predictors,
       cr_predictors = NULL,
       add_gradient_predictor = NULL,
-      all_data = TRUE,
-      analysis_data = baseline_df
+      ch_hr_lim = c(-Inf, Inf),
+      aki_hr_lim = c(-Inf, Inf),
+      all_data = TRUE
     )
     cat("\n----------------\nBaseline model for all admissions:\n")
     print_model_summary(baseline_all, print = print)
 
-    baseline_sig <- aki_dev_wrapper( # Must be with baseline_df
-      analysis_data = analysis_data,
+    baseline_sig <- aki_dev_wrapper(
+      analysis_data = baseline_data,
       outcome_var = outcome_var,
       baseline_predictors = baseline_predictors,
       cr_predictors = NULL,
       add_gradient_predictor = NULL,
+      ch_hr_lim = c(-Inf, Inf),
+      aki_hr_lim = c(-Inf, Inf),
       stepwise = TRUE,
       k = "AIC",
-      all_data = TRUE,
-      analysis_data = baseline_df
+      all_data = TRUE
     )
     cat("\n----------------\nBaseline model for all admissions (sig only):\n")
     print_model_summary(baseline_sig, print = print)
@@ -229,7 +232,7 @@ deoptim_search <- function( # aki_dev_wrapper
 
   # CR ONLY models
 
-  if (is.null(baseline_predictors)) { # WHY DOES THIS STILL FAIL?
+  if (is.null(baseline_data)) {
     return(list(
       optim_value = optim_value,
       optim_model = optim_model,
