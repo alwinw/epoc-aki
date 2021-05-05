@@ -4,18 +4,18 @@
 # Add a plot showing cr vs time and predictive value
 
 
+# Table 2 – Predictive value parameters for creatinine change as an independent predictor of AKI
 
-ts <- tribble(
-  ~"hour", ~"cr", ~"colour",
-  0, 70, 1,
-  1, 72, 1,
-  3, 75, 1,
-  4, 73, 1,
-  5.8, 78, 1,
-  5.8 + 8.7, 110, 2,
-  5.8 + 25.6, 110, 2
-) %>%
-  mutate(hour = make_datetime(hour = hour, min = hour %% 1 * 60))
-
-ggplot(ts, aes(hour, cr, colour = colour)) +
-  geom_point()
+model_ssAOCI <- function(model) {
+  data.frame(
+    GLM.Model = model$summary$glm_model,
+    Cr.ch.epis.duration = paste0(model$summary$ch_hr_lower, "-", model$summary$ch_hr_upper),
+    Outcome = gsub(" ~.*", "", model$summary$glm_model),
+    Timeframe.to.AKI = paste0(model$summary$aki_hr_lower, "-", model$summary$aki_hr_upper),
+    Sensitivity = model$summary$sensitivity,
+    Specificity = model$summary$specificity,
+    AUC = model$summary$AUC,
+    Odds.Ratio = publish(model$model, print = FALSE)$regressionTable$OddsRatio,
+    CI.95 = publish(model$model, print = FALSE)$regressionTable$CI.95
+  )
+}

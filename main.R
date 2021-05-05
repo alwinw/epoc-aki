@@ -128,7 +128,7 @@ grad_only_model <- deoptim_search(
     "Olig_defined_AKI_2or3", "Olig_defined_AKI"
   ),
   override = c(5.7, 3.2, 3.0, 34.7),
-  print = TRUE
+  print = FALSE
 )
 
 # Cr change model
@@ -150,7 +150,7 @@ change_only_model <- deoptim_search(
     "Olig_defined_AKI_2or3", "Olig_defined_AKI"
   ),
   override = c(5.6, 3.1, 3.0, 34.7),
-  print = TRUE
+  print = FALSE
 )
 
 # Cr percentage change model
@@ -199,5 +199,9 @@ multi_model <- deoptim_search(
   ),
   baseline_data = epoc_aki$baseline,
   override = c(4.9, 1.8, 8.7, 16.9),
-  print = TRUE
+  print = FALSE
 )
+
+
+# Table 2
+model_ssAOCI(grad_only_model$optim_model)
