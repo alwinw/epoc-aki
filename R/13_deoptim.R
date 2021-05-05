@@ -208,7 +208,7 @@ deoptim_search <- function( # aki_dev_wrapper
     baseline_predictors <- NULL
   }
   # if (nchar(baseline_predictors) == 0) baseline_predictors <- NULL
-  if (!grepl("\\bcr\\b", optim_model$summary$glm_model)) cr_predictors <- NULL
+  if (!grepl("\\bcr\\b|\\bdel_cr\\b|\\bper_cr_change\\b", optim_model$summary$glm_model)) cr_predictors <- NULL
   if (!grepl("\\bcr_gradient\\b", optim_model$summary$glm_model)) add_gradient_predictor <- NULL
 
   secondary_models <- lapply(

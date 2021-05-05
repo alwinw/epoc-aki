@@ -150,7 +150,7 @@ change_only_model <- deoptim_search(
     "Olig_defined_AKI_2or3", "Olig_defined_AKI"
   ),
   override = c(5.6, 3.1, 3.0, 34.7),
-  print = FALSE
+  print = TRUE
 )
 
 # Cr percentage change model
