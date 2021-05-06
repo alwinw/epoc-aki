@@ -222,3 +222,7 @@ nribin(
   cut = 0.1, # multi_model$optim_model$cutpoint$youden #multi_model$baseline_models$baseline_sig$cutpoint$youden
   msg = FALSE
 )
+
+BrierScore(multi_model$baseline_models$baseline_all$model)
+BrierScore(multi_model$baseline_models$baseline_sig$model)
+BrierScore(multi_model$optim_model$model)
