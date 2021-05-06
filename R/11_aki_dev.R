@@ -110,7 +110,7 @@ aki_dev_wrapper <- function(analysis_data,
 
   # Run glm
   glm_model <- paste(outcome_var, "~", paste(predictors[predictors != ""], collapse = " + "))
-  logit_model <- glm(formula = glm_model, family = "binomial", data = analysis_data)
+  logit_model <- glm(formula = glm_model, family = "binomial", data = analysis_data, x = TRUE)
   # Cutpoint
   analysis_data$predict <- predict(logit_model, type = "response")
   logit_cut <- cutpointr(
