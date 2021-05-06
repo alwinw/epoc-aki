@@ -17,7 +17,7 @@
 # ---- Load Functions ----
 file_sources <- list.files(path = "R/", pattern = "^[0-9][0-9].*.R$", full.names = TRUE)
 
-max_num <- 14
+max_num <- 15
 excl_num <- c(12, 14)
 file_nums <- as.numeric(gsub(".*([0-9]{2})_[A-Za-z].*", "\\1", file_sources))
 file_sources <- file_sources[file_nums <= max_num & !(file_nums %in% excl_num)]
@@ -219,10 +219,29 @@ nribin(
     multi_model$optim_model$data,
     PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient
   )),
-  cut = 0.1, # multi_model$optim_model$cutpoint$youden #multi_model$baseline_models$baseline_sig$cutpoint$youden
-  msg = FALSE
+  cut = 0.1, # multi_model$baseline_models$baseline_sig$cutpoint$youden,
+  msg = TRUE,
+  updown = "diff"
 )
 
 BrierScore(multi_model$baseline_models$baseline_all$model)
 BrierScore(multi_model$baseline_models$baseline_sig$model)
 BrierScore(multi_model$optim_model$model)
+
+opt_cut_baseline_sig <- cutpointr(
+  multi_model$baseline_models$baseline_sig$data,
+  predict, AKI_2or3,
+  use_midpoints = TRUE, direction = ">=", pos_class = 1, neg_class = 0,
+  method = maximize_metric, metric = youden,
+  boot_runs = 1000
+)
+boot_ci(opt_cut_baseline_sig, AUC, in_bag = TRUE, alpha = 0.05)
+
+opt_cut_optim_model <- cutpointr(
+  multi_model$optim_model$data,
+  predict, AKI_2or3,
+  use_midpoints = TRUE, direction = ">=", pos_class = 1, neg_class = 0,
+  method = maximize_metric, metric = youden,
+  boot_runs = 1000
+)
+boot_ci(opt_cut_optim_model, AUC, in_bag = TRUE, alpha = 0.05)
