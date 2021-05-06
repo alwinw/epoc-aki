@@ -210,6 +210,15 @@ model_ssAOCI_summary(list(change_only_model, per_only_model, grad_only_model)) %
 # TODO: Uniform cr change ep duration
 
 nribin(
-  mdl.std = multi_model$baseline_models$baseline_sig,
-  mdl.new = multi_model$optim_model
+  event = multi_model$optim_model$data$AKI_2or3,
+  z.std = as.matrix(select(
+    multi_model$optim_model$data,
+    APACHE_II, PCs_cardio, Vasopressor
+  )),
+  z.new = as.matrix(select(
+    multi_model$optim_model$data,
+    PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient
+  )),
+  cut = 0.1, # multi_model$optim_model$cutpoint$youden #multi_model$baseline_models$baseline_sig$cutpoint$youden
+  msg = FALSE
 )
