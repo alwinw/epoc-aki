@@ -204,4 +204,5 @@ multi_model <- deoptim_search(
 
 
 # Table 2
-model_ssAOCI(grad_only_model$optim_model)
+model_ssAOCI_summary(list(change_only_model, per_only_model, grad_only_model)) %>%
+  kable(.)
