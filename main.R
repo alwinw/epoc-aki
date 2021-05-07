@@ -304,3 +304,51 @@ score_coef <- DEoptim(
 score_coef$optim$bestval
 score_coef$optim$bestmem
 # Summary: Vasopressor is 3x more important than others
+
+temp <- multi_model$optim_model$data %>%
+  select(AKI_2or3, predict, PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient) %>%
+  mutate(score = PCs_cardio + Vasopressor + 3 * Chronic_liver_disease + cr_gradient) %>%
+  group_by(score)
+
+temp %>% summarise(
+  # across(everything(), list(mean = mean, median = median))
+  mean = mean(predict) * 100,
+  median = median(predict) * 100,
+  .groups = "drop"
+)
+
+ggplot(temp) +
+  geom_point(aes(score, predict))
+
+score_predictor <- function(PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient) {
+  score <- PCs_cardio + Vasopressor + 3 * Chronic_liver_disease + cr_gradient
+  case_when(
+    score == 0 ~ 0.00734,
+    score == 1 ~ 0.0234,
+    score == 2 ~ 0.127,
+    score == 3 ~ 0.265,
+    score == 4 ~ 0.424,
+    score == 5 ~ 0.853
+  )
+  # ^ Consider running a DEOptim to optimise these instead of just mean/median
+}
+
+score_est <- score_predictor(
+  multi_model$optim_model$data$PCs_cardio,
+  multi_model$optim_model$data$Vasopressor,
+  multi_model$optim_model$data$Chronic_liver_disease,
+  multi_model$optim_model$data$cr_gradient
+)
+
+temp <- temp %>%
+  mutate(score_est = score_predictor(PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient))
+
+BrierScore(temp$AKI_2or3, temp$score_est)
+
+score_cp <- cutpointr(
+  temp,
+  score_est, AKI_2or3,
+  use_midpoints = TRUE, direction = ">=", pos_class = 1, neg_class = 0,
+  method = maximize_metric, metric = youden,
+  boot_runs = 1000
+)
