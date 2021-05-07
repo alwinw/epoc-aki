@@ -20,3 +20,5 @@ servr
 formatR
 kableExtra
 lme4
+nricens
+DescTools

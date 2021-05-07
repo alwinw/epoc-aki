@@ -110,7 +110,7 @@ aki_dev_wrapper <- function(analysis_data,
 
   # Run glm
   glm_model <- paste(outcome_var, "~", paste(predictors[predictors != ""], collapse = " + "))
-  logit_model <- glm(formula = glm_model, family = "binomial", data = analysis_data)
+  logit_model <- glm(formula = glm_model, family = "binomial", data = analysis_data, x = TRUE)
   # Cutpoint
   analysis_data$predict <- predict(logit_model, type = "response")
   logit_cut <- cutpointr(
@@ -174,14 +174,19 @@ aki_dev_wrapper <- function(analysis_data,
 
 
 # ---- aki_dev_wrapper_tests ----
+# analysis_df = epoc_aki$analysis
+#
 # test1func <- aki_dev_wrapper(
+#   analysis_data = analysis_df,
 #   outcome_var = "AKI_ICU",
 #   baseline_predictors = c(
 #     "Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr",
 #     "PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease"
 #   ),
 #   cr_predictors = "cr",
-#   add_gradient_predictor = 1 # umol/L/h
+#   add_gradient_predictor = 1, # umol/L/h
+#   ch_hr_lim = c(-Inf, Inf),
+#   aki_hr_lim = c(-Inf, Inf)
 # )
 # test1logit <- glm(
 #   AKI_ICU ~ Age + Male + Mecvenadm + APACHE_II + APACHE_III + Baseline_Cr + PCs_cardio + Vasopressor + Diabetes + AF + IHD + HF + HT + PVD + Chronic_liver_disease + cr + cr_gradient,
