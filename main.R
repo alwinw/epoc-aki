@@ -317,8 +317,9 @@ temp %>% summarise(
   .groups = "drop"
 )
 
-ggplot(temp) +
-  geom_point(aes(score, predict))
+ggplot(temp, aes(x = score, y = predict, group = score)) +
+  geom_point() +
+  geom_boxplot()
 
 score_predictor <- function(PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient) {
   score <- PCs_cardio + Vasopressor + 3 * Chronic_liver_disease + cr_gradient
