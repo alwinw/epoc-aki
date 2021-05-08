@@ -315,6 +315,6 @@ auc_plot <- ggplot(
 if (.Platform$OS.type == "windows") {
   ggsave("AUC_plot.png", auc_plot,
     path = paste0(rel_path, "/doc/images/"),
-    width = 11, height = 11, scale = 0.8
+    width = 13, height = 11, scale = 0.8
   )
 }
