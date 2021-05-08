@@ -278,36 +278,55 @@ cutpoints <- list(
 plot_data <- lapply(names(cutpoints), function(name) {
   cp <- cutpoints[[name]]
   data.frame(
-    Model = name,
+    model = name,
     sensitivity = cp$sensitivity,
     specificity = cp$specificity,
+    AUC = cp$AUC,
     tnr = cp$roc_curve[[1]]$tnr,
     tpr = cp$roc_curve[[1]]$tpr,
     row.names = NULL
   )
 }) %>%
   bind_rows() %>%
-  mutate(Model = factor(
-    Model,
-    levels = c("optim_model", "risk_score", "baseline_sig"),
-    labels = c(
-      "Significant variables with\nCr change model",
-      "ARC risk score",
-      "Significant baseline\ncharacteristics model"
+  mutate(
+    label = sprintf("AUC: %.2f \nSens: %.0f%%\nSpec: %.0f%%", AUC, sensitivity * 100, specificity * 100),
+    hjust = case_when(
+      model == "optim_model" ~ 1.1,
+      model == "risk_score" ~ -0.1,
+      model == "baseline_sig" ~ -0.1,
     ),
-    ordered = TRUE
-  ))
+    vjust = case_when(
+      model == "optim_model" ~ -0.1,
+      model == "risk_score" ~ 1.1,
+      model == "baseline_sig" ~ 1.1,
+    ),
+    model = factor(
+      model,
+      levels = c("optim_model", "risk_score", "baseline_sig"),
+      labels = c(
+        "Significant variables with\nCr change model",
+        "ARC risk score",
+        "Significant baseline\ncharacteristics model"
+      ),
+      ordered = TRUE
+    ),
+  )
 
-auc_plot <- ggplot(
-  plot_data,
-  aes(colour = Model)
-) +
-  geom_line(aes(x = 1 - tnr, y = tpr, linetype = Model), size = 0.5) +
+auc_plot <- ggplot(plot_data, aes(colour = model)) +
+  geom_line(aes(x = 1 - tnr, y = tpr, linetype = model), size = 0.5) +
   geom_point(aes(x = 1 - specificity, y = sensitivity), size = 3) +
+  annotate("segment",
+    x = 0, xend = 1, y = 0, yend = 1,
+    colour = "darkgrey", linetype = "dashed"
+  ) +
+  geom_label(
+    aes(x = 1 - specificity, y = sensitivity, label = label, hjust = hjust, vjust = vjust),
+    show.legend = FALSE
+  ) +
   xlab("1 - Specificity") +
   ylab("Sensitivity") +
-  theme(aspect.ratio = 1) +
-  scale_colour_manual(name = "Legend", values = c("#7ac25a", "#38678c", "#431853")) +
+  theme(aspect.ratio = 1, legend.position = c(0.88, 0.08)) +
+  scale_colour_manual(name = "Legend", values = c("#289d87", "#404a88", "#440154")) +
   scale_linetype_manual(values = c("dashed", "solid", "dashed"), guide = "none") +
   scale_x_continuous(expand = c(0, 0)) +
   scale_y_continuous(expand = c(0, 0))
@@ -315,6 +334,6 @@ auc_plot <- ggplot(
 if (.Platform$OS.type == "windows") {
   ggsave("AUC_plot.png", auc_plot,
     path = paste0(rel_path, "/doc/images/"),
-    width = 13, height = 11, scale = 0.8
+    width = 11.5, height = 11, scale = 0.7
   )
 }
