@@ -97,10 +97,10 @@ model_ssACIBnri_summary <- function(multi_model, baseline_model) {
     # multi_model$secondary_models
   )
 
-  cl <- NULL # makeCluster(detectCores() - 1)
-  table <- pblapply(models, model_ssACIBnri, baseline_vars, cl = cl) %>%
+  # cl <- NULL # makeCluster(detectCores() - 1)
+  table <- pblapply(models, model_ssACIBnri, baseline_vars) %>%
     bind_rows()
-  stopCluster(cl)
+  # stopCluster(cl)
 
   return(table)
 }

@@ -266,3 +266,55 @@ nribin(
   mutate(CI = sprintf("%.2f [%.2f-%.2f]", Estimate, Lower, Upper)) %>%
   select(Var, CI) %>%
   pivot_wider(names_from = Var, values_from = CI)
+
+# ---- AUC Graph ----
+# plot_roc(multi_model$optim_model$cutpoint)
+cutpoints <- list(
+  baseline_sig = multi_model$baseline_models$baseline_sig$cutpoint,
+  optim_model = multi_model$optim_model$cutpoint,
+  risk_score = score_cp
+)
+
+plot_data <- lapply(names(cutpoints), function(name) {
+  cp <- cutpoints[[name]]
+  data.frame(
+    Model = name,
+    sensitivity = cp$sensitivity,
+    specificity = cp$specificity,
+    tnr = cp$roc_curve[[1]]$tnr,
+    tpr = cp$roc_curve[[1]]$tpr,
+    row.names = NULL
+  )
+}) %>%
+  bind_rows() %>%
+  mutate(Model = factor(
+    Model,
+    levels = c("optim_model", "risk_score", "baseline_sig"),
+    labels = c(
+      "Significant variables with\nCr change model",
+      "ARC risk score",
+      "Significant baseline\ncharacteristics model"
+    ),
+    ordered = TRUE
+  ))
+
+auc_plot <- ggplot(
+  plot_data,
+  aes(colour = Model)
+) +
+  geom_line(aes(x = 1 - tnr, y = tpr, linetype = Model), size = 0.5) +
+  geom_point(aes(x = 1 - specificity, y = sensitivity), size = 3) +
+  xlab("1 - Specificity") +
+  ylab("Sensitivity") +
+  theme(aspect.ratio = 1) +
+  scale_colour_manual(name = "Legend", values = c("#7ac25a", "#38678c", "#431853")) +
+  scale_linetype_manual(values = c("dashed", "solid", "dashed"), guide = "none") +
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_y_continuous(expand = c(0, 0))
+
+if (.Platform$OS.type == "windows") {
+  ggsave("AUC_plot.png", auc_plot,
+    path = paste0(rel_path, "/doc/images/"),
+    width = 11, height = 11, scale = 0.8
+  )
+}
