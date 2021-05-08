@@ -222,85 +222,7 @@ table_multi <- model_ssACIBnri_summary(multi_model, multi_model$baseline_models$
 kable(table_multi, caption = "Multivariable models with patient characteristics and creatinine change for the prediction of stages 2 and 3 AKI")
 write.csv(table_multi, file = "table3a.csv")
 
-
-
-
-
-
 # Score
-manual_predictor <- function(PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient) {
-  y <- coef(multi_model$optim_model$model)["(Intercept)"] +
-    coef(multi_model$optim_model$model)["PCs_cardio"] * PCs_cardio +
-    coef(multi_model$optim_model$model)["Vasopressor"] * Vasopressor +
-    coef(multi_model$optim_model$model)["Chronic_liver_disease"] * Chronic_liver_disease +
-    coef(multi_model$optim_model$model)["cr_gradient"] * cr_gradient
-  as.numeric(1 / (1 + exp(-y)))
-}
-
-stopifnot(all.equal(
-  manual_predictor(
-    multi_model$optim_model$data$PCs_cardio,
-    multi_model$optim_model$data$Vasopressor,
-    multi_model$optim_model$data$Chronic_liver_disease,
-    multi_model$optim_model$data$cr_gradient
-  ),
-  as.numeric(multi_model$optim_model$data$predict)
-))
-
-lm_score <- lm(
-  predict ~ PCs_cardio + Vasopressor + Chronic_liver_disease + cr_gradient,
-  multi_model$optim_model$data
-)
-
-manual_predictor(
-  PCs_cardio = 0,
-  Vasopressor = 1,
-  Chronic_liver_disease = 0,
-  cr_gradient = 0
-)
-
-BrierScore(multi_model$optim_model$data$AKI_2or3, multi_model$optim_model$data$predict)
-
-brier_wrapper <- function(b, data) {
-  y <- 0 + b[1] +
-    b[2] * data$PCs_cardio +
-    b[3] * data$Vasopressor +
-    b[4] * data$Chronic_liver_disease +
-    b[5] * data$cr_gradient
-  p <- as.numeric(1 / (1 + exp(-y)))
-  BrierScore(data$AKI_2or3, p)
-}
-
-# brier_wrapper(c(-4.9068747, 1.7988061, 1.1770319, 3.6879612, 0.9126502), multi_model$optim_model$data)
-
-score_coef <- DEoptim(
-  brier_wrapper,
-  rep(-10, 5),
-  rep(10, 5),
-  DEoptim.control(NP = 320, itermax = 500, trace = 100),
-  fnMap = function(x) c(x[1], round(x[2:5], 0)),
-  data = multi_model$optim_model$data
-)
-score_coef$optim$bestval
-score_coef$optim$bestmem
-# Summary: Vasopressor is 3x more important than others
-
-temp <- multi_model$optim_model$data %>%
-  select(AKI_2or3, predict, PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient) %>%
-  mutate(score = PCs_cardio + Vasopressor + 3 * Chronic_liver_disease + cr_gradient) %>%
-  group_by(score)
-
-temp %>% summarise(
-  # across(everything(), list(mean = mean, median = median))
-  mean = mean(predict) * 100,
-  median = median(predict) * 100,
-  .groups = "drop"
-)
-
-ggplot(temp, aes(x = score, y = predict, group = score)) +
-  geom_point() +
-  geom_boxplot()
-
 score_predictor <- function(PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient) {
   score <- PCs_cardio + Vasopressor + 3 * Chronic_liver_disease + cr_gradient
   case_when(
@@ -314,22 +236,33 @@ score_predictor <- function(PCs_cardio, Vasopressor, Chronic_liver_disease, cr_g
   # ^ Consider running a DEOptim to optimise these instead of just mean/median
 }
 
-score_est <- score_predictor(
-  multi_model$optim_model$data$PCs_cardio,
-  multi_model$optim_model$data$Vasopressor,
-  multi_model$optim_model$data$Chronic_liver_disease,
-  multi_model$optim_model$data$cr_gradient
-)
-
-temp <- temp %>%
+score_model_data <- multi_model$optim_model$data %>%
+  select(AKI_2or3, predict, PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient) %>%
+  mutate(score = PCs_cardio + Vasopressor + 3 * Chronic_liver_disease + cr_gradient) %>%
+  group_by(score) %>%
   mutate(score_est = score_predictor(PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient))
 
-BrierScore(temp$AKI_2or3, temp$score_est)
+BrierScore(score_model_data$AKI_2or3, score_model_data$score_est)
 
 score_cp <- cutpointr(
-  temp,
+  score_model_data,
   score_est, AKI_2or3,
   use_midpoints = TRUE, direction = ">=", pos_class = 1, neg_class = 0,
   method = maximize_metric, metric = youden,
   boot_runs = 1000
 )
+AUC_ci <- boot_ci(score_cp, AUC, in_bag = TRUE, alpha = 0.05)
+
+nribin(
+  event = score_model_data$AKI_2or3,
+  p.std = multi_model$optim_model$data$predict, # TODO: NEEDS TO BE CHANGED TO BASELINE PREDICTION
+  p.new = score_model_data$score_est,
+  cut = 0.1, # multi_model$baseline_models$baseline_sig$cutpoint$youden,
+  msg = FALSE,
+  updown = "diff"
+)$nri %>%
+  rownames_to_column("Var") %>%
+  slice_head(n = 3) %>%
+  mutate(CI = sprintf("%.2f [%.2f-%.2f]", Estimate, Lower, Upper)) %>%
+  select(Var, CI) %>%
+  pivot_wider(names_from = Var, values_from = CI)

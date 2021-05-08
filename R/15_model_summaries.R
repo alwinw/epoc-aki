@@ -37,6 +37,7 @@ model_ssAOCI_summary <- function(predictor_models) {
 model_nri <- function(data, outcome, std_vars, new_vars) {
   calc_nri <- nribin(
     event = data[[outcome]],
+    # TODO: Change to p.std, and p.new where p.std needs to be calculated......
     z.std = as.matrix(select(data, all_of(std_vars))),
     z.new = as.matrix(select(data, all_of(new_vars))),
     cut = 0.1, # multi_model$baseline_models$baseline_sig$cutpoint$youden,
@@ -84,6 +85,9 @@ model_ssACIBnri_summary <- function(multi_model, baseline_model) {
   baseline_vars <- baseline_model$summary$glm_model
   baseline_vars <- as.vector(str_split(gsub(".*~ ", "", baseline_vars), " \\+ ", simplify = TRUE))
 
+  # TODO: Instead of using baseline_vars for z.std, I should be
+  # creating a new glm and creating the prediction column. Then use p.std in nribin
+
   models <- c(
     multi_model$baseline_models,
     list(
@@ -115,7 +119,7 @@ model_ssACIBnri_summary <- function(multi_model, baseline_model) {
 #   msg = TRUE,
 #   updown = "diff"
 # )
-# 
+#
 # nribin(
 #   event = multi_model$optim_model$data$AKI_2or3,
 #   z.std = as.matrix(select(
