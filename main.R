@@ -217,6 +217,26 @@ table_cr_ch <- model_ssAOCI_summary(list(change_only_model, per_only_model, grad
 kable(table_cr_ch, caption = "Predictive value parameters for creatinine change as an independent predictor of AKI")
 write.csv(table_cr_ch, file = "table2.csv")
 
+# Multivariable models with patient characteristics and creatinine change for the prediction of stages 2 and 3 AKI
+table_multi <- model_ssACIBnri_summary(multi_model, multi_model$baseline_models$baseline_sig)
+kable(table_multi, caption = "Multivariable models with patient characteristics and creatinine change for the prediction of stages 2 and 3 AKI")
+write.csv(table_multi, file = "table3a.csv")
+
+
+nribin(
+  event = multi_model$optim_model$data$AKI_2or3,
+  z.std = as.matrix(select(
+    multi_model$optim_model$data,
+    PCs_cardio, Vasopressor, Chronic_liver_disease
+  )),
+  z.new = as.matrix(select(
+    multi_model$optim_model$data,
+    PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient
+  )),
+  cut = 0.1, # multi_model$baseline_models$baseline_sig$cutpoint$youden,
+  msg = TRUE,
+  updown = "diff"
+)
 
 nribin(
   event = multi_model$optim_model$data$AKI_2or3,
