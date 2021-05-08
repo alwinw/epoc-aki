@@ -110,27 +110,6 @@ if (.Platform$OS.type == "windows") {
   )
 }
 
-# Cr gradient only model
-grad_only_model <- deoptim_search(
-  analysis_data = epoc_aki$analysis,
-  outcome_var = "AKI_2or3",
-  baseline_predictors = NULL,
-  cr_predictors = NULL,
-  add_gradient_predictor = 1,
-  stepwise = FALSE,
-  penalty_fn = heuristic_penalty,
-  itermax = 200,
-  NP = 320,
-  parallel = TRUE,
-  secondary_outcomes = c(
-    "AKI_ICU",
-    "Cr_defined_AKI_2or3", "Cr_defined_AKI",
-    "Olig_defined_AKI_2or3", "Olig_defined_AKI"
-  ),
-  override = c(5.7, 3.2, 3.0, 34.7),
-  print = FALSE
-)
-
 # Cr change model
 change_only_model <- deoptim_search(
   analysis_data = epoc_aki$analysis,
@@ -149,7 +128,7 @@ change_only_model <- deoptim_search(
     "Cr_defined_AKI_2or3", "Cr_defined_AKI",
     "Olig_defined_AKI_2or3", "Olig_defined_AKI"
   ),
-  override = c(5.6, 3.1, 3.0, 34.7),
+  override = c(5.7, 3.2, 3.0, 34.7),
   print = FALSE
 )
 
@@ -171,7 +150,28 @@ per_only_model <- deoptim_search(
     "Cr_defined_AKI_2or3", "Cr_defined_AKI",
     "Olig_defined_AKI_2or3", "Olig_defined_AKI"
   ),
-  override = c(5.6, 3.1, 3.0, 34.7),
+  override = c(5.7, 3.2, 3.0, 34.7),
+  print = FALSE
+)
+
+# Cr gradient only model
+grad_only_model <- deoptim_search(
+  analysis_data = epoc_aki$analysis,
+  outcome_var = "AKI_2or3",
+  baseline_predictors = NULL,
+  cr_predictors = NULL,
+  add_gradient_predictor = 1,
+  stepwise = FALSE,
+  penalty_fn = heuristic_penalty,
+  itermax = 200,
+  NP = 320,
+  parallel = TRUE,
+  secondary_outcomes = c(
+    "AKI_ICU",
+    "Cr_defined_AKI_2or3", "Cr_defined_AKI",
+    "Olig_defined_AKI_2or3", "Olig_defined_AKI"
+  ),
+  override = c(5.7, 3.2, 3.0, 34.7),
   print = FALSE
 )
 
@@ -203,124 +203,26 @@ multi_model <- deoptim_search(
 )
 
 
-# Table 2
-model_ssAOCI_summary(list(change_only_model, per_only_model, grad_only_model)) %>%
-  kable(.)
-# TODO: Fix up `cr_gradient + cr_gradient` Predictor
-# TODO: Uniform cr change ep duration
+# ---- Summarise Models ----
+# Predictive value of cr ch change
+table_cr_ch <- model_ssAOCI_summary(list(change_only_model, per_only_model, grad_only_model)) %>%
+  as_tibble(.) %>%
+  mutate(
+    Predictor = case_when(
+      Predictor == "del_cr" ~ "Cr change",
+      Predictor == "per_cr_change" ~ "% Cr change",
+      Predictor == "cr_gradient" ~ "Cr change >=1µmol/L/h"
+    )
+  )
+kable(table_cr_ch, caption = "Predictive value parameters for creatinine change as an independent predictor of AKI")
+write.csv(table_cr_ch, file = "table2.csv")
 
-nribin(
-  event = multi_model$optim_model$data$AKI_2or3,
-  z.std = as.matrix(select(
-    multi_model$optim_model$data,
-    APACHE_II, PCs_cardio, Vasopressor
-  )),
-  z.new = as.matrix(select(
-    multi_model$optim_model$data,
-    PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient
-  )),
-  cut = 0.1, # multi_model$baseline_models$baseline_sig$cutpoint$youden,
-  msg = TRUE,
-  updown = "diff"
-)
-
-BrierScore(multi_model$baseline_models$baseline_all$model)
-BrierScore(multi_model$baseline_models$baseline_sig$model)
-BrierScore(multi_model$optim_model$model)
-
-opt_cut_baseline_sig <- cutpointr(
-  multi_model$baseline_models$baseline_sig$data,
-  predict, AKI_2or3,
-  use_midpoints = TRUE, direction = ">=", pos_class = 1, neg_class = 0,
-  method = maximize_metric, metric = youden,
-  boot_runs = 1000
-)
-boot_ci(opt_cut_baseline_sig, AUC, in_bag = TRUE, alpha = 0.05)
-
-opt_cut_optim_model <- cutpointr(
-  multi_model$optim_model$data,
-  predict, AKI_2or3,
-  use_midpoints = TRUE, direction = ">=", pos_class = 1, neg_class = 0,
-  method = maximize_metric, metric = youden,
-  boot_runs = 1000
-)
-boot_ci(opt_cut_optim_model, AUC, in_bag = TRUE, alpha = 0.05)
-
+# Multivariable models with patient characteristics and creatinine change for the prediction of stages 2 and 3 AKI
+table_multi <- model_ssACIBnri_summary(multi_model, multi_model$baseline_models$baseline_sig)
+kable(table_multi, caption = "Multivariable models with patient characteristics and creatinine change for the prediction of stages 2 and 3 AKI")
+write.csv(table_multi, file = "table3a.csv")
 
 # Score
-manual_predictor <- function(PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient) {
-  y <- coef(multi_model$optim_model$model)["(Intercept)"] +
-    coef(multi_model$optim_model$model)["PCs_cardio"] * PCs_cardio +
-    coef(multi_model$optim_model$model)["Vasopressor"] * Vasopressor +
-    coef(multi_model$optim_model$model)["Chronic_liver_disease"] * Chronic_liver_disease +
-    coef(multi_model$optim_model$model)["cr_gradient"] * cr_gradient
-  as.numeric(1 / (1 + exp(-y)))
-}
-
-stopifnot(all.equal(
-  manual_predictor(
-    multi_model$optim_model$data$PCs_cardio,
-    multi_model$optim_model$data$Vasopressor,
-    multi_model$optim_model$data$Chronic_liver_disease,
-    multi_model$optim_model$data$cr_gradient
-  ),
-  as.numeric(multi_model$optim_model$data$predict)
-))
-
-lm_score <- lm(
-  predict ~ PCs_cardio + Vasopressor + Chronic_liver_disease + cr_gradient,
-  multi_model$optim_model$data
-)
-
-manual_predictor(
-  PCs_cardio = 0,
-  Vasopressor = 1,
-  Chronic_liver_disease = 0,
-  cr_gradient = 0
-)
-
-BrierScore(multi_model$optim_model$data$AKI_2or3, multi_model$optim_model$data$predict)
-
-brier_wrapper <- function(b, data) {
-  y <- 0 + b[1] +
-    b[2] * data$PCs_cardio +
-    b[3] * data$Vasopressor +
-    b[4] * data$Chronic_liver_disease +
-    b[5] * data$cr_gradient
-  p <- as.numeric(1 / (1 + exp(-y)))
-  BrierScore(data$AKI_2or3, p)
-}
-
-# brier_wrapper(c(-4.9068747, 1.7988061, 1.1770319, 3.6879612, 0.9126502), multi_model$optim_model$data)
-
-score_coef <- DEoptim(
-  brier_wrapper,
-  rep(-10, 5),
-  rep(10, 5),
-  DEoptim.control(NP = 320, itermax = 500, trace = 100),
-  fnMap = function(x) c(x[1], round(x[2:5], 0)),
-  data = multi_model$optim_model$data
-)
-score_coef$optim$bestval
-score_coef$optim$bestmem
-# Summary: Vasopressor is 3x more important than others
-
-temp <- multi_model$optim_model$data %>%
-  select(AKI_2or3, predict, PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient) %>%
-  mutate(score = PCs_cardio + Vasopressor + 3 * Chronic_liver_disease + cr_gradient) %>%
-  group_by(score)
-
-temp %>% summarise(
-  # across(everything(), list(mean = mean, median = median))
-  mean = mean(predict) * 100,
-  median = median(predict) * 100,
-  .groups = "drop"
-)
-
-ggplot(temp, aes(x = score, y = predict, group = score)) +
-  geom_point() +
-  geom_boxplot()
-
 score_predictor <- function(PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient) {
   score <- PCs_cardio + Vasopressor + 3 * Chronic_liver_disease + cr_gradient
   case_when(
@@ -334,22 +236,107 @@ score_predictor <- function(PCs_cardio, Vasopressor, Chronic_liver_disease, cr_g
   # ^ Consider running a DEOptim to optimise these instead of just mean/median
 }
 
-score_est <- score_predictor(
-  multi_model$optim_model$data$PCs_cardio,
-  multi_model$optim_model$data$Vasopressor,
-  multi_model$optim_model$data$Chronic_liver_disease,
-  multi_model$optim_model$data$cr_gradient
-)
-
-temp <- temp %>%
+score_model_data <- multi_model$optim_model$data %>%
+  select(AKI_2or3, predict, PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient) %>%
+  mutate(score = PCs_cardio + Vasopressor + 3 * Chronic_liver_disease + cr_gradient) %>%
+  group_by(score) %>%
   mutate(score_est = score_predictor(PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient))
 
-BrierScore(temp$AKI_2or3, temp$score_est)
+BrierScore(score_model_data$AKI_2or3, score_model_data$score_est)
 
 score_cp <- cutpointr(
-  temp,
+  score_model_data,
   score_est, AKI_2or3,
   use_midpoints = TRUE, direction = ">=", pos_class = 1, neg_class = 0,
   method = maximize_metric, metric = youden,
   boot_runs = 1000
 )
+AUC_ci <- boot_ci(score_cp, AUC, in_bag = TRUE, alpha = 0.05)
+
+# plot(score_cp)
+# plot_x(score_cp)
+
+nribin(
+  event = score_model_data$AKI_2or3,
+  p.std = multi_model$optim_model$data$predict, # TODO: NEEDS TO BE CHANGED TO BASELINE PREDICTION
+  p.new = score_model_data$score_est,
+  cut = 0.078, # multi_model$optim_model$cutpoint$optimal_cutpoint,
+  msg = FALSE,
+  updown = "diff"
+)$nri %>%
+  rownames_to_column("Var") %>%
+  slice_head(n = 3) %>%
+  mutate(CI = sprintf("%.2f [%.2f-%.2f]", Estimate, Lower, Upper)) %>%
+  select(Var, CI) %>%
+  pivot_wider(names_from = Var, values_from = CI)
+
+# ---- AUC Graph ----
+# plot_roc(multi_model$optim_model$cutpoint)
+cutpoints <- list(
+  baseline_sig = multi_model$baseline_models$baseline_sig$cutpoint,
+  optim_model = multi_model$optim_model$cutpoint,
+  risk_score = score_cp
+)
+
+plot_data <- lapply(names(cutpoints), function(name) {
+  cp <- cutpoints[[name]]
+  data.frame(
+    model = name,
+    sensitivity = cp$sensitivity,
+    specificity = cp$specificity,
+    AUC = cp$AUC,
+    tnr = cp$roc_curve[[1]]$tnr,
+    tpr = cp$roc_curve[[1]]$tpr,
+    row.names = NULL
+  )
+}) %>%
+  bind_rows() %>%
+  mutate(
+    label = sprintf("AUC: %.2f \nSens: %.0f%%\nSpec: %.0f%%", AUC, sensitivity * 100, specificity * 100),
+    hjust = case_when(
+      model == "optim_model" ~ 1.1,
+      model == "risk_score" ~ -0.1,
+      model == "baseline_sig" ~ -0.1,
+    ),
+    vjust = case_when(
+      model == "optim_model" ~ -0.1,
+      model == "risk_score" ~ 1.1,
+      model == "baseline_sig" ~ 1.1,
+    ),
+    model = factor(
+      model,
+      levels = c("optim_model", "risk_score", "baseline_sig"),
+      labels = c(
+        "Significant variables with\nCr change model",
+        "ARC risk score",
+        "Significant baseline\ncharacteristics model"
+      ),
+      ordered = TRUE
+    ),
+  )
+
+auc_plot <- ggplot(plot_data, aes(colour = model)) +
+  geom_line(aes(x = 1 - tnr, y = tpr, linetype = model), size = 0.5) +
+  geom_point(aes(x = 1 - specificity, y = sensitivity), size = 3) +
+  annotate("segment",
+    x = 0, xend = 1, y = 0, yend = 1,
+    colour = "darkgrey", linetype = "dashed"
+  ) +
+  geom_label(
+    aes(x = 1 - specificity, y = sensitivity, label = label, hjust = hjust, vjust = vjust),
+    show.legend = FALSE
+  ) +
+  xlab("1 - Specificity") +
+  ylab("Sensitivity") +
+  theme(aspect.ratio = 1, legend.position = c(0.88, 0.08)) +
+  scale_colour_manual(name = "Legend", values = c("#289d87", "#404a88", "#440154")) +
+  scale_linetype_manual(values = c("dashed", "solid", "dashed"), guide = "none") +
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_y_continuous(expand = c(0, 0))
+
+if (.Platform$OS.type == "windows") {
+  ggsave("AUC_plot.png", auc_plot,
+    path = paste0(rel_path, "/doc/images/"),
+    width = 11.5, height = 11, scale = 0.7
+  )
+}
