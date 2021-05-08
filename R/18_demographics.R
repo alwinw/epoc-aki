@@ -149,3 +149,19 @@ write.csv(demographics_table, "demographics_table.csv", row.names = FALSE)
 # add per_cr_change
 
 # Number of AKI_2or3 doesn't match the plot totals ffs...
+
+
+# n_changes "discrepancy"
+# epoc_aki$analysis %>%
+#   filter(cr_before_aki == 1) %>%
+#   group_by(AdmissionID) %>%
+#   select(AdmissionID) %>%
+#   summarise(n = n()) %>%
+#   arrange(-n)
+# demographics_df %>%
+#   filter(UR_number %in% c("2337038", "2197703")) %>%
+#   select(LOS_ICU_days)
+# epoc_aki$measurements %>%
+#   filter(UR_number %in% c("2337038", "2197703")) %>%
+#   select(n_measurements) %>%
+#   distinct()

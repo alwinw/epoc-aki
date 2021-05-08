@@ -255,6 +255,15 @@ opt_cut_optim_model <- cutpointr(
 )
 boot_ci(opt_cut_optim_model, AUC, in_bag = TRUE, alpha = 0.05)
 
+validation_cut <- cutpointr(
+  multi_model$optim_model$data %>% filter(!(UR_number %in% c("2337038", "2197703"))),
+  predict, AKI_2or3,
+  use_midpoints = TRUE, direction = ">=", pos_class = 1, neg_class = 0,
+  method = maximize_metric, metric = youden,
+  boot_runs = 1000
+)
+boot_ci(validation_cut, AUC, in_bag = TRUE, alpha = 0.05)
+
 
 # Score
 manual_predictor <- function(PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient) {
