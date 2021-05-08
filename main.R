@@ -223,66 +223,8 @@ kable(table_multi, caption = "Multivariable models with patient characteristics 
 write.csv(table_multi, file = "table3a.csv")
 
 
-nribin(
-  event = multi_model$optim_model$data$AKI_2or3,
-  z.std = as.matrix(select(
-    multi_model$optim_model$data,
-    PCs_cardio, Vasopressor, Chronic_liver_disease
-  )),
-  z.new = as.matrix(select(
-    multi_model$optim_model$data,
-    PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient
-  )),
-  cut = 0.1, # multi_model$baseline_models$baseline_sig$cutpoint$youden,
-  msg = TRUE,
-  updown = "diff"
-)
 
-nribin(
-  event = multi_model$optim_model$data$AKI_2or3,
-  z.std = as.matrix(select(
-    multi_model$optim_model$data,
-    APACHE_II, PCs_cardio, Vasopressor
-  )),
-  z.new = as.matrix(select(
-    multi_model$optim_model$data,
-    PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient
-  )),
-  cut = 0.1, # multi_model$baseline_models$baseline_sig$cutpoint$youden,
-  msg = TRUE,
-  updown = "diff"
-)
 
-BrierScore(multi_model$baseline_models$baseline_all$model)
-BrierScore(multi_model$baseline_models$baseline_sig$model)
-BrierScore(multi_model$optim_model$model)
-
-opt_cut_baseline_sig <- cutpointr(
-  multi_model$baseline_models$baseline_sig$data,
-  predict, AKI_2or3,
-  use_midpoints = TRUE, direction = ">=", pos_class = 1, neg_class = 0,
-  method = maximize_metric, metric = youden,
-  boot_runs = 1000
-)
-boot_ci(opt_cut_baseline_sig, AUC, in_bag = TRUE, alpha = 0.05)
-
-opt_cut_optim_model <- cutpointr(
-  multi_model$optim_model$data,
-  predict, AKI_2or3,
-  use_midpoints = TRUE, direction = ">=", pos_class = 1, neg_class = 0,
-  method = maximize_metric, metric = youden,
-  boot_runs = 1000
-)
-boot_ci(opt_cut_optim_model, AUC, in_bag = TRUE, alpha = 0.05)
-
-validation_cut <- cutpointr(
-  multi_model$optim_model$data %>% filter(!(UR_number %in% c("2337038", "2197703"))),
-  predict, AKI_2or3,
-  use_midpoints = TRUE, direction = ">=", pos_class = 1, neg_class = 0,
-  method = maximize_metric, metric = youden,
-  boot_runs = 1000
-)
-boot_ci(validation_cut, AUC, in_bag = TRUE, alpha = 0.05)
 
 
 # Score

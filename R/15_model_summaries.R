@@ -100,3 +100,33 @@ model_ssACIBnri_summary <- function(multi_model, baseline_model) {
 
   return(table)
 }
+
+# nribin(
+#   event = multi_model$optim_model$data$AKI_2or3,
+#   z.std = as.matrix(select(
+#     multi_model$optim_model$data,
+#     PCs_cardio, Vasopressor, Chronic_liver_disease
+#   )),
+#   z.new = as.matrix(select(
+#     multi_model$optim_model$data,
+#     PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient
+#   )),
+#   cut = 0.1, # multi_model$baseline_models$baseline_sig$cutpoint$youden,
+#   msg = TRUE,
+#   updown = "diff"
+# )
+# 
+# nribin(
+#   event = multi_model$optim_model$data$AKI_2or3,
+#   z.std = as.matrix(select(
+#     multi_model$optim_model$data,
+#     APACHE_II, PCs_cardio, Vasopressor
+#   )),
+#   z.new = as.matrix(select(
+#     multi_model$optim_model$data,
+#     PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient
+#   )),
+#   cut = 0.1, # multi_model$baseline_models$baseline_sig$cutpoint$youden,
+#   msg = TRUE,
+#   updown = "diff"
+# )
