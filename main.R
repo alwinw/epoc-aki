@@ -110,27 +110,6 @@ if (.Platform$OS.type == "windows") {
   )
 }
 
-# Cr gradient only model
-grad_only_model <- deoptim_search(
-  analysis_data = epoc_aki$analysis,
-  outcome_var = "AKI_2or3",
-  baseline_predictors = NULL,
-  cr_predictors = NULL,
-  add_gradient_predictor = 1,
-  stepwise = FALSE,
-  penalty_fn = heuristic_penalty,
-  itermax = 200,
-  NP = 320,
-  parallel = TRUE,
-  secondary_outcomes = c(
-    "AKI_ICU",
-    "Cr_defined_AKI_2or3", "Cr_defined_AKI",
-    "Olig_defined_AKI_2or3", "Olig_defined_AKI"
-  ),
-  override = c(5.7, 3.2, 3.0, 34.7),
-  print = FALSE
-)
-
 # Cr change model
 change_only_model <- deoptim_search(
   analysis_data = epoc_aki$analysis,
@@ -149,7 +128,7 @@ change_only_model <- deoptim_search(
     "Cr_defined_AKI_2or3", "Cr_defined_AKI",
     "Olig_defined_AKI_2or3", "Olig_defined_AKI"
   ),
-  override = c(5.6, 3.1, 3.0, 34.7),
+  override = c(5.7, 3.2, 3.0, 34.7),
   print = FALSE
 )
 
@@ -171,7 +150,28 @@ per_only_model <- deoptim_search(
     "Cr_defined_AKI_2or3", "Cr_defined_AKI",
     "Olig_defined_AKI_2or3", "Olig_defined_AKI"
   ),
-  override = c(5.6, 3.1, 3.0, 34.7),
+  override = c(5.7, 3.2, 3.0, 34.7),
+  print = FALSE
+)
+
+# Cr gradient only model
+grad_only_model <- deoptim_search(
+  analysis_data = epoc_aki$analysis,
+  outcome_var = "AKI_2or3",
+  baseline_predictors = NULL,
+  cr_predictors = NULL,
+  add_gradient_predictor = 1,
+  stepwise = FALSE,
+  penalty_fn = heuristic_penalty,
+  itermax = 200,
+  NP = 320,
+  parallel = TRUE,
+  secondary_outcomes = c(
+    "AKI_ICU",
+    "Cr_defined_AKI_2or3", "Cr_defined_AKI",
+    "Olig_defined_AKI_2or3", "Olig_defined_AKI"
+  ),
+  override = c(5.7, 3.2, 3.0, 34.7),
   print = FALSE
 )
 
@@ -203,11 +203,20 @@ multi_model <- deoptim_search(
 )
 
 
-# Table 2
-model_ssAOCI_summary(list(change_only_model, per_only_model, grad_only_model)) %>%
-  kable(.)
-# TODO: Fix up `cr_gradient + cr_gradient` Predictor
-# TODO: Uniform cr change ep duration
+# ---- Summarise Models ----
+# Predictive value of cr ch change
+table_cr_ch <- model_ssAOCI_summary(list(change_only_model, per_only_model, grad_only_model)) %>%
+  as_tibble(.) %>%
+  mutate(
+    Predictor = case_when(
+      Predictor == "del_cr" ~ "Cr change",
+      Predictor == "per_cr_change" ~ "% Cr change",
+      Predictor == "cr_gradient" ~ "Cr change >=1µmol/L/h"
+    )
+  )
+kable(table_cr_ch, caption = "Predictive value parameters for creatinine change as an independent predictor of AKI")
+write.csv(table_cr_ch, file = "table2.csv")
+
 
 nribin(
   event = multi_model$optim_model$data$AKI_2or3,

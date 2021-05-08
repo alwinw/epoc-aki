@@ -203,13 +203,13 @@ deoptim_search <- function( # aki_dev_wrapper
 
   # Update the predictors if it was stepwise!
   baseline_predictors <- gsub(".*~ | \\+ \\bcr\\b| \\+ \\bcr_gradient\\b", "", optim_model$summary$glm_model)
-  print(baseline_predictors)
   if (str_split(baseline_predictors, " \\+ ") %in% cr_predictors) {
     baseline_predictors <- NULL
   }
   # if (nchar(baseline_predictors) == 0) baseline_predictors <- NULL
   if (!grepl("\\bcr\\b|\\bdel_cr\\b|\\bper_cr_change\\b", optim_model$summary$glm_model)) cr_predictors <- NULL
   if (!grepl("\\bcr_gradient\\b", optim_model$summary$glm_model)) add_gradient_predictor <- NULL
+  if (grepl("~ cr_gradient$", optim_model$summary$glm_model)) baseline_predictors <- NULL # Edge case where baseline_predictors = "cr_gradient" only
 
   secondary_models <- lapply(
     secondary_outcomes,
