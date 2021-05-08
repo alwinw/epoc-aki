@@ -40,7 +40,8 @@ model_nri <- function(data, outcome, std_vars, new_vars) {
     # TODO: Change to p.std, and p.new where p.std needs to be calculated......
     z.std = as.matrix(select(data, all_of(std_vars))),
     z.new = as.matrix(select(data, all_of(new_vars))),
-    cut = 0.1, # multi_model$baseline_models$baseline_sig$cutpoint$youden,
+    cut = 0.078, # multi_model$optim_model$cutpoint$optimal_cutpoint,
+    # TODO: implement this as a function argument
     msg = FALSE,
     updown = "diff"
   )

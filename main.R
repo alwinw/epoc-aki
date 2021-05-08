@@ -253,11 +253,14 @@ score_cp <- cutpointr(
 )
 AUC_ci <- boot_ci(score_cp, AUC, in_bag = TRUE, alpha = 0.05)
 
+# plot(score_cp)
+# plot_x(score_cp)
+
 nribin(
   event = score_model_data$AKI_2or3,
   p.std = multi_model$optim_model$data$predict, # TODO: NEEDS TO BE CHANGED TO BASELINE PREDICTION
   p.new = score_model_data$score_est,
-  cut = 0.1, # multi_model$baseline_models$baseline_sig$cutpoint$youden,
+  cut = 0.078, # multi_model$optim_model$cutpoint$optimal_cutpoint,
   msg = FALSE,
   updown = "diff"
 )$nri %>%
