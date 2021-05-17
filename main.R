@@ -308,7 +308,7 @@ plot_data <- lapply(names(cutpoints), function(name) {
       levels = c("optim_model", "risk_score", "baseline_sig"),
       labels = c(
         "Significant variables with\nCr change model",
-        "ARC risk score",
+        "Arboc risk score",
         "Significant baseline\ncharacteristics model"
       ),
       ordered = TRUE
