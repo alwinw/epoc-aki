@@ -18,7 +18,7 @@
 file_sources <- list.files(path = "R/", pattern = "^[0-9][0-9].*.R$", full.names = TRUE)
 
 max_num <- 15
-excl_num <- c(12, 14)
+excl_num <- c(12, 14, 16, 17)
 file_nums <- as.numeric(gsub(".*([0-9]{2})_[A-Za-z].*", "\\1", file_sources))
 file_sources <- file_sources[file_nums <= max_num & !(file_nums %in% excl_num)]
 rm(max_num, excl_num, file_nums)
@@ -90,6 +90,8 @@ cr_ch_ts <- generate_cr_changes(
 
 # Analysis Data
 epoc_aki <- create_analysis_data(cr_ch_ts)
+epoc_aki$analysis <- epoc_aki$analysis %>%
+  filter(cr_before_aki == 1, del_t_ch_hr <= 24)
 
 summarise_analysis(
   analysis_df = epoc_aki$analysis,
