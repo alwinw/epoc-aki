@@ -19,8 +19,18 @@ model_ssAOCI <- function(model) {
       publish(model$model, print = FALSE)$regressionTable$OddsRatio,
       gsub(";", "-", publish(model$model, print = FALSE)$regressionTable$CI.95)
     ),
+    tp = summary(model$cutpoint)$confusion_matrix[[1]]$tp,
+    fn = summary(model$cutpoint)$confusion_matrix[[1]]$fn,
+    fp = summary(model$cutpoint)$confusion_matrix[[1]]$fp,
+    tn = summary(model$cutpoint)$confusion_matrix[[1]]$tn,
     check.names = FALSE
-  )
+  ) %>%
+    mutate(
+      sen = sprintf("%.0f%%", tp / (tp + fn) * 100),
+      spe = sprintf("%.0f%%", tn / (fp + tn) * 100),
+      ppv = sprintf("%.0f%%", tp / (tp + fp) * 100),
+      npv = sprintf("%.0f%%", tn / (fn + tn) * 100)
+    )
 }
 
 model_ssAOCI_summary <- function(predictor_models) {

@@ -207,22 +207,23 @@ multi_model <- deoptim_search(
 
 # ---- Summarise Models ----
 # Predictive value of cr ch change
-table_cr_ch <- model_ssAOCI_summary(list(change_only_model, per_only_model, grad_only_model)) %>%
+table_cr_ch <- model_ssAOCI_summary(list(change_only_model, per_only_model, grad_only_model, multi_model)) %>%
   as_tibble(.) %>%
   mutate(
     Predictor = case_when(
       Predictor == "del_cr" ~ "Cr change",
       Predictor == "per_cr_change" ~ "% Cr change",
-      Predictor == "cr_gradient" ~ "Cr change >=1µmol/L/h"
+      Predictor == "cr_gradient" ~ "Cr change >=1µmol/L/h",
+      TRUE ~ Predictor
     )
   )
 kable(table_cr_ch, caption = "Predictive value parameters for creatinine change as an independent predictor of AKI")
-write.csv(table_cr_ch, file = "table2.csv")
+write.csv(table_cr_ch, file = "table2.csv", row.names = FALSE)
 
 # Multivariable models with patient characteristics and creatinine change for the prediction of stages 2 and 3 AKI
 table_multi <- model_ssACIBnri_summary(multi_model, multi_model$baseline_models$baseline_sig)
 kable(table_multi, caption = "Multivariable models with patient characteristics and creatinine change for the prediction of stages 2 and 3 AKI")
-write.csv(table_multi, file = "table3a.csv")
+write.csv(table_multi, file = "table3a.csv", row.names = FALSE)
 
 # Score
 score_predictor <- function(PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient) {
