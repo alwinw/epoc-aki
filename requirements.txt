@@ -22,4 +22,3 @@ kableExtra
 lme4
 nricens
 DescTools
-ggrepel

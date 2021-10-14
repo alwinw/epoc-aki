@@ -299,17 +299,17 @@ plot_data <- lapply(names(cutpoints), function(name) {
   bind_rows() %>%
   mutate(
     label = sprintf("AUC: %.2f \nSens: %.0f%%\nSpec: %.0f%%", AUC, sensitivity * 100, specificity * 100),
-    nudge_x = case_when(
+    hjust = case_when(
       model == "optim_model" ~ 1.3,
       model == "risk_score" ~ 0.6,
-      model == "baseline_sig" ~ -0.1,
-      model == "del_cr" ~ 1.1,
+      model == "baseline_sig" ~ 0.45,
+      model == "del_cr" ~ -0.1,
     ),
-    nudge_y = case_when(
+    vjust = case_when(
       model == "optim_model" ~ 0.6,
       model == "risk_score" ~ -0.4,
-      model == "baseline_sig" ~ 1.1,
-      model == "del_cr" ~ -0.1,
+      model == "baseline_sig" ~ -0.2,
+      model == "del_cr" ~ 1.1,
     ),
     model = factor(
       model,
@@ -325,23 +325,22 @@ plot_data <- lapply(names(cutpoints), function(name) {
   )
 
 label_data <- plot_data %>%
-  select(label, model, sensitivity, specificity, nudge_x, nudge_y) %>%
+  select(label, model, sensitivity, specificity, hjust, vjust) %>%
   distinct()
+label_data[5, ] <- label_data[3, ]
+label_data$label[5] <- "Optimal Cutpoint\nARBOC Score \u2265 1"
+label_data$hjust[5] <- -0.1
+label_data$vjust[5] <- 1.1
 
-# auc_plot <-
-ggplot(plot_data, aes(colour = model)) +
+auc_plot <- ggplot(plot_data, aes(colour = model)) +
   geom_line(aes(x = 1 - tnr, y = tpr, linetype = model), size = 0.5) +
   geom_point(aes(x = 1 - specificity, y = sensitivity), size = 3) +
   annotate("segment",
     x = 0, xend = 1, y = 0, yend = 1,
     colour = "darkgrey", linetype = "dashed"
   ) +
-  geom_label_repel(
-    aes(x = 1 - specificity, y = sensitivity, label = label, nudge_x = nudge_x, nudge_y = nudge_y),
-    point.padding = 1,
-    box.padding = 0.1,
-    # nudge_x = .1,
-    # nudge_y = .1,
+  geom_label(
+    aes(x = 1 - specificity, y = sensitivity, label = label, hjust = hjust, vjust = vjust),
     show.legend = FALSE,
     data = label_data
   ) +
@@ -349,7 +348,7 @@ ggplot(plot_data, aes(colour = model)) +
   ylab("Sensitivity") +
   theme(aspect.ratio = 1, legend.position = c(0.88, 0.11)) +
   scale_colour_manual(name = "Legend", values = c("#be0150", "#404a88", "#289d87", "#e28000")) +
-  scale_linetype_manual(values = c("solid", "solid", "dashed", "solid"), guide = "none") +
+  scale_linetype_manual(values = c("solid", "solid", "solid", "solid"), guide = "none") +
   scale_x_continuous(expand = c(0, 0)) +
   scale_y_continuous(expand = c(0, 0))
 
