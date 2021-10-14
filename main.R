@@ -258,6 +258,8 @@ AUC_ci <- boot_ci(score_cp, AUC, in_bag = TRUE, alpha = 0.05)
 
 # plot(score_cp)
 # plot_x(score_cp)
+# plot_metric(score_cp)
+# predict(score_cp, newdata = data.frame(score_est = 1))
 
 nribin(
   event = score_model_data$AKI_2or3,
@@ -278,7 +280,8 @@ nribin(
 cutpoints <- list(
   baseline_sig = multi_model$baseline_models$baseline_sig$cutpoint,
   optim_model = multi_model$optim_model$cutpoint,
-  risk_score = score_cp
+  risk_score = score_cp,
+  del_cr = change_only_model$optim_model$cutpoint
 )
 
 plot_data <- lapply(names(cutpoints), function(name) {
@@ -296,44 +299,57 @@ plot_data <- lapply(names(cutpoints), function(name) {
   bind_rows() %>%
   mutate(
     label = sprintf("AUC: %.2f \nSens: %.0f%%\nSpec: %.0f%%", AUC, sensitivity * 100, specificity * 100),
-    hjust = case_when(
-      model == "optim_model" ~ 1.1,
-      model == "risk_score" ~ -0.1,
+    nudge_x = case_when(
+      model == "optim_model" ~ 1.3,
+      model == "risk_score" ~ 0.6,
       model == "baseline_sig" ~ -0.1,
+      model == "del_cr" ~ 1.1,
     ),
-    vjust = case_when(
-      model == "optim_model" ~ -0.1,
-      model == "risk_score" ~ 1.1,
+    nudge_y = case_when(
+      model == "optim_model" ~ 0.6,
+      model == "risk_score" ~ -0.4,
       model == "baseline_sig" ~ 1.1,
+      model == "del_cr" ~ -0.1,
     ),
     model = factor(
       model,
-      levels = c("optim_model", "risk_score", "baseline_sig"),
+      levels = c("optim_model", "risk_score", "baseline_sig", "del_cr"),
       labels = c(
         "Significant variables with\nCr change model",
         "ARBOC score",
-        "Significant baseline\ncharacteristics model"
+        "Significant baseline\ncharacteristics model",
+        "Cr change only model"
       ),
       ordered = TRUE
     ),
   )
 
-auc_plot <- ggplot(plot_data, aes(colour = model)) +
+label_data <- plot_data %>%
+  select(label, model, sensitivity, specificity, nudge_x, nudge_y) %>%
+  distinct()
+
+# auc_plot <-
+ggplot(plot_data, aes(colour = model)) +
   geom_line(aes(x = 1 - tnr, y = tpr, linetype = model), size = 0.5) +
   geom_point(aes(x = 1 - specificity, y = sensitivity), size = 3) +
   annotate("segment",
     x = 0, xend = 1, y = 0, yend = 1,
     colour = "darkgrey", linetype = "dashed"
   ) +
-  geom_label(
-    aes(x = 1 - specificity, y = sensitivity, label = label, hjust = hjust, vjust = vjust),
-    show.legend = FALSE
+  geom_label_repel(
+    aes(x = 1 - specificity, y = sensitivity, label = label, nudge_x = nudge_x, nudge_y = nudge_y),
+    point.padding = 1,
+    box.padding = 0.1,
+    # nudge_x = .1,
+    # nudge_y = .1,
+    show.legend = FALSE,
+    data = label_data
   ) +
   xlab("1 - Specificity") +
   ylab("Sensitivity") +
-  theme(aspect.ratio = 1, legend.position = c(0.88, 0.08)) +
-  scale_colour_manual(name = "Legend", values = c("#289d87", "#404a88", "#440154")) +
-  scale_linetype_manual(values = c("dashed", "solid", "dashed"), guide = "none") +
+  theme(aspect.ratio = 1, legend.position = c(0.88, 0.11)) +
+  scale_colour_manual(name = "Legend", values = c("#be0150", "#404a88", "#289d87", "#e28000")) +
+  scale_linetype_manual(values = c("solid", "solid", "dashed", "solid"), guide = "none") +
   scale_x_continuous(expand = c(0, 0)) +
   scale_y_continuous(expand = c(0, 0))
 
