@@ -281,7 +281,7 @@ cutpoints <- list(
   baseline_sig = multi_model$baseline_models$baseline_sig$cutpoint,
   optim_model = multi_model$optim_model$cutpoint,
   risk_score = score_cp,
-  del_cr = change_only_model$optim_model$cutpoint
+  change_only_model = change_only_model$optim_model$cutpoint
 )
 
 plot_data <- lapply(names(cutpoints), function(name) {
@@ -303,21 +303,21 @@ plot_data <- lapply(names(cutpoints), function(name) {
       model == "optim_model" ~ 1.3,
       model == "risk_score" ~ 0.6,
       model == "baseline_sig" ~ 0.45,
-      model == "del_cr" ~ -0.1,
+      model == "change_only_model" ~ -0.1,
     ),
     vjust = case_when(
       model == "optim_model" ~ 0.6,
       model == "risk_score" ~ -0.4,
       model == "baseline_sig" ~ -0.2,
-      model == "del_cr" ~ 1.1,
+      model == "change_only_model" ~ 1.1,
     ),
     model = factor(
       model,
-      levels = c("optim_model", "risk_score", "baseline_sig", "del_cr"),
+      levels = c("optim_model", "risk_score", "baseline_sig", "change_only_model"),
       labels = c(
-        "Significant variables with\nCr change model",
+        "Significant variables with\nCr change model\n(Model D)",
         "ARBOC score",
-        "Significant baseline\ncharacteristics model",
+        "Significant baseline\ncharacteristics model\n(Model B)",
         "Cr change only model"
       ),
       ordered = TRUE
@@ -328,7 +328,7 @@ label_data <- plot_data %>%
   select(label, model, sensitivity, specificity, hjust, vjust) %>%
   distinct()
 label_data[5, ] <- label_data[3, ]
-label_data$label[5] <- "Optimal Cutpoint\nARBOC Score \u2265 1"
+label_data$label[5] <- "Optimal Cutpoint\nARBOC Score \u2265 2"
 label_data$hjust[5] <- -0.1
 label_data$vjust[5] <- 1.1
 
@@ -346,7 +346,7 @@ auc_plot <- ggplot(plot_data, aes(colour = model)) +
   ) +
   xlab("1 - Specificity") +
   ylab("Sensitivity") +
-  theme(aspect.ratio = 1, legend.position = c(0.88, 0.11)) +
+  theme(aspect.ratio = 1, legend.position = c(0.88, 0.12)) +
   scale_colour_manual(name = "Legend", values = c("#be0150", "#404a88", "#289d87", "#e28000")) +
   scale_linetype_manual(values = c("solid", "solid", "solid", "solid"), guide = "none") +
   scale_x_continuous(expand = c(0, 0)) +
