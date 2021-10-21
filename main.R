@@ -346,7 +346,7 @@ auc_plot <- ggplot(plot_data, aes(colour = model)) +
   ) +
   xlab("1 - Specificity") +
   ylab("Sensitivity") +
-  theme(aspect.ratio = 1, legend.position = c(0.88, 0.12)) +
+  theme(aspect.ratio = 1, legend.position = c(0.85, 0.12)) +
   scale_colour_manual(name = "Legend", values = c("#be0150", "#404a88", "#289d87", "#e28000")) +
   scale_linetype_manual(values = c("solid", "solid", "solid", "solid"), guide = "none") +
   scale_x_continuous(expand = c(0, 0)) +
