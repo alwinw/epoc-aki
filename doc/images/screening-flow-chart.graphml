@@ -17,10 +17,10 @@
     <node id="n0">
       <data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="145.0" width="395.0" x="-25.0" y="335.0"/>
+          <y:Geometry height="145.0" width="435.0" x="-25.0" y="335.0"/>
           <y:Fill color="#F0F0F0" transparent="false"/>
           <y:BorderStyle hasColor="false" raised="false" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Times New Roman" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="4.0" x="195.5" y="70.5">
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Arial" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="4.0" x="215.5" y="70.5">
             <y:LabelModel>
               <y:SmartNodeLabelModel distance="4.0"/>
             </y:LabelModel>
@@ -35,10 +35,10 @@
     <node id="n1">
       <data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="145.0" width="395.0" x="-25.0" y="190.0"/>
+          <y:Geometry height="145.0" width="435.0" x="-25.0" y="190.0"/>
           <y:Fill color="#F5F5F5" transparent="false"/>
           <y:BorderStyle hasColor="false" raised="false" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Times New Roman" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="4.0" x="195.5" y="70.5">
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Arial" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="4.0" x="215.5" y="70.5">
             <y:LabelModel>
               <y:SmartNodeLabelModel distance="4.0"/>
             </y:LabelModel>
@@ -53,10 +53,10 @@
     <node id="n2">
       <data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="180.0" width="395.0" x="-25.0" y="10.0"/>
+          <y:Geometry height="180.0" width="435.0" x="-25.0" y="10.0"/>
           <y:Fill color="#FAFAFA" transparent="false"/>
           <y:BorderStyle hasColor="false" raised="false" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Times New Roman" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="4.0" x="195.5" y="88.0">
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Arial" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="4.0" x="215.5" y="88.0">
             <y:LabelModel>
               <y:SmartNodeLabelModel distance="4.0"/>
             </y:LabelModel>
@@ -74,7 +74,7 @@
           <y:Geometry height="40.0" width="180.0" x="-20.0" y="195.0"/>
           <y:Fill color="#FFFFFF" transparent="false"/>
           <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Times New Roman" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="32.79296875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="142.27099609375" x="18.864501953125" y="3.603515625">387 (47%) Patients met 
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Arial" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="33.046875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="153.56982421875" x="13.215087890625" y="3.4765625">387 (47%) Patients met 
 the study inclusion criteria<y:LabelModel>
               <y:SmartNodeLabelModel distance="4.0"/>
             </y:LabelModel>
@@ -89,10 +89,10 @@ the study inclusion criteria<y:LabelModel>
     <node id="n4">
       <data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="25.0" width="315.0" x="50.0" y="245.0"/>
+          <y:Geometry height="25.0" width="355.0" x="50.0" y="245.0"/>
           <y:Fill color="#FFFFFF" transparent="false"/>
           <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Times New Roman" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.396484375" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="301.603515625" x="6.6982421875" y="3.3017578125">10 (2.6%) Patients had &lt;2 Cr measurements prior to AKI<y:LabelModel>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Arial" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.5234375" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="330.23779296875" x="12.381103515625" y="3.23828125">10 (2.6%) Patients had &lt;2 Cr measurements prior to AKI<y:LabelModel>
               <y:SmartNodeLabelModel distance="4.0"/>
             </y:LabelModel>
             <y:ModelParameter>
@@ -109,7 +109,7 @@ the study inclusion criteria<y:LabelModel>
           <y:Geometry height="40.0" width="180.0" x="-20.0" y="280.0"/>
           <y:Fill color="#FFFFFF" transparent="false"/>
           <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Times New Roman" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="32.79296875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="135.421875" x="22.2890625" y="3.603515625">377 (97.4%) Patients had
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Arial" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="33.046875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="150.70703125" x="14.646484375" y="3.4765625">377 (97.4%) Patients had
 ≥2 Cr measurements<y:LabelModel>
               <y:SmartNodeLabelModel distance="4.0"/>
             </y:LabelModel>
@@ -127,7 +127,7 @@ the study inclusion criteria<y:LabelModel>
           <y:Geometry height="25.0" width="180.0" x="-20.0" y="15.0"/>
           <y:Fill color="#FFFFFF" transparent="false"/>
           <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Times New Roman" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.396484375" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="118.8037109375" x="30.59814453125" y="3.3017578125">830 Patients Screened<y:LabelModel>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Arial" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.5234375" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="135.5361328125" x="22.23193359375" y="3.23828125">830 Patients Screened<y:LabelModel>
               <y:SmartNodeLabelModel distance="4.0"/>
             </y:LabelModel>
             <y:ModelParameter>
@@ -144,7 +144,7 @@ the study inclusion criteria<y:LabelModel>
           <y:Geometry height="25.0" width="260.0" x="77.5" y="50.0"/>
           <y:Fill color="#FFFFFF" transparent="false"/>
           <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Times New Roman" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.396484375" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="185.94287109375" x="37.028564453125" y="3.3017578125">443 (53%) Patients were excluded:<y:LabelModel>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Arial" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.5234375" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="205.6142578125" x="27.19287109375" y="3.23828125">443 (53%) Patients were excluded:<y:LabelModel>
               <y:SmartNodeLabelModel distance="4.0"/>
             </y:LabelModel>
             <y:ModelParameter>
@@ -161,7 +161,7 @@ the study inclusion criteria<y:LabelModel>
           <y:Geometry height="110.0" width="45.0" x="77.5" y="75.0"/>
           <y:Fill color="#FFFFFF" transparent="false"/>
           <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
-          <y:NodeLabel alignment="right" autoSizePolicy="content" fontFamily="Times New Roman" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="104.775390625" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="23.5" x="10.75" y="2.6123046875">208
+          <y:NodeLabel alignment="right" autoSizePolicy="content" fontFamily="Arial" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="105.6640625" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="25.68994140625" x="9.655029296875" y="2.16796875">208
 91
 87
 30
@@ -184,7 +184,7 @@ the study inclusion criteria<y:LabelModel>
           <y:Geometry height="110.0" width="55.0" x="122.5" y="75.0"/>
           <y:Fill color="#FFFFFF" transparent="false"/>
           <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Times New Roman" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="104.775390625" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="36.4873046875" x="9.25634765625" y="2.6123046875">(47%)
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Arial" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="105.6640625" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="38.67724609375" x="8.161376953125" y="2.16796875">(47%)
 (21%)
 (20%)
 (7%)
@@ -207,7 +207,7 @@ the study inclusion criteria<y:LabelModel>
           <y:Geometry height="110.0" width="160.0" x="177.5" y="75.0"/>
           <y:Fill color="#FFFFFF" transparent="false"/>
           <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
-          <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Times New Roman" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="104.775390625" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="133.23193359375" x="13.384033203125" y="2.6123046875">AKI on ICU admission
+          <y:NodeLabel alignment="left" autoSizePolicy="content" fontFamily="Arial" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="105.6640625" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="151.4306640625" x="4.28466796875" y="2.16796875">AKI on ICU admission
 weekend admission
 no indwelling catheter
 end-stage kidney disease
@@ -230,7 +230,7 @@ child<y:LabelModel>
           <y:Geometry height="40.0" width="180.0" x="-20.0" y="350.0"/>
           <y:Fill color="#FFFFFF" transparent="false"/>
           <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Times New Roman" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="32.79296875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="150.580078125" x="14.7099609375" y="3.603515625">6,938 Cr measurements
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Arial" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="33.046875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="170.232421875" x="4.8837890625" y="3.4765625">6,938 Cr measurements
 183,672 Cr change episodes<y:LabelModel>
               <y:SmartNodeLabelModel distance="4.0"/>
             </y:LabelModel>
@@ -245,10 +245,10 @@ child<y:LabelModel>
     <node id="n12">
       <data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="40.0" width="315.0" x="50.0" y="400.0"/>
+          <y:Geometry height="40.0" width="355.0" x="50.0" y="400.0"/>
           <y:Fill color="#FFFFFF" transparent="false"/>
           <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Times New Roman" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="32.79296875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="298.201171875" x="8.3994140625" y="3.603515625">3,703 (53.4%) Cr measurements occured after AKI
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Arial" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="33.046875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="327.7431640625" x="13.62841796875" y="3.4765625">3,703 (53.4%) Cr measurements occured after AKI
 133,498 (72.7%) Cr change episodes occurred after AKI<y:LabelModel>
               <y:SmartNodeLabelModel distance="4.0"/>
             </y:LabelModel>
@@ -263,10 +263,10 @@ child<y:LabelModel>
     <node id="n13">
       <data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="65.0" width="395.0" x="-25.0" y="480.0"/>
+          <y:Geometry height="65.0" width="435.0" x="-25.0" y="480.0"/>
           <y:Fill color="#EBEBEB" transparent="false"/>
           <y:BorderStyle hasColor="false" raised="false" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Times New Roman" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="4.0" x="195.5" y="30.5">
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Arial" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" hasText="false" height="4.0" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="4.0" x="215.5" y="30.5">
             <y:LabelModel>
               <y:SmartNodeLabelModel distance="4.0"/>
             </y:LabelModel>
@@ -284,7 +284,7 @@ child<y:LabelModel>
           <y:Geometry height="55.0" width="180.0" x="-20.0" y="485.0"/>
           <y:Fill color="#FFFFFF" transparent="false"/>
           <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Times New Roman" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="47.189453125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="150.25" x="14.875" y="3.9052734375">Final Analysis: 377 Patients
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Arial" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="47.5703125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="163.6943359375" x="8.15283203125" y="3.71484375">Final Analysis: 377 Patients
 3,235 Cr measurements 
 15,075 Cr change episodes<y:LabelModel>
               <y:SmartNodeLabelModel distance="4.0"/>
@@ -300,10 +300,10 @@ child<y:LabelModel>
     <node id="n15">
       <data key="d6">
         <y:ShapeNode>
-          <y:Geometry height="25.0" width="315.0" x="50.0" y="450.0"/>
+          <y:Geometry height="25.0" width="355.0" x="50.0" y="450.0"/>
           <y:Fill color="#FFFFFF" transparent="false"/>
           <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Times New Roman" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.396484375" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="309.18896484375" x="2.905517578125" y="3.3017578125">35,099 (19.1%) Cr change episodes of duration &gt; 24 hours<y:LabelModel>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Arial" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.5234375" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="342.583984375" x="6.2080078125" y="3.23828125">35,099 (19.1%) Cr change episodes of duration &gt; 24 hours<y:LabelModel>
               <y:SmartNodeLabelModel distance="4.0"/>
             </y:LabelModel>
             <y:ModelParameter>
@@ -385,7 +385,6 @@ child<y:LabelModel>
       </data>
     </edge>
     <edge id="e7" source="n0" target="n15">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="-151.94239999999994" sy="55.0" tx="0.0" ty="0.0"/>
@@ -396,7 +395,6 @@ child<y:LabelModel>
       </data>
     </edge>
     <edge id="e8" source="n11" target="n15">
-      <data key="d9"/>
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="-50.0" sy="92.5" tx="0.0" ty="0.0"/>
