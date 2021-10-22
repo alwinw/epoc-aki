@@ -276,24 +276,7 @@ nribin(
   pivot_wider(names_from = Var, values_from = CI)
 
 # All Models
-score_model_wrapper = list(
-  optim_model = list(
-    summary = list(
-      glm_model = "ARBOC Score",
-      ch_hr_lower = multi_model$optim_model$summary$ch_hr_lower,
-      ch_hr_upper = multi_model$optim_model$summary$ch_hr_upper,
-      aki_hr_lower = multi_model$optim_model$summary$aki_hr_lower,
-      aki_hr_upper = multi_model$optim_model$summary$aki_hr_upper,
-      sensitive = score_cp$sensitivity,
-      specificity =  score_cp$specificity,
-      AUC = score_cp$AUC,
-    )
-  )
-  )
-
-
-
-table_all <- model_ssAOCI_summary(list(change_only_model, per_only_model, grad_only_model, multi_model)) %>%
+table_all <- model_ssAOCI_summary(list(change_only_model, per_only_model, grad_only_model, multi_model, score_model)) %>%
   as_tibble(.) %>%
   mutate(
     Predictor = case_when(
@@ -303,6 +286,8 @@ table_all <- model_ssAOCI_summary(list(change_only_model, per_only_model, grad_o
       TRUE ~ Predictor
     )
   )
+kable(table_all, caption = "All Models")
+write.csv(table_all, file = "table4.csv", row.names = FALSE)
 
 # ---- AUC Graph ----
 # plot_roc(multi_model$optim_model$cutpoint)

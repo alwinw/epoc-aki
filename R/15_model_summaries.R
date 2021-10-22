@@ -32,9 +32,10 @@ model_ssAOCI <- function(model) {
       spe = sprintf("%.0f%%", tn / (fp + tn) * 100),
       ppv = sprintf("%.0f%%", tp / (tp + fp) * 100),
       npv = sprintf("%.0f%%", tn / (fn + tn) * 100),
-      plr = sprintf("%.0f%%", sens / (1 + spec) * 100),
-      nlr = sprintf("%.0f%%", (1 - sens) / spec)
-    )
+      plr = sprintf("%.1f", sens / (1 - spec)),
+      nlr = sprintf("%.1f", (1 - sens) / spec)
+    ) %>%
+    select(-sens, -spec)
 }
 
 model_ssAOCI_summary <- function(predictor_models) {
