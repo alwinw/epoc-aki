@@ -116,7 +116,7 @@ plot_cr_ch_heatmap <- function(analysis_df, outcome_var, save_plots) {
     # Theme
     ggtitle(paste("The frequency at which small, short-term changes in creatinine predict imminent", heatmap_var)) +
     xlab(expression("Duration of short-term Cr change episode: " * Delta * "t" * " (hours)")) +
-    ylab(expression("Change in Cr during episode: " * Delta * "cr" * " (" * mu * "mol/L)")) +
+    ylab(expression("Change in Cr during episode: " * Delta * "Cr" * " (" * mu * "mol/L)")) +
     theme(panel.spacing = unit(0.85, "lines")) +
     theme(
       plot.background = element_rect(fill = "transparent", colour = NA),
