@@ -275,6 +275,35 @@ nribin(
   select(Var, CI) %>%
   pivot_wider(names_from = Var, values_from = CI)
 
+# All Models
+score_model_wrapper = list(
+  optim_model = list(
+    summary = list(
+      glm_model = "ARBOC Score",
+      ch_hr_lower = multi_model$optim_model$summary$ch_hr_lower,
+      ch_hr_upper = multi_model$optim_model$summary$ch_hr_upper,
+      aki_hr_lower = multi_model$optim_model$summary$aki_hr_lower,
+      aki_hr_upper = multi_model$optim_model$summary$aki_hr_upper,
+      sensitive = score_cp$sensitivity,
+      specificity =  score_cp$specificity,
+      AUC = score_cp$AUC,
+    )
+  )
+  )
+
+
+
+table_all <- model_ssAOCI_summary(list(change_only_model, per_only_model, grad_only_model, multi_model)) %>%
+  as_tibble(.) %>%
+  mutate(
+    Predictor = case_when(
+      Predictor == "del_cr" ~ "Cr change",
+      Predictor == "per_cr_change" ~ "% Cr change",
+      Predictor == "cr_gradient" ~ "Cr change >=1µmol/L/h",
+      TRUE ~ Predictor
+    )
+  )
+
 # ---- AUC Graph ----
 # plot_roc(multi_model$optim_model$cutpoint)
 cutpoints <- list(

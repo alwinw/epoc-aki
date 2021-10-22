@@ -26,10 +26,14 @@ model_ssAOCI <- function(model) {
     check.names = FALSE
   ) %>%
     mutate(
+      sens = tp / (tp + fn),
+      spec = tn / (fp + tn),
       sen = sprintf("%.0f%%", tp / (tp + fn) * 100),
       spe = sprintf("%.0f%%", tn / (fp + tn) * 100),
       ppv = sprintf("%.0f%%", tp / (tp + fp) * 100),
-      npv = sprintf("%.0f%%", tn / (fn + tn) * 100)
+      npv = sprintf("%.0f%%", tn / (fn + tn) * 100),
+      plr = sprintf("%.0f%%", sens / (1 + spec) * 100),
+      nlr = sprintf("%.0f%%", (1 - sens) / spec)
     )
 }
 
