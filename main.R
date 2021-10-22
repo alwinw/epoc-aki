@@ -18,7 +18,7 @@
 file_sources <- list.files(path = "R/", pattern = "^[0-9][0-9].*.R$", full.names = TRUE)
 
 max_num <- 15
-excl_num <- c(12, 14)
+excl_num <- c(12, 14, 16, 17)
 file_nums <- as.numeric(gsub(".*([0-9]{2})_[A-Za-z].*", "\\1", file_sources))
 file_sources <- file_sources[file_nums <= max_num & !(file_nums %in% excl_num)]
 rm(max_num, excl_num, file_nums)
@@ -90,6 +90,8 @@ cr_ch_ts <- generate_cr_changes(
 
 # Analysis Data
 epoc_aki <- create_analysis_data(cr_ch_ts)
+epoc_aki$analysis <- epoc_aki$analysis %>%
+  filter(cr_before_aki == 1, del_t_ch_hr <= 24)
 
 summarise_analysis(
   analysis_df = epoc_aki$analysis,
@@ -205,22 +207,23 @@ multi_model <- deoptim_search(
 
 # ---- Summarise Models ----
 # Predictive value of cr ch change
-table_cr_ch <- model_ssAOCI_summary(list(change_only_model, per_only_model, grad_only_model)) %>%
+table_cr_ch <- model_ssAOCI_summary(list(change_only_model, per_only_model, grad_only_model, multi_model)) %>%
   as_tibble(.) %>%
   mutate(
     Predictor = case_when(
       Predictor == "del_cr" ~ "Cr change",
       Predictor == "per_cr_change" ~ "% Cr change",
-      Predictor == "cr_gradient" ~ "Cr change >=1µmol/L/h"
+      Predictor == "cr_gradient" ~ "Cr change >=1µmol/L/h",
+      TRUE ~ Predictor
     )
   )
 kable(table_cr_ch, caption = "Predictive value parameters for creatinine change as an independent predictor of AKI")
-write.csv(table_cr_ch, file = "table2.csv")
+write.csv(table_cr_ch, file = "table2.csv", row.names = FALSE)
 
 # Multivariable models with patient characteristics and creatinine change for the prediction of stages 2 and 3 AKI
 table_multi <- model_ssACIBnri_summary(multi_model, multi_model$baseline_models$baseline_sig)
 kable(table_multi, caption = "Multivariable models with patient characteristics and creatinine change for the prediction of stages 2 and 3 AKI")
-write.csv(table_multi, file = "table3a.csv")
+write.csv(table_multi, file = "table3a.csv", row.names = FALSE)
 
 # Score
 score_predictor <- function(PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient) {
@@ -255,6 +258,8 @@ AUC_ci <- boot_ci(score_cp, AUC, in_bag = TRUE, alpha = 0.05)
 
 # plot(score_cp)
 # plot_x(score_cp)
+# plot_metric(score_cp)
+# predict(score_cp, newdata = data.frame(score_est = 1))
 
 nribin(
   event = score_model_data$AKI_2or3,
@@ -275,7 +280,8 @@ nribin(
 cutpoints <- list(
   baseline_sig = multi_model$baseline_models$baseline_sig$cutpoint,
   optim_model = multi_model$optim_model$cutpoint,
-  risk_score = score_cp
+  risk_score = score_cp,
+  change_only_model = change_only_model$optim_model$cutpoint
 )
 
 plot_data <- lapply(names(cutpoints), function(name) {
@@ -294,26 +300,37 @@ plot_data <- lapply(names(cutpoints), function(name) {
   mutate(
     label = sprintf("AUC: %.2f \nSens: %.0f%%\nSpec: %.0f%%", AUC, sensitivity * 100, specificity * 100),
     hjust = case_when(
-      model == "optim_model" ~ 1.1,
-      model == "risk_score" ~ -0.1,
-      model == "baseline_sig" ~ -0.1,
+      model == "optim_model" ~ 1.3,
+      model == "risk_score" ~ 0.6,
+      model == "baseline_sig" ~ 0.45,
+      model == "change_only_model" ~ -0.1,
     ),
     vjust = case_when(
-      model == "optim_model" ~ -0.1,
-      model == "risk_score" ~ 1.1,
-      model == "baseline_sig" ~ 1.1,
+      model == "optim_model" ~ 0.6,
+      model == "risk_score" ~ -0.4,
+      model == "baseline_sig" ~ -0.2,
+      model == "change_only_model" ~ 1.1,
     ),
     model = factor(
       model,
-      levels = c("optim_model", "risk_score", "baseline_sig"),
+      levels = c("optim_model", "risk_score", "baseline_sig", "change_only_model"),
       labels = c(
-        "Significant variables with\nCr change model",
+        "Significant variables with\nCr change model\n(Model D)",
         "ARBOC score",
-        "Significant baseline\ncharacteristics model"
+        "Significant baseline\ncharacteristics model\n(Model B)",
+        "Cr change only model"
       ),
       ordered = TRUE
     ),
   )
+
+label_data <- plot_data %>%
+  select(label, model, sensitivity, specificity, hjust, vjust) %>%
+  distinct()
+label_data[5, ] <- label_data[3, ]
+label_data$label[5] <- "Optimal Cutpoint\nARBOC Score \u2265 2"
+label_data$hjust[5] <- -0.1
+label_data$vjust[5] <- 1.1
 
 auc_plot <- ggplot(plot_data, aes(colour = model)) +
   geom_line(aes(x = 1 - tnr, y = tpr, linetype = model), size = 0.5) +
@@ -324,13 +341,14 @@ auc_plot <- ggplot(plot_data, aes(colour = model)) +
   ) +
   geom_label(
     aes(x = 1 - specificity, y = sensitivity, label = label, hjust = hjust, vjust = vjust),
-    show.legend = FALSE
+    show.legend = FALSE,
+    data = label_data
   ) +
   xlab("1 - Specificity") +
   ylab("Sensitivity") +
-  theme(aspect.ratio = 1, legend.position = c(0.88, 0.08)) +
-  scale_colour_manual(name = "Legend", values = c("#289d87", "#404a88", "#440154")) +
-  scale_linetype_manual(values = c("dashed", "solid", "dashed"), guide = "none") +
+  theme(aspect.ratio = 1, legend.position = c(0.85, 0.12)) +
+  scale_colour_manual(name = "Legend", values = c("#be0150", "#404a88", "#289d87", "#e28000")) +
+  scale_linetype_manual(values = c("solid", "solid", "solid", "solid"), guide = "none") +
   scale_x_continuous(expand = c(0, 0)) +
   scale_y_continuous(expand = c(0, 0))
 

@@ -25,11 +25,14 @@ load_library(
 
 if (.Platform$OS.type == "windows") {
   withAutoprint({
-    windowsFonts(serif = windowsFont("Times New Roman"))
+    windowsFonts(
+      serif = windowsFont("Times New Roman"),
+      sans = windowsFont("Arial")
+    )
   })
 }
 
-theme_set(theme_bw() + theme(text = element_text(family = "serif")))
+theme_set(theme_bw() + theme(text = element_text(family = "sans")))
 options(knitr.table.format = "pipe")
 
 
