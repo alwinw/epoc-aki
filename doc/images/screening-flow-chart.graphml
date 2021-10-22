@@ -92,7 +92,7 @@ the study inclusion criteria<y:LabelModel>
           <y:Geometry height="25.0" width="355.0" x="50.0" y="245.0"/>
           <y:Fill color="#FFFFFF" transparent="false"/>
           <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Arial" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.5234375" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="330.23779296875" x="12.381103515625" y="3.23828125">10 (2.6%) Patients had &lt;2 Cr measurements prior to AKI<y:LabelModel>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Arial" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="18.5234375" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="333.849609375" x="10.5751953125" y="3.23828125">10 (2.6%) Patients had &lt; 2 Cr measurements prior to AKI<y:LabelModel>
               <y:SmartNodeLabelModel distance="4.0"/>
             </y:LabelModel>
             <y:ModelParameter>
@@ -110,7 +110,7 @@ the study inclusion criteria<y:LabelModel>
           <y:Fill color="#FFFFFF" transparent="false"/>
           <y:BorderStyle color="#000000" raised="false" type="line" width="1.0"/>
           <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Arial" fontSize="13" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="33.046875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="150.70703125" x="14.646484375" y="3.4765625">377 (97.4%) Patients had
-≥2 Cr measurements<y:LabelModel>
+≥ 2 Cr measurements<y:LabelModel>
               <y:SmartNodeLabelModel distance="4.0"/>
             </y:LabelModel>
             <y:ModelParameter>
