@@ -61,3 +61,33 @@ score_model$optim_model$data %>%
     nlr = nlr(tp, fp, tn, fn)[1],
     cutpoint_value = cutpoint_value
   )
+
+values = as.list(0:6)
+
+lapply(values, function(cutpoint_value){
+  score_model$optim_model$data %>%
+    mutate(
+      pred = if_else(ARBOC_score >= cutpoint_value, 1, 0),
+      tp = if_else(pred == 1 & AKI_2or3 == 1, 1, 0),
+      tn = if_else(pred == 0 & AKI_2or3 == 0, 1, 0),
+      fp = if_else(pred == 1 & AKI_2or3 == 0, 1, 0),
+      fn = if_else(pred == 0 & AKI_2or3 == 1, 1, 0)
+    ) %>%
+    summarise(
+      tp = sum(tp),
+      fn = sum(fn),
+      fp = sum(fp),
+      tn = sum(tn),
+    ) %>%
+    mutate(
+      sensitivity = tp / (tp + fn),
+      specificity = tn / (tn + fp),
+      ppv = tp / (tp + fp),
+      npv = tn / (tn + fn),
+      plr = plr(tp, fp, tn, fn)[1],
+      nlr = nlr(tp, fp, tn, fn)[1],
+      ARBOC_score = cutpoint_value
+    )
+}) %>% 
+  bind_rows() %>% 
+  write.csv("table5.csv", row.names = FALSE)
