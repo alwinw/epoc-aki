@@ -226,30 +226,66 @@ kable(table_multi, caption = "Multivariable models with patient characteristics 
 write.csv(table_multi, file = "table3a.csv", row.names = FALSE)
 
 # Score
-score_predictor <- function(PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient) {
+score_predictor <- function(PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient, pred = FALSE) {
+  # est. from 16_score_creation
   score <- PCs_cardio + Vasopressor + 3 * Chronic_liver_disease + cr_gradient
-  case_when(
-    score == 0 ~ 0.00734,
-    score == 1 ~ 0.0234,
-    score == 2 ~ 0.127,
-    score == 3 ~ 0.265,
-    score == 4 ~ 0.424,
-    score == 5 ~ 0.853
-  )
-  # ^ Consider running a DEOptim to optimise these instead of just mean/median
+  if (pred) {
+    est <- case_when(
+      score == 0 ~ 0.00734,
+      score == 1 ~ 0.0234,
+      score == 2 ~ 0.127,
+      score == 3 ~ 0.265,
+      score == 4 ~ 0.424,
+      score == 5 ~ 0.853
+    )
+    # ^ Consider running a DEOptim to optimise these instead of just mean/median
+    return(est)
+  } else {
+    return(score)
+  }
 }
 
-score_model_data <- multi_model$optim_model$data %>%
-  select(AKI_2or3, predict, PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient) %>%
-  mutate(score = PCs_cardio + Vasopressor + 3 * Chronic_liver_disease + cr_gradient) %>%
-  group_by(score) %>%
-  mutate(score_est = score_predictor(PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient))
+score_analysis <- epoc_aki$analysis %>%
+  mutate(
+    cr_gradient = if_else(del_cr >= 1 * del_t_ch_hr, 1, 0),
+    ARBOC_score = score_predictor(PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient, pred = FALSE),
+    ARBOC_pred = score_predictor(PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient, pred = TRUE)
+  ) %>%
+  select(
+    AKI_2or3, AKI_ICU, Cr_defined_AKI_2or3, Cr_defined_AKI, Olig_defined_AKI_2or3, Olig_defined_AKI,
+    AdmissionID, UR_number, del_t_ch_hr, del_t_aki_hr, del_cr, cr_gradient,
+    ARBOC_score, ARBOC_pred
+  )
 
-BrierScore(score_model_data$AKI_2or3, score_model_data$score_est)
+score_model <- deoptim_search(
+  analysis_data = score_analysis,
+  outcome_var = "AKI_2or3",
+  baseline_predictors = c(
+    "ARBOC_pred"
+  ),
+  cr_predictors = NULL,
+  add_gradient_predictor = NULL,
+  first_cr_only = FALSE,
+  stepwise = FALSE,
+  k = "mBIC",
+  penalty_fn = heuristic_penalty,
+  itermax = 200,
+  NP = 320,
+  parallel = TRUE,
+  secondary_outcomes = c(
+    "AKI_ICU",
+    "Cr_defined_AKI_2or3", "Cr_defined_AKI",
+    "Olig_defined_AKI_2or3", "Olig_defined_AKI"
+  ),
+  override = c(4.9, 1.8, 8.7, 16.9),
+  print = FALSE
+)
+
+BrierScore(score_model$optim_model$data$AKI_2or3, score_model$optim_model$data$ARBOC_pred)
 
 score_cp <- cutpointr(
-  score_model_data,
-  score_est, AKI_2or3,
+  score_model$optim_model$data,
+  ARBOC_pred, AKI_2or3,
   use_midpoints = TRUE, direction = ">=", pos_class = 1, neg_class = 0,
   method = maximize_metric, metric = youden,
   boot_runs = 1000
@@ -259,12 +295,12 @@ AUC_ci <- boot_ci(score_cp, AUC, in_bag = TRUE, alpha = 0.05)
 # plot(score_cp)
 # plot_x(score_cp)
 # plot_metric(score_cp)
-# predict(score_cp, newdata = data.frame(score_est = 1))
+# predict(score_cp, newdata = data.frame(ARBOC_pred = 1))
 
 nribin(
-  event = score_model_data$AKI_2or3,
+  event = score_model$optim_model$data$AKI_2or3,
   p.std = multi_model$optim_model$data$predict, # TODO: NEEDS TO BE CHANGED TO BASELINE PREDICTION
-  p.new = score_model_data$score_est,
+  p.new = score_model$optim_model$data$ARBOC_score,
   cut = 0.078, # multi_model$optim_model$cutpoint$optimal_cutpoint,
   msg = FALSE,
   updown = "diff"
@@ -274,6 +310,51 @@ nribin(
   mutate(CI = sprintf("%.2f [%.2f-%.2f]", Estimate, Lower, Upper)) %>%
   select(Var, CI) %>%
   pivot_wider(names_from = Var, values_from = CI)
+
+# All Models
+table_all <- model_ssAOCI_summary(list(change_only_model, per_only_model, grad_only_model, multi_model, score_model)) %>%
+  as_tibble(.) %>%
+  mutate(
+    Predictor = case_when(
+      Predictor == "del_cr" ~ "Cr change",
+      Predictor == "per_cr_change" ~ "% Cr change",
+      Predictor == "cr_gradient" ~ "Cr change >=1µmol/L/h",
+      TRUE ~ Predictor
+    )
+  )
+kable(table_all, caption = "All Models")
+write.csv(table_all, file = "table4.csv", row.names = FALSE)
+
+values <- as.list(0:6)
+
+lapply(values, function(cutpoint_value) {
+  score_model$optim_model$data %>%
+    mutate(
+      pred = if_else(ARBOC_score >= cutpoint_value, 1, 0),
+      tp = if_else(pred == 1 & AKI_2or3 == 1, 1, 0),
+      tn = if_else(pred == 0 & AKI_2or3 == 0, 1, 0),
+      fp = if_else(pred == 1 & AKI_2or3 == 0, 1, 0),
+      fn = if_else(pred == 0 & AKI_2or3 == 1, 1, 0)
+    ) %>%
+    summarise(
+      tp = sum(tp),
+      fn = sum(fn),
+      fp = sum(fp),
+      tn = sum(tn),
+    ) %>%
+    mutate(
+      sensitivity = tp / (tp + fn),
+      specificity = tn / (tn + fp),
+      ppv = tp / (tp + fp),
+      npv = tn / (tn + fn),
+      plr = plr(tp, fp, tn, fn)[1],
+      nlr = nlr(tp, fp, tn, fn)[1],
+      ARBOC_score = cutpoint_value
+    )
+}) %>%
+  bind_rows() %>%
+  write.csv("table5.csv", row.names = FALSE)
+
 
 # ---- AUC Graph ----
 # plot_roc(multi_model$optim_model$cutpoint)

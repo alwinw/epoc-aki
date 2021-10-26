@@ -1,3 +1,4 @@
+# Manual logistic predictor using 1/(1+e^-y)
 manual_predictor <- function(PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient) {
   y <- coef(multi_model$optim_model$model)["(Intercept)"] +
     coef(multi_model$optim_model$model)["PCs_cardio"] * PCs_cardio +
@@ -17,17 +18,8 @@ stopifnot(all.equal(
   as.numeric(multi_model$optim_model$data$predict)
 ))
 
-lm_score <- lm(
-  predict ~ PCs_cardio + Vasopressor + Chronic_liver_disease + cr_gradient,
-  multi_model$optim_model$data
-)
 
-manual_predictor(
-  PCs_cardio = 0,
-  Vasopressor = 1,
-  Chronic_liver_disease = 0,
-  cr_gradient = 0
-)
+# Search for optimum score coefficients based on BrierScore
 
 BrierScore(multi_model$optim_model$data$AKI_2or3, multi_model$optim_model$data$predict)
 
@@ -55,6 +47,8 @@ score_coef$optim$bestval
 score_coef$optim$bestmem
 # Summary: Vasopressor is 3x more important than others
 
+
+# Visualise the suggested score
 temp <- multi_model$optim_model$data %>%
   select(AKI_2or3, predict, PCs_cardio, Vasopressor, Chronic_liver_disease, cr_gradient) %>%
   mutate(score = PCs_cardio + Vasopressor + 3 * Chronic_liver_disease + cr_gradient) %>%
@@ -70,7 +64,6 @@ temp %>% summarise(
 ggplot(temp, aes(x = score, y = predict, group = score)) +
   geom_point() +
   geom_boxplot()
-
 
 score_est <- score_predictor(
   multi_model$optim_model$data$PCs_cardio,
