@@ -62,9 +62,9 @@ score_model$optim_model$data %>%
     cutpoint_value = cutpoint_value
   )
 
-values = as.list(0:6)
+values <- as.list(0:6)
 
-lapply(values, function(cutpoint_value){
+lapply(values, function(cutpoint_value) {
   score_model$optim_model$data %>%
     mutate(
       pred = if_else(ARBOC_score >= cutpoint_value, 1, 0),
@@ -88,6 +88,6 @@ lapply(values, function(cutpoint_value){
       nlr = nlr(tp, fp, tn, fn)[1],
       ARBOC_score = cutpoint_value
     )
-}) %>% 
-  bind_rows() %>% 
+}) %>%
+  bind_rows() %>%
   write.csv("table5.csv", row.names = FALSE)
