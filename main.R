@@ -412,10 +412,13 @@ plot_data <- lapply(names(cutpoints), function(name) {
 label_data <- plot_data %>%
   select(label, model, sensitivity, specificity, hjust, vjust) %>%
   distinct()
-label_data[5, ] <- label_data[3, ]
-label_data$label[5] <- "Optimal Cutpoint\nARBOC Score \u2265 2"
-label_data$hjust[5] <- -0.1
-label_data$vjust[5] <- 1.1
+arboc_label <- label_data[3, ]
+arboc_label$label <- as.character(expression(atop(
+  "Optimal Cutpoint",
+  "ARBOC Score" >= 2
+)))
+arboc_label$hjust <- -0.1
+arboc_label$vjust <- 1.1
 
 auc_plot <- ggplot(plot_data, aes(colour = model)) +
   geom_line(aes(x = 1 - tnr, y = tpr, linetype = model), size = 0.5) +
@@ -429,6 +432,11 @@ auc_plot <- ggplot(plot_data, aes(colour = model)) +
     show.legend = FALSE,
     data = label_data
   ) +
+  geom_label(
+    aes(x = 1 - specificity, y = sensitivity, label = label, hjust = hjust, vjust = vjust),
+    show.legend = FALSE, parse = TRUE,
+    data = arboc_label
+  ) +
   xlab("1 - Specificity") +
   ylab("Sensitivity") +
   theme(aspect.ratio = 1, legend.position = c(0.85, 0.12)) +
@@ -437,9 +445,6 @@ auc_plot <- ggplot(plot_data, aes(colour = model)) +
   scale_x_continuous(expand = c(0, 0)) +
   scale_y_continuous(expand = c(0, 0))
 
-if (.Platform$OS.type %in% c("windows", "unix")) {
-  ggsave("AUC_plot.png", auc_plot,
-    path = paste0(rel_path, "/doc/images/"),
-    width = 11.5, height = 11, scale = 0.7
-  )
-}
+save_plot("AUC_plot", auc_plot,
+  width = 11.5, height = 11, scale = 0.7
+)

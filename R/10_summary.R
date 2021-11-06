@@ -77,7 +77,7 @@ plot_cr_ch_heatmap <- function(analysis_df, outcome_var) {
     group_by(heatmap) %>%
     summarise(n_cr = n(), n_admission = n_distinct(AdmissionID), .groups = "drop") %>%
     mutate(
-      label = if_else(row_number() == 1, "", "1\u03BCmol/L/h"),
+      label = if_else(row_number() == 1, "", as.character(expression("1" * mu * "mol/L/h"))),
       slope = if_else(row_number() == 1, 0, 1),
       intercept = if_else(row_number() == 1, 100, 0),
     )
@@ -106,7 +106,7 @@ plot_cr_ch_heatmap <- function(analysis_df, outcome_var) {
     geom_text(
       data = heatmap_count,
       aes(x = 10.5, y = 15.5, label = label),
-      colour = "white", vjust = 1.3, angle = 10, size = 3
+      colour = "white", vjust = 1.3, angle = 10, size = 3, parse = TRUE
     ) +
     geom_text(
       data = heatmap_count,

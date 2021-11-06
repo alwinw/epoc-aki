@@ -46,13 +46,13 @@ save_plot <- function(filename, plot, width, height, scale) {
   if (.Platform$OS.type == "windows") {
     ggsave(paste0(filename, ".png"), plot,
       path = paste0(rel_path, "/doc/images/"),
-      width = width, height = height, scale = scale, dpi = 300
+      width = width, height = height, scale = scale, dpi = 300, units = "in"
     )
   } else if (.Platform$OS.type == "unix") {
     plot <- plot + theme(plot.title = element_blank())
     ggsave(paste0(filename, ".eps"), plot,
       path = paste0(rel_path, "/doc/images/"),
-      width = width, height = height, scale = scale, dpi = 300
+      width = width, height = height, scale = scale, dpi = 300, units = "in"
     )
   }
 }
