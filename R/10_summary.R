@@ -48,7 +48,7 @@ summarise_analysis <- function(analysis_df, measurements_df) {
 plot_cr_ch_heatmap <- function(analysis_df, outcome_var, save_plots) {
   heatmap_var <- case_when(
     outcome_var == "AKI_ICU" ~ "AKI",
-    outcome_var == "AKI_2or3" ~ "Stages 2 or 3 AKI",
+    outcome_var == "AKI_2or3" ~ "Stage 2 or 3 AKI",
     TRUE ~ gsub("_", " ", outcome_var)
   )
   heatmap_all <- analysis_df %>%

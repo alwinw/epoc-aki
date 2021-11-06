@@ -220,9 +220,9 @@ table_cr_ch <- model_ssAOCI_summary(list(change_only_model, per_only_model, grad
 kable(table_cr_ch, caption = "Predictive value parameters for creatinine change as an independent predictor of AKI")
 write.csv(table_cr_ch, file = "table2.csv", row.names = FALSE)
 
-# Multivariable models with patient characteristics and creatinine change for the prediction of stages 2 and 3 AKI
+# Multivariable models with patient characteristics and creatinine change for the prediction of stage 2 or 3 AKI
 table_multi <- model_ssACIBnri_summary(multi_model, multi_model$baseline_models$baseline_sig)
-kable(table_multi, caption = "Multivariable models with patient characteristics and creatinine change for the prediction of stages 2 and 3 AKI")
+kable(table_multi, caption = "Multivariable models with patient characteristics and creatinine change for the prediction of stage 2 or 3 AKI")
 write.csv(table_multi, file = "table3a.csv", row.names = FALSE)
 
 # Score
