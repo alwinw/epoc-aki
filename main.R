@@ -98,19 +98,23 @@ summarise_analysis(
   measurements_df = epoc_aki$measurements
 )
 
-if (.Platform$OS.type == "windows") {
-  plot_cr_ch_heatmap(
-    analysis_df = epoc_aki$analysis,
-    outcome_var = "AKI_ICU",
-    save_plots = TRUE
-  )
+cr_ch_heatmap_AKI_ICU <- plot_cr_ch_heatmap(
+  analysis_df = epoc_aki$analysis,
+  outcome_var = "AKI_ICU"
+)
+save_plot("heatmap_AKI_ICU", cr_ch_heatmap_AKI_ICU,
+  width = 13.5, height = 11, scale = 0.8
+)
 
-  plot_cr_ch_heatmap(
-    analysis_df = epoc_aki$analysis,
-    outcome_var = "AKI_2or3",
-    save_plots = TRUE
-  )
-}
+cr_ch_heatmap_AKI_2or3 <- plot_cr_ch_heatmap(
+  analysis_df = epoc_aki$analysis,
+  outcome_var = "AKI_2or3"
+)
+save_plot("heatmap_AKI_2or3", cr_ch_heatmap_AKI_2or3,
+  width = 13.5, height = 11, scale = 0.8
+)
+
+rm(cr_ch_heatmap_AKI_ICU, cr_ch_heatmap_AKI_2or3)
 
 # Cr change model
 change_only_model <- deoptim_search(
@@ -433,7 +437,7 @@ auc_plot <- ggplot(plot_data, aes(colour = model)) +
   scale_x_continuous(expand = c(0, 0)) +
   scale_y_continuous(expand = c(0, 0))
 
-if (.Platform$OS.type == "windows") {
+if (.Platform$OS.type %in% c("windows", "unix")) {
   ggsave("AUC_plot.png", auc_plot,
     path = paste0(rel_path, "/doc/images/"),
     width = 11.5, height = 11, scale = 0.7
