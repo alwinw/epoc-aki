@@ -48,7 +48,7 @@ model_ssAOCI_summary <- function(predictor_models) {
     bind_rows()
 }
 
-# Table 3: Multivariable models with patient characteristics and creatinine change for the prediction of stages 2 and 3 AKI
+# Table 3: Multivariable models with patient characteristics and creatinine change for the prediction of stage 2 or 3 AKI
 model_nri <- function(data, outcome, std_vars, new_vars) {
   calc_nri <- nribin(
     event = data[[outcome]],

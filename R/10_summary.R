@@ -45,10 +45,10 @@ summarise_analysis <- function(analysis_df, measurements_df) {
 
 
 # ---- Heatmap Plot ----
-plot_cr_ch_heatmap <- function(analysis_df, outcome_var, save_plots) {
+plot_cr_ch_heatmap <- function(analysis_df, outcome_var) {
   heatmap_var <- case_when(
     outcome_var == "AKI_ICU" ~ "AKI",
-    outcome_var == "AKI_2or3" ~ "Stages 2 or 3 AKI",
+    outcome_var == "AKI_2or3" ~ "Stage 2 or 3 AKI",
     TRUE ~ gsub("_", " ", outcome_var)
   )
   heatmap_all <- analysis_df %>%
@@ -77,7 +77,7 @@ plot_cr_ch_heatmap <- function(analysis_df, outcome_var, save_plots) {
     group_by(heatmap) %>%
     summarise(n_cr = n(), n_admission = n_distinct(AdmissionID), .groups = "drop") %>%
     mutate(
-      label = if_else(row_number() == 1, "", "1\u03BCmol/L/h"),
+      label = if_else(row_number() == 1, "", as.character(expression("1" * mu * "mol/L/h"))),
       slope = if_else(row_number() == 1, 0, 1),
       intercept = if_else(row_number() == 1, 100, 0),
     )
@@ -106,7 +106,7 @@ plot_cr_ch_heatmap <- function(analysis_df, outcome_var, save_plots) {
     geom_text(
       data = heatmap_count,
       aes(x = 10.5, y = 15.5, label = label),
-      colour = "white", vjust = 1.3, angle = 10, size = 3
+      colour = "white", vjust = 1.3, angle = 10, size = 3, parse = TRUE
     ) +
     geom_text(
       data = heatmap_count,
@@ -125,15 +125,6 @@ plot_cr_ch_heatmap <- function(analysis_df, outcome_var, save_plots) {
       text = element_text(size = 15)
     )
   # print(heatmap_plot)
-
-
-  if (save_plots) {
-    # png(bg = "transparent")
-    ggsave(paste0("heatmap_", outcome_var, ".png"), heatmap_plot,
-      path = paste0(rel_path, "/doc/images/"),
-      width = 13.5, height = 11, scale = 0.8
-    )
-  }
 
   return(heatmap_plot)
 }

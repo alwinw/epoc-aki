@@ -23,6 +23,9 @@ load_library(
   file.path(rel_path, "doc/bib/R-references.bib")
 )
 
+rm(load_library)
+
+# ---- Plotting ----
 if (.Platform$OS.type == "windows") {
   withAutoprint({
     windowsFonts(
@@ -35,8 +38,25 @@ if (.Platform$OS.type == "windows") {
 theme_set(theme_bw() + theme(text = element_text(family = "sans")))
 options(knitr.table.format = "pipe")
 
+if (.Platform$OS.type == "unix") {
+  theme_set(theme_bw() + theme(text = element_text(family = "Helvetica")))
+}
 
-rm(load_library)
+save_plot <- function(filename, plot, width, height, scale) {
+  if (.Platform$OS.type == "windows") {
+    ggsave(paste0(filename, ".png"), plot,
+      path = paste0(rel_path, "/doc/images/"),
+      width = width, height = height, scale = scale, dpi = 300, units = "in"
+    )
+  } else if (.Platform$OS.type == "unix") {
+    plot <- plot + theme(plot.title = element_blank())
+    ggsave(paste0(filename, ".eps"), plot,
+      path = paste0(rel_path, "/doc/images/"),
+      width = width, height = height, scale = scale, dpi = 300, units = "in"
+    )
+  }
+}
+
 
 # ---- General Utility Functions ----
 uniqueN <- function(x) length(unique(x))
