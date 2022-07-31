@@ -4,6 +4,8 @@ Evaluation of the Predictive value of short-term Oliguria and minor Creatinine i
 
 Austin Health ResearchFest 2020: [Virtual Poster Presentation](https://doi.org/10.6084/m9.figshare.13055699.v1)
 
+Journal of Critical Care article: [Small, short-term, point-of-care creatinine changes as predictors of acute kidney injury in critically ill patients](https://doi.org/10.1016/j.jcrc.2022.154097)
+
 ## Data Overview
 
 ### Definitions
@@ -33,7 +35,7 @@ Example: Significant difference in creatinine changes 8 < Δt<sub>cr_ch</sub> < 
 1. Clone the repository and open the R project file `epoc-aki.Rproj` with RStudio
 
     ```bash
-    git clone git@github.com:AlwinW/epoc-api.git
+    git clone git@github.com:alwinw/epoc-api.git
     ```
 
 2. Preview the relevant `bookdown` file

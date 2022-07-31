@@ -1,0 +1,39 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: "Wang"
+    given-names: "Alwin"
+    orcid: "https://orcid.org/0000-0003-4883-2917"
+  - family-names: "Lisa"
+    given-names: "Toh"
+    orcid: "https://orcid.org/0000-0002-5994-3666"
+title: "epoc-aki"
+version: 1.0.0
+doi: 10.1016/j.jcrc.2022.154097
+date-released: 2022-06-25
+url: "https://github.com/alwinw/epoc-aki"
+preferred-citation:
+  type: article
+  authors:
+    - family-names: "Lisa"
+      given-names: "Toh"
+      orcid: "https://orcid.org/0000-0002-5994-3666"
+    - family-names: "Wang"
+      given-names: "Alwin"
+      orcid: "https://orcid.org/0000-0003-4883-2917"
+    - family-names: "Bitker"
+      given-names: "Laurent"
+      orcid: "https://orcid.org/0000-0002-4698-053X"
+    - family-names: "Glenn"
+      given-names: "Eastwood"
+      orcid: "https://orcid.org/0000-0001-7700-9933"
+    - family-names: "Rinaldo"
+      given-names: "Bellomo"
+      orcid: "https://orcid.org/0000-0002-1650-8939"
+  doi: "10.1016/j.jcrc.2022.154097"
+  journal: "Journal of Critical Care"
+  month: 10
+  start: 154097
+  title: "Small, short-term, point-of-care creatinine changes as predictors of acute kidney injury in critically ill patients"
+  volume: 71
+  year: 2022
