@@ -1,10 +1,10 @@
 # The EPOC-AKI Study <img src='doc/images/logo.png' align="right" height="138.5" />
 
-Evaluation of the Predictive value of short-term Oliguria and minor Creatinine increases for Acute Kidney Injury in ICU
+Evaluation of the Predictive value of short-term Oliguria and minor Creatinine increases for Acute Kidney Injury (AKI) in ICU
 
-Austin Health ResearchFest 2020: [Virtual Poster Presentation](https://doi.org/10.6084/m9.figshare.13055699.v1)
+- Austin Health ResearchFest 2020: [Virtual Poster Presentation](https://doi.org/10.6084/m9.figshare.13055699.v1)
 
-Journal of Critical Care article: [Small, short-term, point-of-care creatinine changes as predictors of acute kidney injury in critically ill patients](https://doi.org/10.1016/j.jcrc.2022.154097)
+- Journal of Critical Care article: [Small, short-term, point-of-care creatinine changes as predictors of acute kidney injury in critically ill patients](https://doi.org/10.1016/j.jcrc.2022.154097)
 
 ## Data Overview
 
